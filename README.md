@@ -30,14 +30,13 @@ Front-End: Typescript - React
 3 Tier based:
 
 Tier 1.
-Database: PostgreSQL
+Front-End: Typescript - React
 
 Tier 2.
 Back-End: Clean Architechture
 
 Tier 3.
-Front-End: Typescript - React
-
+Database: PostgreSQL
 ---
 
 ## Feature plan
