@@ -3,7 +3,17 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="FitnessTracker.UI.MainWindow"
-        Title="FitnessTracker.UI">
-    Welcome to Avalonia!
+        x:Class="Frontend.MainWindow"
+        Title="FitnessTracker">
+    <StackPanel>
+         <TextBlock Text="Please Login" FontSize="16" HorizontalAlignment="Center"/>
+
+        <TextBox Watermark="Username"/>
+
+        <TextBox Watermark="Password"
+                 PasswordChar="•"/>
+
+        <Button Content="Login"/>
+
+    </StackPanel>
 </Window>
