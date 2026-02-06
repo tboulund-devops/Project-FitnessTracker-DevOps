@@ -26,11 +26,11 @@ jobs:
       # Use the ReportGenerator tool to generate a report from the code coverage results
       - name: Generate report
         if: always()
-        run: reportgenerator "-reports:**/coverage.cobertura.xml" "-targetdir:coverage-report" -reporttypes:Html
+        run: reportgenerator ./UnitTests "-reports:**/coverage.cobertura.xml" "-targetdir:coverage-report" -reporttypes:Html
 
       # Write a command to execute mutation tests using Stryker with a threshold of 80% mutation score
       - name: Run Mutation Tests
-        run: dotnet stryker --break-at 60 --output "stryker-report"
+        run: dotnet stryker ./UnitTests --break-at 60 --output "stryker-report"
 
       # Complete this step sp it uploads the coverage report to the artifacts - make it run always even if previous steps fail
       - name: Collect Coverage Report
