@@ -21,7 +21,7 @@ jobs:
 
       # Write a command to execute unit tests while collecting code coverage
       - name: Run unit tests
-        run: dotnet test --collect:"Xplat code coverage" --results-directory TestResults
+        run: dotnet test ./UnitTests --collect:"Xplat code coverage" --results-directory TestResults
 
       # Use the ReportGenerator tool to generate a report from the code coverage results
       - name: Generate report
