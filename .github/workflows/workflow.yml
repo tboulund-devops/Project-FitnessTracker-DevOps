@@ -13,13 +13,13 @@ jobs:
         with:
           fetch-depth: 0 # Fetch all history for accurate results of code analysis
 
-      # Write the commands to install ReportGenerator and Stryker into your pipeline.
+      # Installs ReportGenerator and Stryker tools
       - name: Install required tools
         run: |
           dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.5.1
           dotnet tool install -g dotnet-stryker
 
-      # Write a command to execute unit tests while collecting code coverage
+      # Executes unit tests while collecting code coverage
       - name: Run unit tests
         run: dotnet test ./UnitTests --collect:"Xplat code coverage" --results-directory TestResults
 
@@ -28,11 +28,12 @@ jobs:
         if: always()
         run: reportgenerator ./UnitTests "-reports:**/coverage.cobertura.xml" "-targetdir:coverage-report" -reporttypes:Html
 
-      # Write a command to execute mutation tests using Stryker with a threshold of 60% mutation score
+      # Executes mutation tests using Stryker with a threshold of 60% mutation score
       - name: Run Mutation Tests
-        run: dotnet stryker --solution ./UnitTests/UnitTests.csproj --break-at 60 --output "stryker-report"
+        working-directory: ./UnitTests
+        run: dotnet stryker --project ./UnitTests.csproj --break-at 60 --output "stryker-report"
 
-      # Complete this step sp it uploads the coverage report to the artifacts - make it run always even if previous steps fail
+      # Uploads the coverage report to the artifacts - make it run always even if previous steps fail
       - name: Collect Coverage Report
         if: always()
         uses: actions/upload-artifact@v4
@@ -40,7 +41,7 @@ jobs:
           name: coverage-report
           path: coverage-report
 
-        # Complete this step so it uploads the Stryker report to the artifacts - make it run always even if previous steps fail
+      # Uploads the Stryker report to the artifacts - make it run always even if previous steps fail
       - name: Collect Stryker Report
         if: always()
         uses: actions/upload-artifact@v4
