@@ -11,11 +11,58 @@
     in
     {
       devShells.${system}.default = pkgs.mkShell {
-        packages = [
-          pkgs.dotnet-sdk_10
+        packages = with pkgs; [
+          dotnet-sdk_10
+
+          # SkiaSharp/Avalonia native runtime deps
+          fontconfig
+          freetype
+          harfbuzz
+          icu
+          libGL
+          libX11
+          libXcursor
+          libXext
+          libXfixes
+          libXi
+          libXrandr
+          libXrender
+          libxcb
+          libxkbcommon
+          libICE
+          libSM
+          openssl
+          stdenv.cc.cc.lib
+          zlib
         ];
 
         DOTNET_ROOT = pkgs.dotnet-sdk_10;
+
+        # Help native deps resolve at runtime inside the dev shell.
+        LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath (
+          with pkgs;
+          [
+            fontconfig
+            freetype
+            harfbuzz
+            icu
+            libGL
+            libX11
+            libXcursor
+            libXext
+            libXfixes
+            libXi
+            libXrandr
+            libXrender
+            libxcb
+            libxkbcommon
+            libICE
+            libSM
+            openssl
+            stdenv.cc.cc.lib
+            zlib
+          ]
+        );
       };
     };
 }
