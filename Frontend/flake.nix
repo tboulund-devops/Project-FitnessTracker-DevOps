@@ -12,10 +12,10 @@
     {
       devShells.${system}.default = pkgs.mkShell {
         packages = [
-          pkgs.dotnet-sdk_8
+          pkgs.dotnet-sdk_10
         ];
 
-        DOTNET_ROOT = pkgs.dotnet-sdk_8;
+        DOTNET_ROOT = pkgs.dotnet-sdk_10;
       };
     };
 }
