@@ -49,7 +49,7 @@ _Kick-off week - no features to be planned here_
 
 **Feature 1:** Login Frontend
 
-**Feature 2:**
+**Feature 2:** Login Backend
 
 ### Week 7
 
