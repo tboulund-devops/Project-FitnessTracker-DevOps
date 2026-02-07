@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-namespace FitnessTracker.UI;
+namespace Frontend;
 
 public partial class MainWindow : Window
 {
