@@ -23,8 +23,27 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="MainWindow.axaml.cs">
-      <DependentUpon>MainWindow.axaml</DependentUpon>
+    <Compile Update="Views\HomePage.axaml.cs">
+      <DependentUpon>HomePage.axaml</DependentUpon>
+      <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\LoginPage.axaml.cs">
+      <DependentUpon>LoginPage.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\MainWindow.axaml.cs">
+      <DependentUpon>MainWindow.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="Views\HomePage.axaml" />
+    <AdditionalFiles Include="Views\LoginPage.axaml" />
+    <AdditionalFiles Include="Views\MainWindow.axaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\" />
   </ItemGroup>
 </Project>

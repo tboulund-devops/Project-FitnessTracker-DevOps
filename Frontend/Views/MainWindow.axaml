@@ -1,0 +1,29 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Frontend.Views.MainWindow"
+        Title="FitnessTracker">
+        
+        <Grid>
+                <!-- the ContentControl binds to NavigationStore.CurrentViewModel via MainWindowViewModel -->
+                <!-- <ContentControl Content="{Binding CurrentViewModel}" /> -->
+        
+                <!-- Global Loading Overlay -->
+                <Border Background="#80000000" 
+                        ZIndex="1000">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="20">
+                                <!-- Progress Ring/Spinner -->
+                                <ProgressBar Width="50" Height="50" 
+                                             IsIndeterminate="True"
+                                             Foreground="White"/>
+                                <TextBlock Text="Loading..." 
+                                           Foreground="White" 
+                                           FontSize="16"
+                                           HorizontalAlignment="Center"/>
+                        </StackPanel>
+                </Border>
+        
+        </Grid>
+</Window>
