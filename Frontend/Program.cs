@@ -1,7 +1,7 @@
 ﻿using Avalonia;
 using System;
 
-namespace FitnessTracker.UI;
+namespace Frontend;
 
 class Program
 {
@@ -19,3 +19,4 @@ class Program
             .WithInterFont()
             .LogToTrace();
 }
+

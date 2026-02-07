@@ -16,7 +16,7 @@ public class MainWindowVM:Bindable
     /// Initializes a new instance of the MainWindowViewModel
     /// Sets up the application infrastructure and initial state
     /// </summary>
-    public MainWindowViewModel()
+    public MainWindowVM()
     {
         // Create shared services and navigation pieces
         _navigationStore = new NavigationStore();

@@ -1,14 +1,20 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="FitnessTracker.UI.App"
+             x:Class="Frontend.App"
+             xmlns:viewModels="clr-namespace:FitnessTracker.UI.ViewModels"
+             xmlns:views="clr-namespace:Frontend.Views"
              RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+    
+    <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
              <Application.DataTemplates>
-                 <!-- <DataTemplate DataType="viewModels:LoginScreenViewModel"> -->
-                 <!--     <views:LoginScreen/> -->
-                 <!-- </DataTemplate> -->
+                 <DataTemplate DataType="viewModels:LoginPageVM">
+                     <views:LoginPage/>
+                 </DataTemplate>
                  
+                 <DataTemplate DataType="viewModels:HomePageVM">
+                     <views:HomePage/>
+                 </DataTemplate>
              </Application.DataTemplates>
 
     <Application.Styles>

@@ -2,8 +2,9 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Frontend.Views;
+using FitnessTracker.UI.ViewModels;
 
-namespace FitnessTracker.UI;
+namespace Frontend;
 
 public partial class App : Application
 {
@@ -16,7 +17,13 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow();
+            // Create the MainWindow
+            var mainWindow = new MainWindow();
+            
+            // Set the DataContext to your MainWindowVM
+            mainWindow.DataContext = new MainWindowVM();
+            
+            desktop.MainWindow = mainWindow;
         }
 
         base.OnFrameworkInitializationCompleted();

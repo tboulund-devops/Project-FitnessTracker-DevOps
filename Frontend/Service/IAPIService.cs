@@ -1,6 +1,6 @@
 ﻿namespace FitnessTracker.UI.Service;
 
-public class APIService : IAPIService
+public interface IAPIService
 {
     
 }
