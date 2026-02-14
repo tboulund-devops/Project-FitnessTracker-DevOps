@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using System.Windows.Input;
 using FitnessTracker.UI.Service;
+using Frontend.Models;
 
 namespace FitnessTracker.UI.ViewModels;
 
@@ -12,11 +13,23 @@ public class LoginPageVM:Bindable
     
     public ICommand LoginCommand { get;}
     
+    private LoginInfo _loginInfo;
+    public LoginInfo LoginInfo
+    {
+        get => _loginInfo;
+        set
+        {
+            _loginInfo = value;
+            propertyIsChanged();
+        }
+    }
+    
     public LoginPageVM(NavigationService navigationService, IAPIService apiService)
     {
         _navigationService = navigationService;
         _apiService = apiService;
-        // LoginInfo = new LoginInfo("", "");
+        
+        LoginInfo = new LoginInfo("", "");
         LoginCommand = new ICommandBase(async _ => await LoginAsync());
         
     }

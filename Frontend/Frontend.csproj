@@ -42,8 +42,4 @@
     <AdditionalFiles Include="Views\LoginPage.axaml" />
     <AdditionalFiles Include="Views\MainWindow.axaml" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
 </Project>
