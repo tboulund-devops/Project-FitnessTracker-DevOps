@@ -5,5 +5,46 @@
         x:DataType="viewModels:HomePageVM"
         Width="900" Height="650">
     
+        <Grid>
+                <Grid.RowDefinitions>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                </Grid.RowDefinitions>
+                
+                <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                
+                <Grid Grid.Row="0" Grid.Column="0" Background="Aqua">
+                        <Grid.RowDefinitions>
+                                <RowDefinition Height="*"></RowDefinition>
+                                <RowDefinition Height="*"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"></ColumnDefinition>
+                                <ColumnDefinition Width="*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Total number of Workouts">
+                        </TextBlock>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="0"></TextBlock>
+                        
+                </Grid>
+                
+                <Grid Grid.Row="1" Grid.Column="0" Background="Red">
+                        <Grid.RowDefinitions>
+                                <RowDefinition Height="*"></RowDefinition>
+                                <RowDefinition Height="*"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"></ColumnDefinition>
+                                <ColumnDefinition Width="*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Total KG's lifted">
+                        </TextBlock>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="0"></TextBlock>
+                        
+                </Grid>
+        </Grid>
    
 </UserControl>

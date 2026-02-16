@@ -1,8 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:viewModels="clr-namespace:FitnessTracker.UI.ViewModels"
+        xmlns:viewModels1="clr-namespace:Frontend.ViewModels"
         x:Class="Frontend.Views.LoginPage"
-        x:DataType="viewModels:LoginPageVM"
+        x:DataType="viewModels1:LoginPageVM"
         Width="900" Height="650">
    
     <StackPanel>

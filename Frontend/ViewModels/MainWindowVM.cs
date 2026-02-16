@@ -1,4 +1,5 @@
 ﻿using FitnessTracker.UI.Service;
+using Frontend.ViewModels;
 
 namespace FitnessTracker.UI.ViewModels;
 

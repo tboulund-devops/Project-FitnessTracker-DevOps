@@ -1,9 +1,10 @@
 ﻿using System.Threading.Tasks;
 using System.Windows.Input;
 using FitnessTracker.UI.Service;
+using FitnessTracker.UI.ViewModels;
 using Frontend.Models;
 
-namespace FitnessTracker.UI.ViewModels;
+namespace Frontend.ViewModels;
 
 public class LoginPageVM:Bindable
 {
