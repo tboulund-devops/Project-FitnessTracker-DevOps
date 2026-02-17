@@ -1,0 +1,61 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:viewModels="clr-namespace:FitnessTracker.UI.ViewModels"
+    x:Class="Frontend.Views.DashboardPage"
+    x:DataType="viewModels:DashboardPageVM"
+    Width="900"
+    Height="650"
+>
+
+        <Grid>
+                <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Row="0" Grid.Column="0" Background="Aqua">
+                        <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                Grid.Row="0"
+                Grid.Column="0"
+                Text="Total number of Workouts"
+            >
+                        </TextBlock>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="0" />
+
+                </Grid>
+
+                <Grid Grid.Row="1" Grid.Column="0" Background="Red">
+                        <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                Grid.Row="0"
+                Grid.Column="0"
+                Text="Total KG's lifted"
+            >
+                        </TextBlock>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="0" />
+
+                </Grid>
+        </Grid>
+
+</UserControl>
