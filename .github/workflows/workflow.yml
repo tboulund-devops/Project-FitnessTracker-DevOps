@@ -34,6 +34,10 @@ jobs:
           /d:sonar.qualitygate.wait=true \
           /d:sonar.qualitygate.timeout=300
           
+      - name: Build
+        run: dotnet build
+      
+      
       #Generate sonarqube report
       - name: Generate Sonarqube report
         run: |
