@@ -20,7 +20,6 @@ jobs:
           dotnet tool install -g dotnet-stryker
           dotnet tool install -g dotnet-sonarscanner
           
-
       # Executes unit tests while collecting code coverage
       - name: Run unit tests
         run: dotnet test ./UnitTests --collect:"Xplat code coverage" --results-directory TestResults
@@ -36,15 +35,15 @@ jobs:
           /d:sonar.qualitygate.timeout=300
           
       #Generate sonarqube report
-        - name: Generate Sonarqube report
-          run: |
-            reportgenerator \
-            -reports:TestResults/**/coverage.cobertura.xml \
-            -targetdir:coverage-report \
-            -reporttypes:SonarQube
+      - name: Generate Sonarqube report
+        run: |
+          reportgenerator \
+          -reports:TestResults/**/coverage.cobertura.xml \
+          -targetdir:coverage-report \
+          -reporttypes:SonarQube
             
       # Use the ReportGenerator tool to generate a report from the code coverage results
-      - name: Generate report
+      - name: Generate HTML report
         if: always()
         run: reportgenerator ./UnitTests "-reports:**/coverage.cobertura.xml" "-targetdir:coverage-report" -reporttypes:Html
 
