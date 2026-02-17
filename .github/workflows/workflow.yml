@@ -28,7 +28,7 @@ jobs:
         run: | 
           dotnet sonarscanner begin \
           /k:"${{vars.PROJECT_KEY}}" \
-          /d:sonar.host.url="http://localhost:9000" \
+          /d:sonar.host.url="http://sonarqube.setgo.dk:9000" \
           /d:sonar.token="${{secrets.FITNESSTRACKERTOKEN}}" \
           /d:sonar.coverageReportPaths="coverage-report/SonarQube.xml" \
           /d:sonar.qualitygate.wait=true \
