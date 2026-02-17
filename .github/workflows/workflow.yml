@@ -27,9 +27,9 @@ jobs:
       - name: Start Static Code Analysis
         run: | 
           dotnet sonarscanner begin \
-          /k:"${{vars.PROJECT_KEY}}" \
-          /d:sonar.host.url="http://sonarqube.setgo.dk:9000" \
-          /d:sonar.token="${{secrets.FITNESSTRACKERTOKEN}}" \
+          /k:${{vars.PROJECT_KEY}} \
+          /d:sonar.host.url=${{vars.SONAR_URL}} \
+          /d:sonar.token=${{secrets.FITNESSTRACKERTOKEN}} \
           /d:sonar.coverageReportPaths="coverage-report/SonarQube.xml" \
           /d:sonar.qualitygate.wait=true \
           /d:sonar.qualitygate.timeout=300
@@ -51,7 +51,7 @@ jobs:
       - name: Complete Static Code Analysis
         run: |
           dotnet sonarscanner end \
-          /d:sonar.token="${{ secrets.FITNESSTRACKERTOKEN }}"  
+          /d:sonar.token="${{secrets.FITNESSTRACKERTOKEN}}"  
       
       # Executes mutation tests using Stryker with a threshold of 60% mutation score
       - name: Run Mutation Tests
