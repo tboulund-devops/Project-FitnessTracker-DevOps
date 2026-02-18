@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SportsTimerBackend.Domain;
+using Npgsql;
 
 namespace Backend.External.APIControllers;
 
@@ -9,26 +10,49 @@ namespace Backend.External.APIControllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-public class APIAuthController : ControllerBase
+public class APILoginController : ControllerBase, IAPILoginController
 {
-    /// <summary>
-    /// Authenticates a trainer and returns JWT token upon successful login
-    /// </summary>
-    /// <param name="request">Login request containing email and password</param>
-    /// <returns>
-    /// 200 OK if credentials are accepted, 401 Unauthorized otherwise
-    /// </returns>
-    [AllowAnonymous]
-    [HttpPost("login")]
-    public ActionResult Login([FromBody] LoginRequest request)
+    private readonly IConfiguration _configuration;
+
+    public APILoginController(IConfiguration configuration)
     {
-        if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
+        _configuration = configuration;
+    }
+
+    
+    [HttpPost("Login_CheckCredentials")]
+    public bool CheckCredentials(string username, string password)
+    {
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
         {
             return BadRequest("Username and password are required");
         }
-
-        // NOTE: Authentication/JWT services are not currently wired in this project.
-        // This endpoint is kept functional and can be extended once services exist.
+        
         return Unauthorized("Invalid credentials");
+    }
+    
+    [HttpGet]
+    public IActionResult GetUsers()
+    {
+        var connString = _configuration.GetConnectionString("DefaultConnection");
+
+        using var conn = new NpgsqlConnection(connString);
+        conn.Open();
+
+        using var cmd = new NpgsqlCommand("SELECT id, username FROM tbllogincred", conn);
+        using var reader = cmd.ExecuteReader();
+
+        var users = new List<object>();
+
+        while (reader.Read())
+        {
+            users.Add(new
+            {
+                Id = reader.GetInt32(0),
+                Username = reader.GetString(1)
+            });
+        }
+
+        return Ok(users);
     }
 }

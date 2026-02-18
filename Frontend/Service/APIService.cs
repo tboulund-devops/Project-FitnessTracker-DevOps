@@ -12,8 +12,7 @@ public class APIService : IAPIService
 {
     
     private static readonly HttpClient _client = CreateHttpClient();
-    //private static readonly string _baseUrl = 
-    private static string _token = string.Empty;
+    private static readonly string _baseUrl = "http://localhost:8081";
 
     /// <summary>
     /// creates a HTTP client
@@ -44,6 +43,16 @@ public class APIService : IAPIService
 
         return false;
 
+    }
+    //get all users test
+    public async Task<string> GetUsersAsync()
+    {
+        var response = await _client.GetAsync($"{BaseUrl}/api/APILogin");
+        if (response.IsSuccessStatusCode)
+        {
+            return await response.Content.ReadAsStringAsync();
+        }
+        return null;
     }
 
     
