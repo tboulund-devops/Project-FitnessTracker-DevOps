@@ -21,15 +21,15 @@ jobs:
           dotnet tool install -g dotnet-sonarscanner
           
           
-        - name: Start Static Code Analysis
-          run: |
-            dotnet sonarscanner begin \
-            /k:"${{vars.PROJECT_KEY}}" \
-            /d:sonar.host.url="${{vars.SONAR_URL}}" \
-            /d:sonar.token="${{secrets.FITNESSTRACKERTOKEN}}" \
-            /d:sonar.coverageReportPaths="sonarqube-coverage-report/SonarQube.xml" \
-            /d:sonar.qualitygate.wait=true \
-            /d:sonar.qualitygate.timeout=300
+      - name: Start Static Code Analysis
+        run: |
+          dotnet sonarscanner begin \
+          /k:"${{vars.PROJECT_KEY}}" \
+          /d:sonar.host.url="${{vars.SONAR_URL}}" \
+          /d:sonar.token="${{secrets.FITNESSTRACKERTOKEN}}" \
+          /d:sonar.coverageReportPaths="sonarqube-coverage-report/SonarQube.xml" \
+          /d:sonar.qualitygate.wait=true \
+          /d:sonar.qualitygate.timeout=300
 
       - name: Build
         run: dotnet build    
