@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Input;
+using System.Threading.Tasks;
 
 namespace Frontend.ViewModels;
 
@@ -8,89 +9,76 @@ namespace Frontend.ViewModels;
 /// </summary>
 public class ICommandBase : ICommand
 {
-    //Generic delegates
-    public Action<object?> _executeAction;
-    public Func<object?, bool> _canExecuteAction;
+    private readonly Func<object?, Task>? _executeAsync;
+    private readonly Action<object?>? _executeAction;
+    private readonly Func<object?, bool> _canExecuteAction;
+    private bool _isExecuting;
 
     /// <summary>
-    /// Constructor for commands with parameter and custom canExecute logic
+    /// Constructor for async commands
     /// </summary>
-    /// <param name="executeAction"></param>
-    /// <param name="canExecuteAction"></param>
-    public ICommandBase(Action<object?> executeAction, Func<object?, bool>? canExecuteAction)
+    public ICommandBase(Func<object?, Task> executeAsync, Func<object?, bool>? canExecuteAction = null)
+    {
+        _executeAsync = executeAsync;
+        _executeAction = null;
+        _canExecuteAction = canExecuteAction ?? DefaultCanExecute;
+    }
+
+    /// <summary>
+    /// Constructor for sync commands with parameter
+    /// </summary>
+    public ICommandBase(Action<object?> executeAction, Func<object?, bool>? canExecuteAction = null)
     {
         _executeAction = executeAction;
-        _canExecuteAction = canExecuteAction ?? DefaultCanExecute; // Use default if none provided
+        _executeAsync = null;
+        _canExecuteAction = canExecuteAction ?? DefaultCanExecute;
     }
 
     /// <summary>
-    /// Constructor for parameterless commands with custom canExecute logic
+    /// Constructor for sync commands without parameter
     /// </summary>
-    /// <param name="executeAction"></param>
-    /// <param name="canExecuteAction"></param>
-    public ICommandBase(Action executeAction, Func<object?, bool>? canExecuteAction)
+    public ICommandBase(Action executeAction, Func<object?, bool>? canExecuteAction = null)
         : this(_ => executeAction(), canExecuteAction)
     {
-        
     }
-    
 
-/// <summary>
-/// Constructor for commands with parameter that always execute
-/// </summary>
-/// <param name="executeAction"></param>
-    public ICommandBase(Action<object?> executeAction) : this(executeAction, DefaultCanExecute)
-    {
-        this._executeAction = executeAction;
-    }
-    
-
-    /// <summary>
-    /// Event that notifies when the CanExecute status changes
-    /// CONNECTION: Avalonia automatically subscribes to this for UI updates
-    /// </summary>
     public event EventHandler? CanExecuteChanged;
 
-    /// <summary>
-    /// Manually raises the CanExecuteChanged event
-    /// </summary>
+    public bool CanExecute(object? parameter)
+    {
+        return !_isExecuting && _canExecuteAction(parameter);
+    }
+
+    public async void Execute(object? parameter)
+    {
+        if (!CanExecute(parameter))
+            return;
+
+        _isExecuting = true;
+        RaiseCanExecuteChanged();
+
+        try
+        {
+            if (_executeAsync != null)
+            {
+                await _executeAsync(parameter);
+            }
+            else
+            {
+                _executeAction?.Invoke(parameter);
+            }
+        }
+        finally
+        {
+            _isExecuting = false;
+            RaiseCanExecuteChanged();
+        }
+    }
+
     public void RaiseCanExecuteChanged()
     {
         CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
 
-
-    /// <summary>
-    /// Can execute, the method which enables or disables the UI element trough the Command Manager
-    /// Will just forward invoke the call
-    /// </summary>
-    /// <param name="parameter"></param>
-    /// <returns></returns>
-    public bool CanExecute(object? parameter)
-    {
-        Boolean returnVal = true;
-        if (_canExecuteAction != null)
-            returnVal = _canExecuteAction(parameter);
-        return returnVal;
-    }
-
-    /// <summary>
-    /// The method which executes when an UI element is clicked
-    /// WIll just forward invoke the call
-    /// </summary>
-    /// <param name="parameter"></param>
-    public void Execute(object? parameter)
-    {
-        _executeAction?.Invoke(parameter);
-    }
-    
-    /// <summary>
-    /// Defines if command can be executed (default behaviour)
-    /// </summary>
-    /// <param name="parameter">The parameter.</param>
-    /// <returns>Always true</returns>
-    private static bool DefaultCanExecute(object parameter)
-    {
-        return true;
-    }
+    private static bool DefaultCanExecute(object parameter) => true;
 }

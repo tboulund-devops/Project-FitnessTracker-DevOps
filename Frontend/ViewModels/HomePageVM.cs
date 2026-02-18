@@ -5,13 +5,13 @@ namespace Frontend.ViewModels;
 public class HomePageVM:Bindable
 {
     // Service dependencies for API operations and navigation
-    private readonly IAPIService _trainerService;
-    private readonly NavigationService _navigationService;
+    private readonly IAPIService _apiService;
+    private readonly INavigationService _navigationService;
     
-    public HomePageVM(NavigationService navigationService, IAPIService trainerService)
+    public HomePageVM(INavigationService navigationService, IAPIService apiService)
     {
         _navigationService = navigationService;
-        _trainerService = trainerService;
+        _apiService = apiService;
 
     }
 }

@@ -6,7 +6,7 @@ public class DashboardPageVM:Bindable
 {
     // Service dependencies for API operations and navigation
     private readonly IAPIService _trainerService;
-    private readonly NavigationService _navigationService;
+    private readonly INavigationService _navigationService;
 
     public DashboardPageVM(NavigationService navigationService, IAPIService trainerService)
     {
