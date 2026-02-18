@@ -8,7 +8,7 @@ using Microsoft.OpenApi.Models;
 using Backend.Service;
 using Backend.Application.Service.Interfaces;
 using Backend.External;
-using SportsTimerBackend.External.APIControllers;
+using Backend.External.APIControllers;
 using Backend.External.Repos;
 using Backend.Gateway;
 using Npgsql;
@@ -31,15 +31,6 @@ builder.Services.AddSwaggerGen(options =>
     options.AddServer(new OpenApiServer { Url = "/" });
 });
 
-// Rate Limiting
-builder.Services.AddRateLimiter(rateLimiterOptions =>
-    rateLimiterOptions.AddFixedWindowLimiter("FixedWindowPolicy", options =>
-    {
-        options.PermitLimit = 1000;
-        options.Window = TimeSpan.FromSeconds(60);
-        options.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
-        options.QueueLimit = 20;
-    }));
 
 // Environment-specific configuration
 builder.Configuration
@@ -65,7 +56,6 @@ builder.Services.AddScoped<ILoginRepo, LoginRepo>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<LoginService>();
 builder.Services.AddSingleton<DatabaseSeedingService>();
-builder.Services.AddScoped<IJWTService, JWTService>();
 
 var app = builder.Build();
 

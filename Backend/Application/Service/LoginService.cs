@@ -1,13 +1,14 @@
 ﻿
 
 
+using Backend.Application.Service.Interfaces;
 using Backend.Domain;
 using Backend.Gateway;
 
 
 namespace Backend.Service;
 
-public class LoginService
+public class LoginService:ILoginService
 {
     private readonly ILoginRepo _repo;
 

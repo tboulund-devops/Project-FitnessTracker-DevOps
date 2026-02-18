@@ -1,10 +1,11 @@
+using Backend.Application.Service.Interfaces;
 using Backend.Domain;
 using Backend.External;
 using Backend.External.Repos;
 
 namespace Backend.Service;
 
-public class UserService
+public class UserService:IUserService
 {
     private readonly IUserRepo _userRepo;
 
