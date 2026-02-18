@@ -1,4 +1,4 @@
-﻿using FitnessTracker.UI.ViewModels;
+﻿using Frontend.ViewModels;
 
 namespace Frontend.Models;
 

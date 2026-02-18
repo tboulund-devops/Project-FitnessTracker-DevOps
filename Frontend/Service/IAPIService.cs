@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace FitnessTracker.UI.Service;
+namespace Frontend.Service;
 
 public interface IAPIService
 {

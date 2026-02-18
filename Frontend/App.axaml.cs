@@ -2,7 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Frontend.Views;
-using FitnessTracker.UI.ViewModels;
+using Frontend.ViewModels;
 
 namespace Frontend;
 

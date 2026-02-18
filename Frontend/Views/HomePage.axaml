@@ -1,6 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:viewModels="clr-namespace:FitnessTracker.UI.ViewModels"
+        xmlns:viewModels="clr-namespace:Frontend.ViewModels"
         x:Class="Frontend.Views.HomePage"
         x:DataType="viewModels:HomePageVM"
         Width="900" Height="650">
