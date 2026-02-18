@@ -96,8 +96,11 @@ builder.Services.AddSingleton<DatabaseSeedingService>();
 // Repositories
 builder.Services.AddScoped<IUserRepo, UserRepo>();
 
+
+
 // Services
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<LoginService>();
 builder.Services.AddScoped<IJWTService, JWTService>();
 
 // Authentication & Authorization
