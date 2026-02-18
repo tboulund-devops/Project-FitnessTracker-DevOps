@@ -1,6 +1,7 @@
 ﻿using Backend.Application.Service;
 using Backend.Domain;
 using Backend.Gateway;
+using Microsoft.AspNetCore.Identity;
 using Npgsql;
 
 public class LoginRepo : ILoginRepo
@@ -12,27 +13,27 @@ public class LoginRepo : ILoginRepo
         _connectionService = connectionService;
     }
 
-    public Dictionary<string, string> getCredentials(string username)
+    public List<string> getCredentials(string username)
     {
         using var connection = _connectionService.GetConnection();
         connection.Open();
 
         using var cmd = new NpgsqlCommand(
-            "SELECT fldusername, fldpassword FROM tblusercredentials WHERE username = @username",
+            "SELECT fldUsername, fldPassword FROM tblUserCredentials WHERE fldUsername = @username",
             connection);
 
         cmd.Parameters.AddWithValue("@username", username);
 
         using var reader = cmd.ExecuteReader();
 
-        var result = new Dictionary<string, string>();
+        var result = new List<string>();
 
         if (reader.Read())
         {
-            result["username"] = reader.GetString(0);
-            result["password"] = reader.GetString(1);
+            result.Add(reader.GetString(0).Trim());
+            result.Add(reader.GetString(1).Trim());
         }
-
+        
         return result;
     }
 }

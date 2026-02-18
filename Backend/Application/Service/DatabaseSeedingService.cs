@@ -16,23 +16,23 @@ public class DatabaseSeedingService
         using var connection = _connectionService.GetConnection();
         connection.Open();
 
-        //Create table if it does not exist
+        // Create table with unquoted identifiers
         using (var createCmd = new NpgsqlCommand(@"
-            CREATE TABLE IF NOT EXISTS ""tblUserCredentials"" (
-                ""fldUsername"" VARCHAR(100) NOT NULL,
-                ""fldPassword"" VARCHAR(100) NOT NULL
-            );
-        ", connection))
+        CREATE TABLE IF NOT EXISTS tblUserCredentials (
+            fldUsername VARCHAR(100) NOT NULL,
+            fldPassword VARCHAR(100) NOT NULL
+        );
+    ", connection))
         {
             createCmd.ExecuteNonQuery();
         }
 
-        //Check if test user already exists
+        // Check if test user already exists
         using (var checkCmd = new NpgsqlCommand(@"
-            SELECT COUNT(*) 
-            FROM ""tblUserCredentials"" 
-            WHERE ""fldUsername"" = @username;
-        ", connection))
+        SELECT COUNT(*) 
+        FROM tblUserCredentials 
+        WHERE fldUsername = @username;
+    ", connection))
         {
             checkCmd.Parameters.AddWithValue("@username", "test");
 
@@ -41,10 +41,10 @@ public class DatabaseSeedingService
             if (count == 0)
             {
                 using var insertCmd = new NpgsqlCommand(@"
-                    INSERT INTO ""tblUserCredentials"" 
-                    (""fldUsername"", ""fldPassword"")
-                    VALUES (@username, @password);
-                ", connection);
+                INSERT INTO tblUserCredentials 
+                (fldUsername, fldPassword)
+                VALUES (@username, @password);
+            ", connection);
 
                 insertCmd.Parameters.AddWithValue("@username", "test");
                 insertCmd.Parameters.AddWithValue("@password", "test");

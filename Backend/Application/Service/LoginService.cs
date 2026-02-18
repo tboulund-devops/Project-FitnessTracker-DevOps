@@ -19,12 +19,13 @@ public class LoginService
     public bool CheckCredentials(LoginRequest request)
     {
         var CredentialsFromDatabase = _repo.getCredentials(request.Username);
-
-        if (CredentialsFromDatabase.ContainsKey(request.Username) &&
-            CredentialsFromDatabase.ContainsValue(request.Password))
+        
+        if (CredentialsFromDatabase[0] == request.Username &&
+            CredentialsFromDatabase[1] == request.Password)
         {
             return true;
         }
+
         return false;
     }
 }
