@@ -57,7 +57,7 @@ _Winter vacation - nothing planned._
 
 ### Week 8
 
-**Feature 1:** [...]
+**Feature 1:** Add Navbar for navigating between pages.
 
 **Feature 2:** [...]
 

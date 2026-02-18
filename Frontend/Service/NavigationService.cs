@@ -1,12 +1,12 @@
-﻿using FitnessTracker.UI.ViewModels;
+﻿using Frontend.ViewModels;
 
-namespace FitnessTracker.UI.Service;
+namespace Frontend.Service;
 
 /// <summary>
 /// /// Service for handling navigation between different views in the application
 /// Manages the current view model displayed in the main window
 /// </summary>
-public class NavigationService
+public class NavigationService:INavigationService
 {
     // Reference to the navigation store that maintains the current view state
     private readonly NavigationStore _navigationStore;

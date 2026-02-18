@@ -1,7 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using System.Windows.Input;
-using FitnessTracker.UI.Service;
-using FitnessTracker.UI.ViewModels;
+using Frontend.Service;
+using Frontend.ViewModels;
 using Frontend.Models;
 
 namespace Frontend.ViewModels;
@@ -9,10 +10,33 @@ namespace Frontend.ViewModels;
 public class LoginPageVM:Bindable
 {
     // Service dependencies for navigation and API operations
-    private readonly NavigationService _navigationService;
+    private readonly INavigationService _navigationService;
     private readonly IAPIService _apiService;
     
     public ICommand LoginCommand { get;}
+    
+    // Add error properties
+    private string _errorMessage;
+    public string ErrorMessage
+    {
+        get => _errorMessage;
+        set
+        {
+            _errorMessage = value;
+            propertyIsChanged();
+        }
+    }
+
+    private bool _hasError;
+    public bool HasError
+    {
+        get => _hasError;
+        set
+        {
+            _hasError = value;
+            propertyIsChanged();
+        }
+    }
     
     private LoginInfo _loginInfo;
     public LoginInfo LoginInfo
@@ -20,12 +44,15 @@ public class LoginPageVM:Bindable
         get => _loginInfo;
         set
         {
-            _loginInfo = value;
-            propertyIsChanged();
+            if (!ReferenceEquals(_loginInfo, value))
+            {
+                _loginInfo = value;
+                propertyIsChanged();
+            }
         }
     }
     
-    public LoginPageVM(NavigationService navigationService, IAPIService apiService)
+    public LoginPageVM(INavigationService navigationService, IAPIService apiService)
     {
         _navigationService = navigationService;
         _apiService = apiService;
@@ -42,27 +69,24 @@ public class LoginPageVM:Bindable
     private async Task LoginAsync()
     {
         
-        var homePageVm = new HomePageVM(_navigationService, _apiService);
-         _navigationService.Navigate(homePageVm);
-        
-        // IsLoading = true;
-        // try
-        // {
-        //     var result = await _apiService.LoginAsync(LoginInfo.Username, LoginInfo.Password);
-        //     if (result)
-        //     {
-        //         var adminVm = new AdminHomePageViewModel(_navigationService, _apiService);
-        //         _navigationService.Navigate(adminVm);
-        //     }
-        //     else
-        //     {
-        //         ShowError("Wrong username or password!");
-        //     }
-        // }
-        // finally
-        // {
-        //     IsLoading = false;
-        // }
+        try
+        {
+            IsLoading = true;
+            HasError = false;
+            ErrorMessage = string.Empty;
+            
+            var homePageVm = new HomePageVM(_navigationService, _apiService);
+            _navigationService.Navigate(homePageVm);
+        }
+        catch (Exception ex)
+        {
+            HasError = true;
+            ErrorMessage = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
     }
         
 }

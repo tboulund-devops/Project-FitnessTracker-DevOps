@@ -1,50 +1,22 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:viewModels="clr-namespace:FitnessTracker.UI.ViewModels"
-        x:Class="Frontend.Views.HomePage"
-        x:DataType="viewModels:HomePageVM"
-        Width="900" Height="650">
-    
-        <Grid>
-                <Grid.RowDefinitions>
-                        <RowDefinition Height="*"></RowDefinition>
-                        <RowDefinition Height="*"></RowDefinition>
-                </Grid.RowDefinitions>
-                
-                <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"></ColumnDefinition>
-                        <ColumnDefinition Width="*"></ColumnDefinition>
-                </Grid.ColumnDefinitions>
-                
-                <Grid Grid.Row="0" Grid.Column="0" Background="Aqua">
-                        <Grid.RowDefinitions>
-                                <RowDefinition Height="*"></RowDefinition>
-                                <RowDefinition Height="*"></RowDefinition>
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"></ColumnDefinition>
-                                <ColumnDefinition Width="*"></ColumnDefinition>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Total number of Workouts">
-                        </TextBlock>
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="0"></TextBlock>
-                        
-                </Grid>
-                
-                <Grid Grid.Row="1" Grid.Column="0" Background="Red">
-                        <Grid.RowDefinitions>
-                                <RowDefinition Height="*"></RowDefinition>
-                                <RowDefinition Height="*"></RowDefinition>
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"></ColumnDefinition>
-                                <ColumnDefinition Width="*"></ColumnDefinition>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Total KG's lifted">
-                        </TextBlock>
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="0"></TextBlock>
-                        
-                </Grid>
-        </Grid>
-   
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:viewModels="clr-namespace:Frontend.ViewModels"
+    xmlns:views="clr-namespace:Frontend.Views"
+    x:Class="Frontend.Views.HomePage"
+    x:DataType="viewModels:HomePageVM"
+>
+
+    <TabControl Margin="40">
+        <TabItem Header="Dashboard">
+            <views:DashboardPage />
+        </TabItem>
+        <TabItem Header="Tab 2">
+            <TextBlock Margin="5">This is tab 2 content</TextBlock>
+        </TabItem>
+        <TabItem Header="Tab 3">
+            <TextBlock Margin="5">This is tab 3 content</TextBlock>
+        </TabItem>
+    </TabControl>
+
 </UserControl>

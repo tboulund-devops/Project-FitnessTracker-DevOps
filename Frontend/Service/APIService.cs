@@ -6,7 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Frontend.Models;
 
-namespace FitnessTracker.UI.Service;
+namespace Frontend.Service;
 
 public class APIService : IAPIService
 {
