@@ -20,12 +20,9 @@ jobs:
           dotnet tool install -g dotnet-stryker
           dotnet tool install -g dotnet-sonarscanner
           
-      # Executes unit tests while collecting code coverage
-      - name: Run unit tests
-        run: dotnet test ./UnitTests --collect:"Xplat code coverage" --results-directory TestResults
-
+          
       - name: Start Static Code Analysis
-        run: | 
+        run: |
           dotnet sonarscanner begin \
           /k:"${{vars.PROJECT_KEY}}" \
           /d:sonar.host.url="${{vars.SONAR_URL}}" \
@@ -33,11 +30,22 @@ jobs:
           /d:sonar.coverageReportPaths="sonarqube-coverage-report/SonarQube.xml" \
           /d:sonar.qualitygate.wait=true \
           /d:sonar.qualitygate.timeout=300
-          
+
       - name: Build
-        run: dotnet build
+        run: dotnet build    
       
-      
+      # Executes unit tests while collecting code coverage
+      - name: Run unit tests
+        run: dotnet test ./UnitTests --collect:"Xplat code coverage" --results-directory TestResults
+        
+      - name: Debug coverage files
+        run: |
+          echo "Listing TestResults"
+          ls -R TestResults || true
+
+          echo "Listing Sonar report folder"
+          ls -R sonarqube-coverage-report || true
+    
       #Generate sonarqube report
       - name: Generate Sonarqube report
         run: |
