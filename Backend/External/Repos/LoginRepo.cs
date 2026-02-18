@@ -12,16 +12,16 @@ public class LoginRepo : ILoginRepo
         _connectionService = connectionService;
     }
 
-    public Dictionary<string, string> getCredentials(LoginRequest loginRequest)
+    public Dictionary<string, string> getCredentials(string username)
     {
         using var connection = _connectionService.GetConnection();
         connection.Open();
 
         using var cmd = new NpgsqlCommand(
-            "SELECT username, password FROM users WHERE username = @username",
+            "SELECT fldusername, fldpassword FROM tblusercredentials WHERE username = @username",
             connection);
 
-        cmd.Parameters.AddWithValue("@username", loginRequest.Username);
+        cmd.Parameters.AddWithValue("@username", username);
 
         using var reader = cmd.ExecuteReader();
 

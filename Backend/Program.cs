@@ -89,7 +89,7 @@ builder.Services.AddScoped<NpgsqlConnection>(sp =>
 
 builder.Services.AddSingleton<ConnectionService>();
 builder.Services.AddScoped<ILoginRepo, LoginRepo>();
-
+builder.Services.AddSingleton<DatabaseSeedingService>();
 
 // Register application-specific services with scoped lifetime
 
@@ -138,8 +138,12 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Run seeding of database in background to avoid blocking startup
-//Task task = Task.Run(() => SeedDatabase(mongoDatabase));
+// seeding the database
+using (var scope = app.Services.CreateScope())
+{
+    var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeedingService>();
+    seeder.Seed();
+}
 
 // Only use HTTPS redirection in production
 //app.UseHttpsRedirection();
@@ -178,17 +182,8 @@ app.UseStaticFiles(new StaticFileOptions
     ServeUnknownFileTypes = true // Serve any file type not explicitly mapped
 });
 
-app.UseSwagger(c =>
-{
-    c.RouteTemplate = "swagger/{documentname}/swagger.json";
-});
-
-app.UseSwaggerUI(c =>
-{
-    // Make the endpoint relative to the RoutePrefix so it works under /api/swagger
-    c.SwaggerEndpoint("v1/swagger.json", "SportsTimer API v1");
-    c.RoutePrefix = "swagger";
-});
+app.UseSwagger();
+app.UseSwaggerUI();
 
 // Authentication & Authorization
 app.UseAuthentication();
@@ -197,18 +192,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
-/// <summary>
-/// Seeds the database with a default admin user if one doesn't exist
-/// </summary>
-/// <param name="database">Database instance</param>
-// static async Task SeedDatabase(IMongoDatabase database)
-// {
-//     var collection = database.GetCollection<Admin>("Admins");
-//     var existing = await collection.Find(a => a.Username == "Admin").FirstOrDefaultAsync();
-//     if (existing == null)
-//     {
-//         var user = new User { Username = "default_user", Password = "topsecret2024-2027" };
-//         await collection.InsertOneAsync(user);
-//     }
-// }

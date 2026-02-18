@@ -4,5 +4,5 @@ namespace Backend.Gateway;
 
 public interface ILoginRepo
 {
-    public Dictionary<string, string> getCredentials(LoginRequest request);
+    public Dictionary<string, string> getCredentials(string username);
 }

@@ -3,7 +3,7 @@
 
 using Backend.Domain;
 using Backend.Gateway;
-using DefaultNamespace;
+
 
 namespace Backend.Service;
 
@@ -18,8 +18,13 @@ public class LoginService
 
     public bool CheckCredentials(LoginRequest request)
     {
-        var CredentialsFromDatabase = _repo.getCredentials(request);
+        var CredentialsFromDatabase = _repo.getCredentials(request.Username);
 
-        return true;
+        if (CredentialsFromDatabase.ContainsKey(request.Username) &&
+            CredentialsFromDatabase.ContainsValue(request.Password))
+        {
+            return true;
+        }
+        return false;
     }
 }

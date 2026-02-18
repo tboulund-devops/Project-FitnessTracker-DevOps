@@ -1,5 +1,6 @@
 using Backend.Domain;
-using DefaultNamespace;
+using Backend.Gateway;
+using Backend.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
@@ -11,49 +12,32 @@ namespace Backend.External.APIControllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-public class APILoginController : ControllerBase, IAPILoginController
+public class APILoginController : ControllerBase
 {
-    private readonly IConfiguration _configuration;
+    private readonly LoginService _loginService;
 
-    public APILoginController(IConfiguration configuration)
+    public APILoginController(LoginService loginService)
     {
-        _configuration = configuration;
+        _loginService = loginService;
     }
 
     
     [HttpPost("Login_CheckCredentials")]
-    public bool CheckCredentials(LoginRequest request)
+    public IActionResult CheckCredentials(LoginRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
         {
-            return false;
+            return Unauthorized("Credtials Can not be empty");
         }
 
-        return true;
-    }
-    
-    [HttpGet]
-    public IActionResult GetUsers()
-    {
-        var connString = _configuration.GetConnectionString("DefaultConnection");
+        var isValid = _loginService.CheckCredentials(request);
 
-        using var conn = new NpgsqlConnection(connString);
-        conn.Open();
-
-        using var cmd = new NpgsqlCommand("SELECT id, username FROM tbllogincred", conn);
-        using var reader = cmd.ExecuteReader();
-
-        var users = new List<object>();
-
-        while (reader.Read())
+        if (!isValid)
         {
-            users.Add(new
-            {
-                Id = reader.GetInt32(0),
-                Username = reader.GetString(1)
-            });
+            return Unauthorized("Invalid username or password");
         }
-
-        return Ok(users);
+        
+        return Ok("Valid Credentials"); 
+        
     }
 }
