@@ -88,19 +88,18 @@ builder.Services.AddScoped<NpgsqlConnection>(sp =>
 });
 
 builder.Services.AddSingleton<ConnectionService>();
-builder.Services.AddScoped<ILoginRepo, LoginRepo>();
-builder.Services.AddSingleton<DatabaseSeedingService>();
 
 // Register application-specific services with scoped lifetime
 
 // Repositories
 builder.Services.AddScoped<IUserRepo, UserRepo>();
-
+builder.Services.AddScoped<ILoginRepo, LoginRepo>();
 
 
 // Services
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<LoginService>();
+builder.Services.AddSingleton<DatabaseSeedingService>();
 builder.Services.AddScoped<IJWTService, JWTService>();
 
 // Authentication & Authorization
