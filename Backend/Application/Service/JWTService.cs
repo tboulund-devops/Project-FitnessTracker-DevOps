@@ -4,7 +4,7 @@ using System.Text;
 using Backend.Application.Service.Interfaces;
 using Backend.Domain;
 using Microsoft.IdentityModel.Tokens;
-using SportsTimerBackend.Domain;
+
 
 namespace SportsTimerBackend.External.APIControllers;
 

@@ -1,4 +1,11 @@
-﻿namespace DefaultNamespace;
+﻿
+
+
+using Backend.Domain;
+using Backend.Gateway;
+using DefaultNamespace;
+
+namespace Backend.Service;
 
 public class LoginService
 {
@@ -9,8 +16,10 @@ public class LoginService
         _repo = repo;
     }
 
-    public bool CheckCredentials(string username, string password)
+    public bool CheckCredentials(LoginRequest request)
     {
-        var CredentialsFromDatabase = _repo.getCredentials(username, password);
+        var CredentialsFromDatabase = _repo.getCredentials(request);
+
+        return true;
     }
 }

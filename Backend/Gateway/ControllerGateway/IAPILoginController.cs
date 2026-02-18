@@ -1,6 +1,10 @@
-﻿namespace DefaultNamespace;
+﻿
+
+using Backend.Domain;
+
+namespace DefaultNamespace;
 
 public interface IAPILoginController
 {
-    public ActionResult<bool> CheckCredentials(string username, string password);
+    public bool CheckCredentials(LoginRequest request);
 }

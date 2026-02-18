@@ -1,4 +1,5 @@
 using System.Text;
+using Backend.Application.Service;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -9,9 +10,12 @@ using Microsoft.OpenApi;
 using Microsoft.OpenApi.Models;
 using Backend.Service;
 using Backend.Application.Service.Interfaces;
+using Backend.External;
 using SportsTimerBackend.External.APIControllers;
 using Microsoft.IdentityModel.Tokens;
 using Backend.External.Repos;
+using Backend.Gateway;
+using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -76,13 +80,15 @@ builder.Configuration
     .AddEnvironmentVariables();
 
 // Database Configuration
+builder.Services.AddScoped<NpgsqlConnection>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var connectionString = configuration.GetConnectionString("DefaultConnection");
+    return new NpgsqlConnection(connectionString);
+});
 
-// Register Database services with dependency injection container
-//builder.Services.AddSingleton<IMongoClient>(mongoClient);
-//builder.Services.AddSingleton(mongoDatabase);
-var _context = "postgres"; // Placeholder for actual database instance
-
-builder.Services.AddSingleton(_context);
+builder.Services.AddSingleton<ConnectionService>();
+builder.Services.AddScoped<ILoginRepo, LoginRepo>();
 
 
 // Register application-specific services with scoped lifetime

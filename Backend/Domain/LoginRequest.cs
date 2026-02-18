@@ -1,4 +1,4 @@
-namespace SportsTimerBackend.Domain;
+namespace Backend.Domain;
 
 /// <summary>
 /// Request model for login containing credentials

@@ -44,16 +44,7 @@ public class APIService : IAPIService
         return false;
 
     }
-    //get all users test
-    public async Task<string> GetUsersAsync()
-    {
-        var response = await _client.GetAsync($"{BaseUrl}/api/APILogin");
-        if (response.IsSuccessStatusCode)
-        {
-            return await response.Content.ReadAsStringAsync();
-        }
-        return null;
-    }
+
 
     
 }

@@ -1,6 +1,8 @@
-﻿namespace DefaultNamespace;
+﻿using Backend.Domain;
+
+namespace Backend.Gateway;
 
 public interface ILoginRepo
 {
-    public Director<string, string> getCredentials(string username, string password);
+    public Dictionary<string, string> getCredentials(LoginRequest request);
 }

@@ -1,6 +1,7 @@
+using Backend.Domain;
+using DefaultNamespace;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SportsTimerBackend.Domain;
 using Npgsql;
 
 namespace Backend.External.APIControllers;
@@ -21,14 +22,14 @@ public class APILoginController : ControllerBase, IAPILoginController
 
     
     [HttpPost("Login_CheckCredentials")]
-    public bool CheckCredentials(string username, string password)
+    public bool CheckCredentials(LoginRequest request)
     {
-        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+        if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
         {
-            return BadRequest("Username and password are required");
+            return false;
         }
-        
-        return Unauthorized("Invalid credentials");
+
+        return true;
     }
     
     [HttpGet]
