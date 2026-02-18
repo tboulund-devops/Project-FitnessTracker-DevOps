@@ -1,0 +1,31 @@
+﻿version: '3.9'
+
+services:
+  db:
+    image: postgres:15
+    container_name: FitnessTrackerDBPost
+    restart: always
+    environment:
+      POSTGRES_USER: MainUser
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: database
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: FitnessTrackerBackend
+    depends_on:
+      - db
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: ${CONNECTION_STRING}
+    ports:
+      - "8081:8080"
+
+volumes:
+  postgres_data:
