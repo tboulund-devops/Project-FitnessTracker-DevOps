@@ -1,7 +1,7 @@
-﻿using FitnessTracker.UI.Service;
+﻿using Frontend.Service;
 using Frontend.ViewModels;
 
-namespace FitnessTracker.UI.ViewModels;
+namespace Frontend.ViewModels;
 
 public class MainWindowVM:Bindable
 {
