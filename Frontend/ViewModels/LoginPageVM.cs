@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using System.Windows.Input;
-using FitnessTracker.UI.Service;
-using FitnessTracker.UI.ViewModels;
+using Frontend.Service;
+using Frontend.ViewModels;
 using Frontend.Models;
 
 namespace Frontend.ViewModels;

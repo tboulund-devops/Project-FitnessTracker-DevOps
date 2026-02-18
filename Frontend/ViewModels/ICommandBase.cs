@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace FitnessTracker.UI.ViewModels;
+namespace Frontend.ViewModels;
 
 /// <summary>
 /// this serves as a bridge between UI actions and ViewModel methods

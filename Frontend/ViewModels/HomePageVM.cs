@@ -1,6 +1,6 @@
-﻿using FitnessTracker.UI.Service;
+﻿using Frontend.Service;
 
-namespace FitnessTracker.UI.ViewModels;
+namespace Frontend.ViewModels;
 
 public class HomePageVM:Bindable
 {

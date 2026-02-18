@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace FitnessTracker.UI.ViewModels;
+namespace Frontend.ViewModels;
 
 /// <summary>
 /// Base class for all view models that require property change notification

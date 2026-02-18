@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace FitnessTracker.UI.Service;
+namespace Frontend.Service;
 
 /// <summary>
 /// Stores and manages the current view model state for navigation

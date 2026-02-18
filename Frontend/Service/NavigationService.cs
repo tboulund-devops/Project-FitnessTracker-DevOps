@@ -1,6 +1,6 @@
-﻿using FitnessTracker.UI.ViewModels;
+﻿using Frontend.ViewModels;
 
-namespace FitnessTracker.UI.Service;
+namespace Frontend.Service;
 
 /// <summary>
 /// /// Service for handling navigation between different views in the application
