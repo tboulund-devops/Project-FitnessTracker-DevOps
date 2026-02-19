@@ -28,7 +28,7 @@ jobs:
           /d:sonar.host.url="${{vars.SONAR_URL}}" \
           /d:sonar.token="${{secrets.FITNESSTRACKERTOKEN}}" \
           /d:sonar.projectBaseDir="$(pwd)" \
-          /d:sonar.cs.opencover.reportsPaths="$(pwd)/coverage/coverage.opencover.xml" \
+          /d:sonar.cs.opencover.reportsPaths="$(pwd)/coverage/coverage.opencover.xml"
           /d:sonar.qualitygate.wait=true \
           /d:sonar.qualitygate.timeout=300
 
@@ -38,10 +38,11 @@ jobs:
       # Executes unit tests while collecting code coverage
       - name: Run unit tests
         run: |
+          mkdir -p coverage
           dotnet test \
-          /p:CollectCoverage=true \
-          /p:CoverletOutputFormat=opencover \
-          /p:CoverletOutput=./coverage/coverage.opencover.xml
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=opencover \
+            /p:CoverletOutput=$(pwd)/coverage/
 
       #Static code analysis
       - name: Complete Static Code Analysis
