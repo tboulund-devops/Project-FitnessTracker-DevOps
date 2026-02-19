@@ -66,17 +66,6 @@ jobs:
               exit 1
             fi
 
-      - name: Debug - Verify coverage files
-        if: always()
-        run: |
-          echo "Current directory: $(pwd)"
-          echo "TestResults directory:"
-          ls -la TestResults/ || echo "TestResults not found"
-          echo "Looking for coverage files:"
-          find . -name "*.xml" -type f | xargs ls -la || echo "No XML files found"
-          echo "SonarQube coverage report:"
-          ls -la sonarqube-coverage-report/ || echo "sonarqube-coverage-report not found"
-
       #Static code analysis
       - name: Complete Static Code Analysis
         run: |
