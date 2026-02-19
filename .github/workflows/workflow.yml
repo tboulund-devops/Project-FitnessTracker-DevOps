@@ -34,7 +34,7 @@ jobs:
           /d:sonar.qualitygate.timeout=300
 
       - name: Build
-        run: dotnet build Project-FitnessTracker.sln   
+        run: dotnet build Project-FitnessTracker-DevOps.sln   
       
       # Executes unit tests while collecting code coverage
       - name: Run unit tests
