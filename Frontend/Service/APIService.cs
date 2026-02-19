@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -10,15 +9,23 @@ namespace Frontend.Service;
 
 public class APIService : IAPIService
 {
-    
-    private static readonly HttpClient _client = CreateHttpClient();
-    private static readonly string _baseUrl = "http://localhost:8081";
+    private readonly HttpClient _client;
+    private readonly string _baseUrl = "http://localhost:8081";
+
+    public APIService() : this(CreateDefaultHttpClient())
+    {
+    }
+
+    public APIService(HttpClient httpClient)
+    {
+        _client = httpClient;
+    }
 
     /// <summary>
     /// creates a HTTP client
     /// </summary>
     /// <returns></returns>
-    private static HttpClient CreateHttpClient()
+    private static HttpClient CreateDefaultHttpClient()
     {
         var handler = new HttpClientHandler
         {
@@ -47,7 +54,4 @@ public class APIService : IAPIService
 
         return false; // Login failed
     }
-
-
-    
 }
