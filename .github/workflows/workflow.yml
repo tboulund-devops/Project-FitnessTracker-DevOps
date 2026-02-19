@@ -16,9 +16,9 @@ jobs:
       # Installs ReportGenerator and Stryker tools
       - name: Install required tools
         run: |
-          dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.5.1
           dotnet tool install -g dotnet-stryker
           dotnet tool install -g dotnet-sonarscanner
+           dotnet tool install -g dotnet-reportgenerator-globaltool
           
           
       - name: Start Static Code Analysis
@@ -27,33 +27,44 @@ jobs:
           /k:"${{vars.PROJECT_KEY}}" \
           /d:sonar.host.url="${{vars.SONAR_URL}}" \
           /d:sonar.token="${{secrets.FITNESSTRACKERTOKEN}}" \
+          /d:sonar.projectBaseDir="$(pwd)" \
           /d:sonar.coverageReportPaths="sonarqube-coverage-report/SonarQube.xml" \
           /d:sonar.qualitygate.wait=true \
           /d:sonar.qualitygate.timeout=300
 
       - name: Build
-        run: dotnet build    
+        run: dotnet build Project-FitnessTracker-DevOps.sln   
       
       # Executes unit tests while collecting code coverage
-      - name: Run unit tests
-        run: dotnet test ./UnitTests --collect:"Xplat code coverage" --results-directory TestResults
-        
-      - name: Debug coverage files
+      - name: Run unit tests with coverage
         run: |
-          echo "Listing TestResults"
-          ls -R TestResults || true
+          # Run tests with coverage collection
+          dotnet test UnitTests/UnitTests.csproj \
+            --collect:"XPlat Code Coverage" \
+            --results-directory TestResults \
+            --logger "trx;LogFileName=test_results.trx"
 
-          echo "Listing Sonar report folder"
-          ls -R sonarqube-coverage-report || true
-    
-      #Generate sonarqube report
-      - name: Generate Sonarqube report
+      - name: Convert coverage to SonarQube format
         run: |
-          reportgenerator \
-          -reports:TestResults/**/coverage.cobertura.xml \
-          -targetdir:sonarqube-coverage-report \
-          -reporttypes:SonarQube
-          
+            # Find the coverage file
+            COVERAGE_FILE=$(find TestResults -name "coverage.cobertura.xml" | head -n 1)
+            echo "Found coverage file: $COVERAGE_FILE"
+            
+            if [ -f "$COVERAGE_FILE" ]; then
+              # Create report directory
+              mkdir -p sonarqube-coverage-report
+            
+              # Convert to SonarQube format
+              reportgenerator \
+                -reports:"$COVERAGE_FILE" \
+                -targetdir:"sonarqube-coverage-report" \
+                -reporttypes:SonarQube
+            
+              echo "✅ Coverage file converted to SonarQube format"
+            else
+              echo "❌ No coverage file found!"
+              exit 1
+            fi
 
       #Static code analysis
       - name: Complete Static Code Analysis

@@ -28,4 +28,8 @@
     <ProjectReference Include="..\Frontend\Frontend.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Backend-UnitTest\" />
+  </ItemGroup>
+
 </Project>
