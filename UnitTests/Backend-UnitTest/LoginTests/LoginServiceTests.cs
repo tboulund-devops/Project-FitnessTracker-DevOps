@@ -171,15 +171,13 @@ namespace UnitTests.Backend_UnitTest.LoginTests
                 Password = "somepassword"
             };
 
-            var dbCredentials = new List<string> { "testuser", "correctpassword" };
-            _mockRepo.Setup(x => x.getCredentials(null)).Returns(dbCredentials);
-
             // Act
             var result = _loginService.CheckCredentials(request);
 
             // Assert
             Assert.False(result);
-            _mockRepo.Verify(x => x.getCredentials(null), Times.Once);
+            // Verify the repository was NOT called for null username
+            _mockRepo.Verify(x => x.getCredentials(It.IsAny<string>()), Times.Never);
         }
 
         [Fact]
