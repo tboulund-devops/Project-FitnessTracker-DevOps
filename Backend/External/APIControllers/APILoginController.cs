@@ -1,3 +1,4 @@
+using Backend.Application.Service.Interfaces;
 using Backend.Domain;
 using Backend.Gateway;
 using Backend.Service;
@@ -14,18 +15,19 @@ namespace Backend.External.APIControllers;
 [Route("api/[controller]")]
 public class APILoginController : ControllerBase
 {
-    private readonly LoginService _loginService;
 
-    public APILoginController(LoginService loginService)
+    private readonly ILoginService _loginService;
+
+    public APILoginController(ILoginService loginService)
     {
-        _loginService = loginService;
+        _loginService = loginService ?? throw new ArgumentNullException(nameof(loginService));
     }
 
     
     [HttpPost("Login_CheckCredentials")]
     public IActionResult CheckCredentials(LoginRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
+        if (request == null ||string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
         {
             return Unauthorized("Credtials Can not be empty");
         }
