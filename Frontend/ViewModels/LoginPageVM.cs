@@ -92,7 +92,7 @@ public class LoginPageVM:Bindable
             else
             {
                 ErrorMessage = "Login failed";
-                _hasError = true;
+                HasError = true;
             }
             
         }

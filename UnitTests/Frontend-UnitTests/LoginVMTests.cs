@@ -73,46 +73,69 @@ public class LoginVMTests
     }
 
     [Fact]
-    public void LoginCommand_Execute_ShouldNavigateToHomePage()
+    public async Task LoginCommand_Execute_ShouldNavigateToHomePage()
     {
         // Arrange
+        _viewModel.LoginInfo = new LoginInfo("admin", "1234");
+
+        _mockApiService
+            .Setup(x => x.LoginAsync("admin", "1234"))
+            .ReturnsAsync(true);
+
         HomePageVM capturedHomePageVm = null;
+
         _mockNavigationService
-            .Setup(x => x.Navigate(It.IsAny<HomePageVM>()))
-            .Callback<object>(vm => capturedHomePageVm = vm as HomePageVM);
+            .Setup(x => x.Navigate(It.IsAny<Bindable>()))
+            .Callback<Bindable>(vm => capturedHomePageVm = vm as HomePageVM);
 
         // Act
         _viewModel.LoginCommand.Execute(null);
 
+        await WaitForCondition(() => !_viewModel.IsLoading, TimeSpan.FromSeconds(2));
+
         // Assert
         _mockNavigationService.Verify(
-            x => x.Navigate(It.IsAny<HomePageVM>()), 
+            x => x.Navigate(It.IsAny<Bindable>()),
             Times.Once);
-        
+
         capturedHomePageVm.Should().NotBeNull();
         capturedHomePageVm.Should().BeOfType<HomePageVM>();
     }
 
+
+
     [Fact]
-    public void LoginCommand_Execute_ShouldPassSameServicesToHomePageVM()
+    public async Task LoginCommand_Execute_ShouldPassSameServicesToHomePageVM()
     {
         // Arrange
+        _viewModel.LoginInfo = new LoginInfo("admin", "1234");
+
+        _mockApiService
+            .Setup(x => x.LoginAsync("admin", "1234"))
+            .ReturnsAsync(true);
+
         HomePageVM capturedHomePageVm = null;
+
         _mockNavigationService
-            .Setup(x => x.Navigate(It.IsAny<HomePageVM>()))
-            .Callback<object>(vm => capturedHomePageVm = vm as HomePageVM);
+            .Setup(x => x.Navigate(It.IsAny<Bindable>()))
+            .Callback<Bindable>(vm => capturedHomePageVm = vm as HomePageVM);
 
         // Act
         _viewModel.LoginCommand.Execute(null);
 
+        await WaitForCondition(() => !_viewModel.IsLoading, TimeSpan.FromSeconds(2));
+
         // Assert
         capturedHomePageVm.Should().NotBeNull();
-        
-        // Verify that HomePageVM receives the same service instances
+
         var homePageVmType = capturedHomePageVm.GetType();
-        var navigationServiceField = homePageVmType.GetField("_navigationService", 
+
+        var navigationServiceField = homePageVmType.GetField(
+            "_navigationService",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var apiServiceField = homePageVmType.GetField("_apiService", 
+
+        var apiServiceField = homePageVmType.GetField(
+            "_apiService",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
         var actualNavigationService = navigationServiceField?.GetValue(capturedHomePageVm);
@@ -121,28 +144,32 @@ public class LoginVMTests
         actualNavigationService.Should().BeSameAs(_mockNavigationService.Object);
         actualApiService.Should().BeSameAs(_mockApiService.Object);
     }
+
     
     [Fact]
     public async Task LoginCommand_Execute_ShouldSetErrorStateWhenNavigationFails()
     {
         // Arrange
+        _viewModel.LoginInfo = new LoginInfo("admin", "1234");
+
+        _mockApiService
+            .Setup(x => x.LoginAsync("admin", "1234"))
+            .ReturnsAsync(true);
+
         _mockNavigationService
-            .Setup(x => x.Navigate(It.IsAny<HomePageVM>()))
-            .Throws(new System.Exception("Navigation failed"));
+            .Setup(x => x.Navigate(It.IsAny<Bindable>()))
+            .Throws(new Exception("Navigation failed"));
 
         // Act
         _viewModel.LoginCommand.Execute(null);
-    
-        // Wait for async operation to complete
-        await Task.Delay(100); // Simple wait
-        // Or better: wait for IsLoading to become false
+
         await WaitForCondition(() => !_viewModel.IsLoading, TimeSpan.FromSeconds(2));
 
         // Assert
         _viewModel.HasError.Should().BeTrue();
         _viewModel.ErrorMessage.Should().Be("Navigation failed");
     }
-    
+
 
     [Fact]
     public void LoginInfo_ShouldAllowUpdatingProperties()
@@ -169,4 +196,152 @@ public class LoginVMTests
             await Task.Delay(50);
         }
     }
+    
+    // Test Empty Credentials
+    [Fact]
+    public async Task LoginCommand_Should_SetError_When_Credentials_Are_Empty()
+    {
+        // Arrange
+        var navigationMock = new Mock<INavigationService>();
+        var apiMock = new Mock<IAPIService>();
+
+        var vm = new LoginPageVM(navigationMock.Object, apiMock.Object);
+        vm.LoginInfo = new LoginInfo("", "");
+
+        // Act
+        vm.LoginCommand.Execute(null);
+        
+        // Assert
+        Assert.Equal("Login credentials cannot be empty", vm.ErrorMessage);
+        Assert.False(vm.HasError);
+        apiMock.Verify(x => x.LoginAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        navigationMock.Verify(x => x.Navigate(It.IsAny<Bindable>()), Times.Never);
+
+    }
+    
+    // Test successful login
+    [Fact]
+    public async Task LoginCommand_Should_Navigate_When_Login_Is_Valid()
+    {
+        // Arrange
+        var navigationMock = new Mock<INavigationService>();
+        var apiMock = new Mock<IAPIService>();
+
+        apiMock
+            .Setup(x => x.LoginAsync("admin", "1234"))
+            .ReturnsAsync(true);
+
+        var vm = new LoginPageVM(navigationMock.Object, apiMock.Object);
+        vm.LoginInfo = new LoginInfo("admin", "1234");
+
+        // Act
+        vm.LoginCommand.Execute(null);
+        await Task.Yield();
+        
+        // Assert
+        navigationMock.Verify(x => x.Navigate(It.IsAny<HomePageVM>()), Times.Once);
+        Assert.False(vm.IsLoading);
+        Assert.False(vm.HasError);
+    }
+
+    //Test invalid Credentials
+    [Fact]
+    public async Task LoginCommand_Should_SetError_When_Login_Fails()
+    {
+        // Arrange
+        var navigationMock = new Mock<INavigationService>();
+        var apiMock = new Mock<IAPIService>();
+
+        apiMock
+            .Setup(x => x.LoginAsync("admin", "wrong"))
+            .ReturnsAsync(false);
+
+        var vm = new LoginPageVM(navigationMock.Object, apiMock.Object);
+        vm.LoginInfo = new LoginInfo("admin", "wrong");
+
+        // Act
+        vm.LoginCommand.Execute(null);
+        await Task.Yield();
+
+
+
+        // Assert
+        Assert.Equal("Login failed", vm.ErrorMessage);
+        Assert.True(vm.HasError);
+        navigationMock.Verify(x => x.Navigate(It.IsAny<Bindable>()), Times.Never);
+
+    }
+    
+    //Test API Throws Exception
+    [Fact]
+    public async Task LoginCommand_Should_SetError_When_Api_Throws_Exception()
+    {
+        // Arrange
+        var navigationMock = new Mock<INavigationService>();
+        var apiMock = new Mock<IAPIService>();
+
+        apiMock
+            .Setup(x => x.LoginAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ThrowsAsync(new Exception("Server error"));
+
+        var vm = new LoginPageVM(navigationMock.Object, apiMock.Object);
+        vm.LoginInfo = new LoginInfo("admin", "1234");
+
+        // Act
+        vm.LoginCommand.Execute(null);
+        await Task.Yield();
+
+        // Assert
+        Assert.True(vm.HasError);
+        Assert.Equal("Server error", vm.ErrorMessage);
+        Assert.False(vm.IsLoading);
+    }
+    
+    //Test LoginInfo Setter Change
+    [Fact]
+    public void LoginInfo_Should_Update_When_New_Instance_Assigned()
+    {
+        // Arrange
+        var navigationMock = new Mock<INavigationService>();
+        var apiMock = new Mock<IAPIService>();
+        var vm = new LoginPageVM(navigationMock.Object, apiMock.Object);
+
+        var newLoginInfo = new LoginInfo("user", "pass");
+
+        // Act
+        vm.LoginInfo = newLoginInfo;
+
+        // Assert
+        Assert.Equal("user", vm.LoginInfo.Username);
+    }
+    
+    //Test IsLoading Gets Set During Execution
+    [Fact]
+    public async Task LoginCommand_Should_Set_IsLoading_During_Execution()
+    {
+        // Arrange
+        var navigationMock = new Mock<INavigationService>();
+        var apiMock = new Mock<IAPIService>();
+
+        var tcs = new TaskCompletionSource<bool>();
+
+        apiMock
+            .Setup(x => x.LoginAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(tcs.Task);
+
+        var vm = new LoginPageVM(navigationMock.Object, apiMock.Object);
+        vm.LoginInfo = new LoginInfo("admin", "1234");
+
+        // Act
+        vm.LoginCommand.Execute(null);
+
+        // Assert
+        Assert.True(vm.IsLoading);
+
+        tcs.SetResult(true);    
+
+        Assert.False(vm.IsLoading);
+    }
+
+
 }
