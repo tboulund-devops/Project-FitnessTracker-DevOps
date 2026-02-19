@@ -28,7 +28,7 @@ jobs:
           /d:sonar.host.url="${{vars.SONAR_URL}}" \
           /d:sonar.token="${{secrets.FITNESSTRACKERTOKEN}}" \
           /d:sonar.projectBaseDir="$(pwd)" \
-          /d:sonar.cs.opencover.reportsPaths="$(pwd)/coverage/coverage.opencover.xml"
+          /d:sonar.cs.opencover.reportsPaths="$(pwd)/coverage/coverage.opencover.xml"\
           /d:sonar.qualitygate.wait=true \
           /d:sonar.qualitygate.timeout=300
 
