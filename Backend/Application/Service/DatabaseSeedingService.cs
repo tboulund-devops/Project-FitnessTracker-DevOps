@@ -1,4 +1,5 @@
 ﻿using Npgsql;
+using System.Data;
 
 namespace Backend.Application.Service;
 
@@ -17,37 +18,48 @@ public class DatabaseSeedingService
         connection.Open();
 
         // Create table with unquoted identifiers
-        using (var createCmd = new NpgsqlCommand(@"
-        CREATE TABLE IF NOT EXISTS tblUserCredentials (
-            fldUsername VARCHAR(100) NOT NULL,
-            fldPassword VARCHAR(100) NOT NULL
-        );
-    ", connection))
+        using (var createCmd = connection.CreateCommand())
         {
+            createCmd.CommandText = @"
+                CREATE TABLE IF NOT EXISTS tblUserCredentials (
+                    fldUsername VARCHAR(100) NOT NULL,
+                    fldPassword VARCHAR(100) NOT NULL
+                );";
             createCmd.ExecuteNonQuery();
         }
 
         // Check if test user already exists
-        using (var checkCmd = new NpgsqlCommand(@"
-        SELECT COUNT(*) 
-        FROM tblUserCredentials 
-        WHERE fldUsername = @username;
-    ", connection))
+        using (var checkCmd = connection.CreateCommand())
         {
-            checkCmd.Parameters.AddWithValue("@username", "test");
+            checkCmd.CommandText = @"
+                SELECT COUNT(*) 
+                FROM tblUserCredentials 
+                WHERE fldUsername = @username;";
+            
+            var parameter = checkCmd.CreateParameter();
+            parameter.ParameterName = "@username";
+            parameter.Value = "test";
+            checkCmd.Parameters.Add(parameter);
 
-            var count = (long)checkCmd.ExecuteScalar();
+            var count = (long?)checkCmd.ExecuteScalar() ?? 0;
 
             if (count == 0)
             {
-                using var insertCmd = new NpgsqlCommand(@"
-                INSERT INTO tblUserCredentials 
-                (fldUsername, fldPassword)
-                VALUES (@username, @password);
-            ", connection);
+                using var insertCmd = connection.CreateCommand();
+                insertCmd.CommandText = @"
+                    INSERT INTO tblUserCredentials 
+                    (fldUsername, fldPassword)
+                    VALUES (@username, @password);";
 
-                insertCmd.Parameters.AddWithValue("@username", "test");
-                insertCmd.Parameters.AddWithValue("@password", "test");
+                var usernameParam = insertCmd.CreateParameter();
+                usernameParam.ParameterName = "@username";
+                usernameParam.Value = "test";
+                insertCmd.Parameters.Add(usernameParam);
+
+                var passwordParam = insertCmd.CreateParameter();
+                passwordParam.ParameterName = "@password";
+                passwordParam.Value = "test";
+                insertCmd.Parameters.Add(passwordParam);
 
                 insertCmd.ExecuteNonQuery();
             }
