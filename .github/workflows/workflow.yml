@@ -40,7 +40,7 @@ jobs:
           dotnet test Project-FitnessTracker-DevOps.sln \
           /p:CollectCoverage=true \
           /p:CoverletOutputFormat=opencover \
-          /p:CoverletOutput=./coverage/
+          /p:CoverletOutput=./coverage/coverage.opencover.xml
 
       #Static code analysis
       - name: Complete Static Code Analysis
