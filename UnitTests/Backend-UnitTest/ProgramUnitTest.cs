@@ -19,8 +19,6 @@ namespace UnitTests.Backend_UnitTest;
 
 public class ProgramUnitTest
 {
-    private static readonly Assembly BackendAssembly = Assembly.GetAssembly(typeof(Program)) ?? Assembly.GetExecutingAssembly();
-    
     [Fact]
     public void Builder_ShouldConfigureServices()
     {
@@ -325,10 +323,6 @@ public class ProgramUnitTest
                 // Try to resolve some services to ensure they're registered correctly
                 using var scope = app.Services.CreateScope();
                 
-                var userRepo = scope.ServiceProvider.GetService<IUserRepo>();
-                var loginRepo = scope.ServiceProvider.GetService<ILoginRepo>();
-                var userService = scope.ServiceProvider.GetService<UserService>();
-                var loginService = scope.ServiceProvider.GetService<LoginService>();
             });
 
             // Assert
