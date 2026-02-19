@@ -27,14 +27,14 @@ jobs:
           /k:"${{vars.PROJECT_KEY}}" \
           /d:sonar.host.url="${{vars.SONAR_URL}}" \
           /d:sonar.token="${{secrets.FITNESSTRACKERTOKEN}}" \
-          /d:sonar.tests="UnitTests"\
-          /d:sonar.test.inclusions="UnitTests/**/*.cs"\
-          /d:sonar.cs.opencover.reportsPaths="sonarqube-coverage-report/SonarQube.xml"\
+          /d:sonar.tests="UnitTests" \
+          /d:sonar.test.inclusions="UnitTests/**/*.cs" \
+          /d:sonar.cs.opencover.reportsPaths="sonarqube-coverage-report/SonarQube.xml" \
           /d:sonar.qualitygate.wait=true \
           /d:sonar.qualitygate.timeout=300
 
       - name: Build
-        run: dotnet build    
+        run: dotnet build Project-FitnessTracker.sln   
       
       # Executes unit tests while collecting code coverage
       - name: Run unit tests
