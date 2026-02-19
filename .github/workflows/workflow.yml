@@ -16,7 +16,6 @@ jobs:
       # Installs ReportGenerator and Stryker tools
       - name: Install required tools
         run: |
-          dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.5.1
           dotnet tool install -g dotnet-stryker
           dotnet tool install -g dotnet-sonarscanner
           
@@ -27,9 +26,8 @@ jobs:
           /k:"${{vars.PROJECT_KEY}}" \
           /d:sonar.host.url="${{vars.SONAR_URL}}" \
           /d:sonar.token="${{secrets.FITNESSTRACKERTOKEN}}" \
-          /d:sonar.tests="UnitTests" \
-          /d:sonar.test.inclusions="UnitTests/**/*.cs" \
-          /d:sonar.cs.opencover.reportsPaths="sonarqube-coverage-report/SonarQube.xml" \
+          /d:sonar.projectBaseDir="$(pwd)" \
+          /d:sonar.cs.opencover.reportsPaths="$(pwd)/coverage/coverage.opencover.xml" \
           /d:sonar.qualitygate.wait=true \
           /d:sonar.qualitygate.timeout=300
 
@@ -38,24 +36,11 @@ jobs:
       
       # Executes unit tests while collecting code coverage
       - name: Run unit tests
-        run: dotnet test ./UnitTests --collect:"Xplat code coverage" --results-directory TestResults
-        
-      - name: Debug coverage files
         run: |
-          echo "Listing TestResults"
-          ls -R TestResults || true
-
-          echo "Listing Sonar report folder"
-          ls -R sonarqube-coverage-report || true
-    
-      #Generate sonarqube report
-      - name: Generate Sonarqube report
-        run: |
-          reportgenerator \
-          -reports:TestResults/**/coverage.cobertura.xml \
-          -targetdir:sonarqube-coverage-report \
-          -reporttypes:SonarQube
-          
+          dotnet test Project-FitnessTracker-DevOps.sln \
+          /p:CollectCoverage=true \
+          /p:CoverletOutputFormat=opencover \
+          /p:CoverletOutput=./coverage/
 
       #Static code analysis
       - name: Complete Static Code Analysis
