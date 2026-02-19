@@ -37,33 +37,33 @@ jobs:
       
       # Executes unit tests while collecting code coverage
       - name: Run unit tests with coverage
-          run: |
-            # Run tests with coverage collection
-            dotnet test UnitTests/UnitTests.csproj \
-              --collect:"XPlat Code Coverage" \
-              --results-directory TestResults \
-              --logger "trx;LogFileName=test_results.trx"
+        run: |
+          # Run tests with coverage collection
+          dotnet test UnitTests/UnitTests.csproj \
+            --collect:"XPlat Code Coverage" \
+            --results-directory TestResults \
+            --logger "trx;LogFileName=test_results.trx"
 
       - name: Convert coverage to SonarQube format
-          run: |
+        run: |
             # Find the coverage file
             COVERAGE_FILE=$(find TestResults -name "coverage.cobertura.xml" | head -n 1)
             echo "Found coverage file: $COVERAGE_FILE"
             
             if [ -f "$COVERAGE_FILE" ]; then
-            # Create report directory
-            mkdir -p sonarqube-coverage-report
+              # Create report directory
+              mkdir -p sonarqube-coverage-report
             
-            # Convert to SonarQube format
-            reportgenerator \
-             -reports:"$COVERAGE_FILE" \
-             -targetdir:"sonarqube-coverage-report" \
-             -reporttypes:SonarQube
+              # Convert to SonarQube format
+              reportgenerator \
+                -reports:"$COVERAGE_FILE" \
+                -targetdir:"sonarqube-coverage-report" \
+                -reporttypes:SonarQube
             
-            echo "✅ Coverage file converted to SonarQube format"
+              echo "✅ Coverage file converted to SonarQube format"
             else
-            echo "❌ No coverage file found!"
-            exit 1
+              echo "❌ No coverage file found!"
+              exit 1
             fi
 
       - name: Debug - Verify coverage files
