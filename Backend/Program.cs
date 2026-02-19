@@ -100,9 +100,6 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = "swagger";
 });
 
-// Rate limiting
-app.UseRateLimiter();
-
 app.MapControllers();
 
 app.Run();

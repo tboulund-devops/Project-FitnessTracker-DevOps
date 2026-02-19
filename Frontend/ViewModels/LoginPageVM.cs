@@ -74,9 +74,27 @@ public class LoginPageVM:Bindable
             IsLoading = true;
             HasError = false;
             ErrorMessage = string.Empty;
+
+            if (string.IsNullOrWhiteSpace(_loginInfo.Username) || string.IsNullOrWhiteSpace(_loginInfo.Password))
+            {
+                ErrorMessage = "Login credentials cannot be empty";
+                return;
+            }
             
-            var homePageVm = new HomePageVM(_navigationService, _apiService);
-            _navigationService.Navigate(homePageVm);
+            Console.WriteLine("Calling LoginAsync from ViewModel");
+            var isValid = await _apiService.LoginAsync(_loginInfo.Username, _loginInfo.Password);
+
+            if (isValid)
+            {
+                var homePageVm = new HomePageVM(_navigationService, _apiService);
+                _navigationService.Navigate(homePageVm);
+            }
+            else
+            {
+                ErrorMessage = "Login failed";
+                _hasError = true;
+            }
+            
         }
         catch (Exception ex)
         {

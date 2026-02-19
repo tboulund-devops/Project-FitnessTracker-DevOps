@@ -8,14 +8,18 @@
     <StackPanel>
         <TextBlock Text="Please Login" FontSize="16" HorizontalAlignment="Center"/>
 
-        <TextBox Watermark="Username"/>
+        <TextBox Watermark="Username"
+                 Text="{Binding LoginInfo.Username}"/>
 
         <TextBox Watermark="Password"
-                 PasswordChar="•"/>
+                 PasswordChar="•"
+                 Text="{Binding LoginInfo.Password}"/>
 
         <Button Content="Login"
                 Command="{Binding LoginCommand}"/>
-
+        
+        <Label Content="{Binding ErrorMessage}"></Label>
+        
     </StackPanel>
    
 </UserControl>

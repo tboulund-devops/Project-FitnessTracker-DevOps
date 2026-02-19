@@ -30,19 +30,22 @@ public class APIService : IAPIService
     public async Task<bool> LoginAsync(string username, string password)
     {
         var loginData = new { username, password };
-        string json = JsonSerializer.Serialize(loginData);
+        Console.WriteLine("Login Data:" + loginData.username +  ":" + loginData.password);
+        // Serialize the login data to JSON
+        var json = JsonSerializer.Serialize(loginData);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
+        Console.WriteLine("Raw Json:" + content);
+        
+        // Make the POST request with the JSON content
+        var response = await _client.PostAsync($"{_baseUrl}/api/APILogin/Login_CheckCredentials", content);
+        Console.WriteLine("Response:" + response);
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Login successful");
+            return true; // Login successful
+        }
 
-
-        // var response = await _client.PostAsync($"{_baseUrl}APIAuth/admin-login", content);
-        // if (response.IsSuccessStatusCode)
-        // {
-        //     var responseString = await response.Content.ReadAsStringAsync();
-        //     UserDTO? adminDTO = JsonSerializer.Deserialize<UserDTO>(responseString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-        // }
-
-        return false;
-
+        return false; // Login failed
     }
 
 
