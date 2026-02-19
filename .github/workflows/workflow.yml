@@ -33,12 +33,12 @@ jobs:
           /d:sonar.qualitygate.timeout=300
 
       - name: Build
-        run: dotnet build Project-FitnessTracker-DevOps.sln   
+        run: dotnet build    
       
       # Executes unit tests while collecting code coverage
       - name: Run unit tests
         run: |
-          dotnet test Project-FitnessTracker-DevOps.sln \
+          dotnet test \
           /p:CollectCoverage=true \
           /p:CoverletOutputFormat=opencover \
           /p:CoverletOutput=./coverage/coverage.opencover.xml
