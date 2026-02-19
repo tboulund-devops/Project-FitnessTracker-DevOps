@@ -152,15 +152,13 @@ namespace UnitTests.Backend_UnitTest.LoginTests
                 Password = ""
             };
 
-            var dbCredentials = new List<string> { "testuser", "correctpassword" };
-            _mockRepo.Setup(x => x.getCredentials(request.Username)).Returns(dbCredentials);
-
             // Act
             var result = _loginService.CheckCredentials(request);
 
             // Assert
             Assert.False(result);
-            _mockRepo.Verify(x => x.getCredentials(request.Username), Times.Once);
+            // Verify the repository was NOT called for empty password
+            _mockRepo.Verify(x => x.getCredentials(It.IsAny<string>()), Times.Never);
         }
 
         [Fact]
@@ -194,15 +192,13 @@ namespace UnitTests.Backend_UnitTest.LoginTests
                 Password = null
             };
 
-            var dbCredentials = new List<string> { "testuser", "correctpassword" };
-            _mockRepo.Setup(x => x.getCredentials(request.Username)).Returns(dbCredentials);
-
             // Act
             var result = _loginService.CheckCredentials(request);
 
             // Assert
             Assert.False(result);
-            _mockRepo.Verify(x => x.getCredentials(request.Username), Times.Once);
+            // Verify the repository was NOT called for null password
+            _mockRepo.Verify(x => x.getCredentials(It.IsAny<string>()), Times.Never);
         }
 
         [Fact]
@@ -332,7 +328,7 @@ namespace UnitTests.Backend_UnitTest.LoginTests
         }
 
         [Fact]
-        public void CheckCredentials_RepoReturnsNull_ThrowsNullReferenceException()
+        public void CheckCredentials_RepoReturnsNull_ReturnsFalse()
         {
             // Arrange
             var request = new LoginRequest
@@ -343,8 +339,11 @@ namespace UnitTests.Backend_UnitTest.LoginTests
 
             _mockRepo.Setup(x => x.getCredentials(request.Username)).Returns((List<string>)null);
 
-            // Act & Assert
-            Assert.Throws<NullReferenceException>(() => _loginService.CheckCredentials(request));
+            // Act
+            var result = _loginService.CheckCredentials(request);
+
+            // Assert
+            Assert.False(result);
             _mockRepo.Verify(x => x.getCredentials(request.Username), Times.Once);
         }
 
