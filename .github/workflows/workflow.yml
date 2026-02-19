@@ -42,8 +42,7 @@ jobs:
           dotnet test UnitTests/UnitTests.csproj \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=opencover \
-            /p:CoverletOutput=$(pwd)/coverage/
-            /p:IncludeTestAssembly=true \
+            /p:CoverletOutput=$(pwd)/coverage/coverage.opencover.xml \
             --logger "trx;LogFileName=test_results.trx"
 
       - name: Debug - Verify coverage file
