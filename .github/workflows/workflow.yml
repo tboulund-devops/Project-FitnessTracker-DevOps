@@ -43,6 +43,22 @@ jobs:
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=opencover \
             /p:CoverletOutput=$(pwd)/coverage/
+            /p:IncludeTestAssembly=true \
+            --logger "trx;LogFileName=test_results.trx"
+
+      - name: Debug - Verify coverage file
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Coverage directory contents:"
+          ls -la coverage/
+          echo "Looking for opencover files:"
+          find . -name "*.opencover.xml" -type f | xargs ls -la
+          echo "First few lines of coverage file (if exists):"
+          if [ -f coverage/coverage.opencover.xml ]; then
+            head -20 coverage/coverage.opencover.xml
+          else
+            echo "coverage/coverage.opencover.xml not found!"
+          fi
 
       #Static code analysis
       - name: Complete Static Code Analysis
