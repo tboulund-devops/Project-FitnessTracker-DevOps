@@ -54,8 +54,8 @@ builder.Services.AddScoped<ILoginRepo, LoginRepo>();
 
 // Services
 builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<LoginService>();
 builder.Services.AddSingleton<DatabaseSeedingService>();
+builder.Services.AddScoped<ILoginService, LoginService>();
 
 var app = builder.Build();
 
