@@ -28,7 +28,7 @@ public class ProgramTests : IClassFixture<WebApplicationFactory<Program>>
                     services.Remove(descriptor);
 
                 // Mock seeder so Seed() is called without DB dependency
-                var mockSeeder = new Mock<DatabaseSeedingService>();
+                var mockSeeder = new Mock<IDatabaseSeedingService>();
                 mockSeeder.Setup(s => s.Seed());
 
                 services.AddSingleton(mockSeeder.Object);
@@ -66,7 +66,7 @@ public class ProgramTests : IClassFixture<WebApplicationFactory<Program>>
         var userService = scope.ServiceProvider.GetService<IUserService>();
         var loginService = scope.ServiceProvider.GetService<ILoginService>();
         var connectionService = scope.ServiceProvider.GetService<ConnectionService>();
-        var seeder = scope.ServiceProvider.GetService<DatabaseSeedingService>();
+        var seeder = scope.ServiceProvider.GetService<IDatabaseSeedingService>();
 
         Assert.NotNull(userService);
         Assert.NotNull(loginService);

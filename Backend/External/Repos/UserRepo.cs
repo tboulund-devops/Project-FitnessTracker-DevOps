@@ -1,14 +1,15 @@
 using Backend.Domain;
+using Npgsql;
 
 namespace Backend.External.Repos;
 
 public class UserRepo : IUserRepo
 {
-    private readonly string _context;
+    private readonly NpgsqlConnection _connection;
 
-    public UserRepo(string context)
+    public UserRepo(NpgsqlConnection connection)
     {
-        _context = context;
+        _connection = connection;
     }
 
     public async Task<User?> GetByUsernameAsync(string username)

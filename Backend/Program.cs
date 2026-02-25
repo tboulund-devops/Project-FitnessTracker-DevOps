@@ -53,8 +53,8 @@ builder.Services.AddScoped<IUserRepo, UserRepo>();
 builder.Services.AddScoped<ILoginRepo, LoginRepo>();
 
 // Services
-builder.Services.AddScoped<UserService>();
-builder.Services.AddSingleton<DatabaseSeedingService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddSingleton<IDatabaseSeedingService, DatabaseSeedingService>();
 builder.Services.AddScoped<ILoginService, LoginService>();
 
 var app = builder.Build();
@@ -62,7 +62,7 @@ var app = builder.Build();
 // Seed database
 using (var scope = app.Services.CreateScope())
 {
-    var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeedingService>();
+    var seeder = scope.ServiceProvider.GetRequiredService<IDatabaseSeedingService>();
     seeder.Seed();
 }
 

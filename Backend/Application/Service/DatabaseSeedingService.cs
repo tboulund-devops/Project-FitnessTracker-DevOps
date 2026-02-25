@@ -1,9 +1,10 @@
 ﻿using Npgsql;
 using System.Data;
+using Backend.Application.Service.Interfaces;
 
 namespace Backend.Application.Service;
 
-public class DatabaseSeedingService
+public class DatabaseSeedingService :IDatabaseSeedingService
 {
     private readonly ConnectionService _connectionService;
 
