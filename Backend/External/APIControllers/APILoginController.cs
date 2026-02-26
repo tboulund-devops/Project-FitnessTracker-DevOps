@@ -22,7 +22,7 @@ public class APILoginController : ControllerBase
     {
         _loginService = loginService ?? throw new ArgumentNullException(nameof(loginService));
     }
-
+    
     
     [HttpPost("Login_CheckCredentials")]
     public IActionResult CheckCredentials(LoginRequest request)

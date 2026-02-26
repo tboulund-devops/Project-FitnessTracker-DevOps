@@ -1,40 +1,44 @@
-﻿using Backend.Application.Service;
-using Backend.Application.Service.Interfaces;
-using Backend.Domain;
-using Backend.Gateway;
-using Microsoft.AspNetCore.Identity;
+﻿using Backend.Application.Service.Interfaces;
 using Npgsql;
+using System.Collections.Generic;
 
-public class LoginRepo : ILoginRepo
+namespace Backend.Gateway
 {
-    private readonly IConnectionService _connectionService;
-
-    public LoginRepo(IConnectionService connectionService)
+    public class LoginRepo : ILoginRepo
     {
-        _connectionService = connectionService;
-    }
+        private readonly IConnectionService _connectionService;
 
-    public List<string> getCredentials(string username)
-    {
-        using var connection = _connectionService.GetConnection();
-        connection.Open();
-
-        using var cmd = new NpgsqlCommand(
-            "SELECT fldUsername, fldPassword FROM tblUserCredentials WHERE fldUsername = @username",
-            connection);
-
-        cmd.Parameters.AddWithValue("@username", username);
-
-        using var reader = cmd.ExecuteReader();
-
-        var result = new List<string>();
-
-        if (reader.Read())
+        public LoginRepo(IConnectionService connectionService)
         {
-            result.Add(reader.GetString(0).Trim());
-            result.Add(reader.GetString(1).Trim());
+            _connectionService = connectionService;
         }
-        
-        return result;
+
+        public List<string> getCredentials(string username)
+        {
+            // Handle null or empty username gracefully
+            if (string.IsNullOrEmpty(username))
+                return new List<string>();
+
+            using var connection = _connectionService.GetConnection();
+            connection.Open();
+
+            using var cmd = new NpgsqlCommand(
+                "SELECT fldUsername, fldPassword FROM tblUserCredentials WHERE fldUsername = @username",
+                connection);
+
+            cmd.Parameters.AddWithValue("@username", username);
+
+            using var reader = cmd.ExecuteReader();
+
+            var result = new List<string>();
+
+            if (reader.Read())
+            {
+                result.Add(reader.GetString(0).Trim());
+                result.Add(reader.GetString(1).Trim());
+            }
+
+            return result;
+        }
     }
 }
