@@ -65,7 +65,7 @@ public class ProgramTests : IClassFixture<WebApplicationFactory<Program>>
 
         var userService = scope.ServiceProvider.GetService<IUserService>();
         var loginService = scope.ServiceProvider.GetService<ILoginService>();
-        var connectionService = scope.ServiceProvider.GetService<ConnectionService>();
+        var connectionService = scope.ServiceProvider.GetService<IConnectionService>();
         var seeder = scope.ServiceProvider.GetService<IDatabaseSeedingService>();
 
         Assert.NotNull(userService);

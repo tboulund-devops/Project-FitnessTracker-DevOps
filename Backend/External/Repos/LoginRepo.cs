@@ -1,4 +1,5 @@
 ﻿using Backend.Application.Service;
+using Backend.Application.Service.Interfaces;
 using Backend.Domain;
 using Backend.Gateway;
 using Microsoft.AspNetCore.Identity;
@@ -6,9 +7,9 @@ using Npgsql;
 
 public class LoginRepo : ILoginRepo
 {
-    private readonly ConnectionService _connectionService;
+    private readonly IConnectionService _connectionService;
 
-    public LoginRepo(ConnectionService connectionService)
+    public LoginRepo(IConnectionService connectionService)
     {
         _connectionService = connectionService;
     }
