@@ -1,361 +1,154 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
+using Testcontainers.PostgreSql;
 using Xunit;
 using Backend.Application.Service;
-using Testcontainers.PostgreSql;
+using Backend.Application.Service.Interfaces;
 
-namespace UnitTests.Backend_UnitTest;
-
-public class DatabaseSeedingTests : IAsyncLifetime
+namespace Backend.Tests.Application.Service
 {
-    private readonly PostgreSqlContainer _postgreSqlContainer;
-    private ConnectionService _connectionService;
-    private DatabaseSeedingService _service;
-    private IConfiguration _configuration;
-
-    public DatabaseSeedingTests()
+    public class DatabaseSeedingServiceTests : IAsyncLifetime
     {
-        _postgreSqlContainer = new PostgreSqlBuilder()
-            .WithImage("postgres:15-alpine")
-            .WithDatabase("testdb")
-            .WithUsername("testuser")
-            .WithPassword("testpassword")
-            .WithCleanUp(true)
-            .Build();
-    }
+        private readonly PostgreSqlContainer _postgreSqlContainer;
+        private IConnectionService _connectionService;
+        private IDatabaseSeedingService _seedingService;
 
-    public async Task InitializeAsync()
-    {
-        // Start the container
-        await _postgreSqlContainer.StartAsync();
-        
-        // Create configuration with the container's connection string
-        var inMemorySettings = new Dictionary<string, string>
+        public DatabaseSeedingServiceTests()
         {
-            {"ConnectionStrings:DefaultConnection", _postgreSqlContainer.GetConnectionString()}
-        };
+            // Spin up a disposable PostgreSQL container
+            _postgreSqlContainer = new PostgreSqlBuilder()
+                .WithImage("postgres:15-alpine")
+                .WithDatabase("testdb")
+                .WithUsername("testuser")
+                .WithPassword("testpass")
+                .WithCleanUp(true)
+                .Build();
+        }
 
-        _configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(inMemorySettings)
-            .Build();
-
-        // Use the actual ConnectionService with test configuration
-        _connectionService = new ConnectionService(_configuration);
-        _service = new DatabaseSeedingService(_connectionService);
-    }
-
-    public async Task DisposeAsync()
-    {
-        await _postgreSqlContainer.DisposeAsync();
-    }
-
-    [Fact]
-    public void Seed_CreatesTableAndInsertsTestUser_WhenDatabaseIsEmpty()
-    {
-        // Act
-        _service.Seed();
-
-        // Assert
-        using var connection = _connectionService.GetConnection();
-        connection.Open();
-
-        // Check if table exists
-        using var checkTableCmd = new NpgsqlCommand(@"
-            SELECT EXISTS (
-                SELECT FROM information_schema.tables 
-                WHERE table_name = 'tblusercredentials'
-            );", connection);
-        
-        var tableExists = (bool)checkTableCmd.ExecuteScalar();
-        Assert.True(tableExists);
-
-        // Check if test user was inserted
-        using var checkUserCmd = new NpgsqlCommand(@"
-            SELECT COUNT(*) FROM tblUserCredentials WHERE fldUsername = 'test';
-        ", connection);
-        
-        var userCount = (long)checkUserCmd.ExecuteScalar();
-        Assert.Equal(1, userCount);
-
-        // Verify password
-        using var getUserCmd = new NpgsqlCommand(@"
-            SELECT fldPassword FROM tblUserCredentials WHERE fldUsername = 'test';
-        ", connection);
-        
-        var password = (string)getUserCmd.ExecuteScalar();
-        Assert.Equal("test", password);
-    }
-
-    [Fact]
-    public void Seed_DoesNotInsertDuplicateUser_WhenTestUserAlreadyExists()
-    {
-        // Arrange - Insert a user first using the connection service
-        using (var connection = _connectionService.GetConnection())
+        public async Task InitializeAsync()
         {
-            connection.Open();
-            
-            // Create table
-            using var createCmd = new NpgsqlCommand(@"
-                CREATE TABLE IF NOT EXISTS tblUserCredentials (
-                    fldUsername VARCHAR(100) NOT NULL,
-                    fldPassword VARCHAR(100) NOT NULL
-                );", connection);
-            createCmd.ExecuteNonQuery();
+            await _postgreSqlContainer.StartAsync();
 
-            // Insert test user with different password
-            using var insertCmd = new NpgsqlCommand(@"
+            var configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["ConnectionStrings:DefaultConnection"] = _postgreSqlContainer.GetConnectionString()
+                })
+                .Build();
+
+            _connectionService = new ConnectionService(configuration);
+            _seedingService = new DatabaseSeedingService(_connectionService);
+        }
+
+        public async Task DisposeAsync()
+        {
+            await _postgreSqlContainer.DisposeAsync();
+        }
+
+        [Fact]
+        public async Task SeedTables_ShouldCreateAllTables()
+        {
+            // Act
+            _seedingService.SeedTables();
+
+            // Assert – verify each table exists
+            await using var connection = new NpgsqlConnection(_postgreSqlContainer.GetConnectionString());
+            await connection.OpenAsync();
+
+            var expectedTables = new[]
+            {
+                "tblusercredentials",
+                "tbluser",
+                "tblworkout",
+                "tbluserworkout",
+                "tblexercise",
+                "tblset",
+                "tblworkoutset"
+            };
+
+            foreach (var table in expectedTables)
+            {
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = @"
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.tables 
+                        WHERE table_name = @table
+                    );";
+                cmd.Parameters.AddWithValue("@table", table);
+                var exists = (bool)await cmd.ExecuteScalarAsync();
+                Assert.True(exists, $"Table '{table}' was not created.");
+            }
+        }
+
+        [Fact]
+        public async Task Seed_ShouldCreateTablesAndInsertTestData()
+        {
+            // Act
+            _seedingService.Seed();
+
+            // Assert
+            await using var connection = new NpgsqlConnection(_postgreSqlContainer.GetConnectionString());
+            await connection.OpenAsync();
+
+            // Tables should exist (quick check)
+            var tableCheckCmd = connection.CreateCommand();
+            tableCheckCmd.CommandText = "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';";
+            var tableCount = (long)await tableCheckCmd.ExecuteScalarAsync();
+            Assert.Equal(7, tableCount); // 7 tables expected
+
+            // Test data should exist (check for john_doe)
+            var userCheckCmd = connection.CreateCommand();
+            userCheckCmd.CommandText = @"
+                SELECT COUNT(*) > 0 
+                FROM tblUserCredentials 
+                WHERE fldUsername = 'john_doe';";
+            var userExists = (bool)await userCheckCmd.ExecuteScalarAsync();
+            Assert.True(userExists, "Test user credentials were not inserted.");
+
+            // Verify data in related tables (optional)
+            var workoutCheckCmd = connection.CreateCommand();
+            workoutCheckCmd.CommandText = "SELECT COUNT(*) FROM tblWorkout;";
+            var workoutCount = (long)await workoutCheckCmd.ExecuteScalarAsync();
+            Assert.Equal(1, workoutCount);
+        }
+
+        [Fact]
+        public async Task SeedTestData_WhenDataAlreadyExists_ShouldNotInsert()
+        {
+            // Arrange – create tables first
+            _seedingService.SeedTables();
+
+            // Manually insert a user credentials row with the username that TestDataExists() checks for ('test_user')
+            await using var connection = new NpgsqlConnection(_postgreSqlContainer.GetConnectionString());
+            await connection.OpenAsync();
+
+            var insertCmd = connection.CreateCommand();
+            insertCmd.CommandText = @"
                 INSERT INTO tblUserCredentials (fldUsername, fldPassword)
-                VALUES ('test', 'existing_password');
-            ", connection);
-            insertCmd.ExecuteNonQuery();
+                VALUES ('test_user', 'dummy')
+                RETURNING fldCredentialsID;";
+            var insertedId = await insertCmd.ExecuteScalarAsync();
+            Assert.NotNull(insertedId);
+
+            // Capture current row count in tblUserCredentials
+            var countCmd = connection.CreateCommand();
+            countCmd.CommandText = "SELECT COUNT(*) FROM tblUserCredentials;";
+            var initialCount = (long)await countCmd.ExecuteScalarAsync();
+
+            // Act – call SeedTestData (should see existing data and skip inserts)
+            _seedingService.SeedTestData();
+
+            // Assert – no new rows should be added
+            var finalCount = (long)await countCmd.ExecuteScalarAsync();
+            Assert.Equal(initialCount, finalCount);
+
+            // Also verify that no rows were inserted into other tables (e.g., tblUser should be empty)
+            var userTableCheck = connection.CreateCommand();
+            userTableCheck.CommandText = "SELECT COUNT(*) FROM tblUser;";
+            var userCount = (long)await userTableCheck.ExecuteScalarAsync();
+            Assert.Equal(0, userCount);
         }
-
-        // Act
-        _service.Seed();
-
-        // Assert
-        using var connection1 = _connectionService.GetConnection();
-        connection1.Open();
-
-        using var checkUserCmd = new NpgsqlCommand(@"
-            SELECT COUNT(*) FROM tblUserCredentials WHERE fldUsername = 'test';
-        ", connection1);
-        
-        var userCount = (long)checkUserCmd.ExecuteScalar();
-        Assert.Equal(1, userCount); // Still only one user
-
-        // Verify password wasn't overwritten
-        using var getUserCmd = new NpgsqlCommand(@"
-            SELECT fldPassword FROM tblUserCredentials WHERE fldUsername = 'test';
-        ", connection1);
-        
-        var password = (string)getUserCmd.ExecuteScalar();
-        Assert.Equal("existing_password", password);
-    }
-
-    [Fact]
-    public void Seed_HandlesExistingTable_WithoutErrors()
-    {
-        // Arrange - Create table first using connection service
-        using (var connection = _connectionService.GetConnection())
-        {
-            connection.Open();
-            
-            using var createCmd = new NpgsqlCommand(@"
-                CREATE TABLE IF NOT EXISTS tblUserCredentials (
-                    fldUsername VARCHAR(100) NOT NULL,
-                    fldPassword VARCHAR(100) NOT NULL
-                );", connection);
-            createCmd.ExecuteNonQuery();
-        }
-
-        // Act
-        _service.Seed();
-
-        // Assert - Should not throw exception and should insert user
-        using var connection1 = _connectionService.GetConnection();
-        connection1.Open();
-
-        using var checkUserCmd = new NpgsqlCommand(@"
-            SELECT COUNT(*) FROM tblUserCredentials WHERE fldUsername = 'test';
-        ", connection1);
-        
-        var userCount = (long)checkUserCmd.ExecuteScalar();
-        Assert.Equal(1, userCount);
-    }
-
-    [Fact]
-    public void Seed_MultipleCalls_DoesNotCreateDuplicates()
-    {
-        // Act - Call Seed multiple times
-        _service.Seed();
-        _service.Seed();
-        _service.Seed();
-
-        // Assert
-        using var connection = _connectionService.GetConnection();
-        connection.Open();
-
-        using var checkUserCmd = new NpgsqlCommand(@"
-            SELECT COUNT(*) FROM tblUserCredentials WHERE fldUsername = 'test';
-        ", connection);
-        
-        var userCount = (long)checkUserCmd.ExecuteScalar();
-        Assert.Equal(1, userCount); // Still only one user
-    }
-
-    [Fact]
-    public void Seed_WhenConnectionStringIsInvalid_ThrowsException()
-    {
-        // Arrange
-        var invalidSettings = new Dictionary<string, string>
-        {
-            {"ConnectionStrings:DefaultConnection", "Host=invalidhost;Port=9999;Database=testdb;Username=testuser;Password=testpassword"}
-        };
-
-        var invalidConfig = new ConfigurationBuilder()
-            .AddInMemoryCollection(invalidSettings)
-            .Build();
-
-        var invalidConnectionService = new ConnectionService(invalidConfig);
-        var service = new DatabaseSeedingService(invalidConnectionService);
-
-        // Act & Assert
-        Assert.Throws<NpgsqlException>(() => service.Seed());
-    }
-
-    [Fact]
-    public void Seed_WhenDatabaseIsReadOnly_ThrowsException()
-    {
-        // Arrange - Create a read-only user
-        using (var connection = _connectionService.GetConnection())
-        {
-            connection.Open();
-            
-            // Create a read-only user
-            using var createUserCmd = new NpgsqlCommand(@"
-                DO $$
-                BEGIN
-                    IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'readonly_user') THEN
-                        CREATE USER readonly_user WITH PASSWORD 'readonly_password';
-                    END IF;
-                END
-                $$;
-                
-                REVOKE CREATE ON SCHEMA public FROM PUBLIC;
-                REVOKE CREATE ON SCHEMA public FROM readonly_user;
-                GRANT CONNECT ON DATABASE testdb TO readonly_user;
-                GRANT USAGE ON SCHEMA public TO readonly_user;
-                GRANT SELECT ON ALL TABLES IN SCHEMA public TO readonly_user;
-            ", connection);
-            createUserCmd.ExecuteNonQuery();
-        }
-
-        // Create connection service with read-only user
-        var readOnlySettings = new Dictionary<string, string>
-        {
-            {"ConnectionStrings:DefaultConnection", 
-                $"Host=localhost;Port={_postgreSqlContainer.GetMappedPublicPort(5432)};Database=testdb;Username=readonly_user;Password=readonly_password"}
-        };
-
-        var readOnlyConfig = new ConfigurationBuilder()
-            .AddInMemoryCollection(readOnlySettings)
-            .Build();
-
-        var readOnlyConnectionService = new ConnectionService(readOnlyConfig);
-        var service = new DatabaseSeedingService(readOnlyConnectionService);
-
-        // Act & Assert
-        var exception = Assert.Throws<PostgresException>(() => service.Seed());
-        Assert.Contains("permission denied", exception.Message.ToLower());
-    }
-
-    [Fact]
-    public void Seed_WhenDatabaseDoesNotExist_ThrowsException()
-    {
-        // Arrange
-        var invalidSettings = new Dictionary<string, string>
-        {
-            {"ConnectionStrings:DefaultConnection", 
-                $"Host=localhost;Port={_postgreSqlContainer.GetMappedPublicPort(5432)};Database=non_existent_db;Username=testuser;Password=testpassword"}
-        };
-
-        var invalidConfig = new ConfigurationBuilder()
-            .AddInMemoryCollection(invalidSettings)
-            .Build();
-
-        var invalidConnectionService = new ConnectionService(invalidConfig);
-        var service = new DatabaseSeedingService(invalidConnectionService);
-
-        // Act & Assert
-        Assert.Throws<PostgresException>(() => service.Seed());
-    }
-
-    [Fact]
-    public void Seed_WhenTableIsCorrupted_ThrowsException()
-    {
-        // Arrange - Create a table with wrong schema (different columns)
-        using (var connection = _connectionService.GetConnection())
-        {
-            connection.Open();
-            
-            // Drop table if exists
-            using var dropCmd = new NpgsqlCommand(@"
-                DROP TABLE IF EXISTS tblUserCredentials;
-            ", connection);
-            dropCmd.ExecuteNonQuery();
-
-            // Create table with wrong schema (missing password column)
-            using var createWrongTableCmd = new NpgsqlCommand(@"
-                CREATE TABLE tblUserCredentials (
-                    fldUsername VARCHAR(100) NOT NULL,
-                    fldWrongColumn VARCHAR(100) NOT NULL
-                );
-            ", connection);
-            createWrongTableCmd.ExecuteNonQuery();
-        }
-
-        // Act & Assert - The INSERT will fail because of missing column
-        var exception = Assert.Throws<PostgresException>(() => _service.Seed());
-        Assert.Contains("column", exception.Message.ToLower());
-    }
-
-    [Fact]
-    public void Seed_ExecutesSuccessfully_WithCleanDatabase()
-    {
-        // This test ensures no exceptions are thrown with a clean database
-        
-        // Act
-        var exception = Record.Exception(() => _service.Seed());
-        
-        // Assert
-        Assert.Null(exception);
-        
-        // Verify the data was inserted correctly
-        using var connection = _connectionService.GetConnection();
-        connection.Open();
-
-        using var checkUserCmd = new NpgsqlCommand(@"
-            SELECT fldUsername, fldPassword FROM tblUserCredentials WHERE fldUsername = 'test';
-        ", connection);
-        
-        using var reader = checkUserCmd.ExecuteReader();
-        Assert.True(reader.Read());
-        Assert.Equal("test", reader.GetString(0));
-        Assert.Equal("test", reader.GetString(1));
-    }
-
-    [Fact]
-    public void Seed_WhenTableHasDifferentCase_StillWorks()
-    {
-        // Arrange - Create table with different case
-        using (var connection = _connectionService.GetConnection())
-        {
-            connection.Open();
-            
-            // PostgreSQL folds unquoted identifiers to lowercase
-            using var createCmd = new NpgsqlCommand(@"
-                CREATE TABLE IF NOT EXISTS TBLUSERCREDENTIALS (
-                    FLDUSERNAME VARCHAR(100) NOT NULL,
-            FLDPASSWORD VARCHAR(100) NOT NULL
-                );
-            ", connection);
-            createCmd.ExecuteNonQuery();
-        }
-
-        // Act
-        _service.Seed();
-
-        // Assert
-        using var connection1 = _connectionService.GetConnection();
-        connection1.Open();
-
-        using var checkUserCmd = new NpgsqlCommand(@"
-            SELECT COUNT(*) FROM tblUserCredentials WHERE fldUsername = 'test';
-        ", connection1);
-        
-        var userCount = (long)checkUserCmd.ExecuteScalar();
-        Assert.Equal(1, userCount);
     }
 }

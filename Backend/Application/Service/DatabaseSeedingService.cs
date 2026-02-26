@@ -6,9 +6,9 @@ namespace Backend.Application.Service;
 
 public class DatabaseSeedingService :IDatabaseSeedingService
 {
-    private readonly ConnectionService _connectionService;
+    private readonly IConnectionService _connectionService;
 
-    public DatabaseSeedingService(ConnectionService connectionService)
+    public DatabaseSeedingService(IConnectionService connectionService)
     {
         _connectionService = connectionService;
     }

@@ -46,7 +46,7 @@ builder.Services.AddScoped<NpgsqlConnection>(sp =>
     return new NpgsqlConnection(connectionString);
 });
 
-builder.Services.AddSingleton<ConnectionService>();
+builder.Services.AddSingleton<IConnectionService,ConnectionService>();
 
 // Repositories
 builder.Services.AddScoped<IUserRepo, UserRepo>();
