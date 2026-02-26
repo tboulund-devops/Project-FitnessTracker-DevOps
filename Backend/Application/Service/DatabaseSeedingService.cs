@@ -6,9 +6,9 @@ namespace Backend.Application.Service;
 
 public class DatabaseSeedingService :IDatabaseSeedingService
 {
-    private readonly ConnectionService _connectionService;
+    private readonly IConnectionService _connectionService;
 
-    public DatabaseSeedingService(ConnectionService connectionService)
+    public DatabaseSeedingService(IConnectionService connectionService)
     {
         _connectionService = connectionService;
     }
@@ -204,8 +204,8 @@ public class DatabaseSeedingService :IDatabaseSeedingService
                 VALUES (@username, @password)
                 RETURNING fldCredentialsID;";
             
-            insertCmd.Parameters.AddWithValue("@username", "test");
-            insertCmd.Parameters.AddWithValue("@password", "test"); // In real app, this should be hashed!
+            insertCmd.Parameters.AddWithValue("@username", "john_doe");
+            insertCmd.Parameters.AddWithValue("@password", "SecurePass123!"); // In real app, this should be hashed!
             
             return Convert.ToInt32(insertCmd.ExecuteScalar());
         }

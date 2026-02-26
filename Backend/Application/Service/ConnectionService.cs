@@ -1,8 +1,9 @@
-﻿using Npgsql;
+﻿using Backend.Application.Service.Interfaces;
+using Npgsql;
 
 namespace Backend.Application.Service;
 
-public class ConnectionService
+public class ConnectionService :IConnectionService
 {
     private readonly string _connectionString;
 
