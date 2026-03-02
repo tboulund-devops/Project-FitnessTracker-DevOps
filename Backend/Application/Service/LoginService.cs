@@ -15,7 +15,6 @@ public class LoginService : ILoginService
 
     public bool CheckCredentials(LoginRequest request)
     {
-        Console.WriteLine("Login Service Reached");
         // Validate input
         if (request == null || string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
         {
@@ -29,9 +28,6 @@ public class LoginService : ILoginService
         {
             return false;
         }
-
-        Console.WriteLine("Request U/P "+ request.Username + " and " + request.Password);
-        Console.WriteLine("From DB: " +  credentialsFromDatabase[0] + " and " + credentialsFromDatabase[1]);
 
         // Now it's safe to access the list elements
         return credentialsFromDatabase[0] == request.Username &&
