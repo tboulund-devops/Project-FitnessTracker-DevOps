@@ -19,14 +19,14 @@ public class APIWorkoutController : ControllerBase
     }
     
     [HttpPost("CreateWorkout")]
-    public IActionResult CheckCredentials(Workout request, int UserId)
+    public async Task<IActionResult> CheckCredentials(Workout request, int UserId)
     {
         if (request == null ||request.DateOfWorkout == null || string.IsNullOrWhiteSpace(request.Name) || UserId <= 0)
         {
             return BadRequest("Workout must need a creating date and name, and have a positive user id");
         }
 
-        int isValid = Convert.ToInt32(_workoutService.CreateWorkout(request, UserId));
+        int isValid = await _workoutService.CreateWorkout(request, UserId);
 
         if (isValid <= 0)
         {
@@ -38,7 +38,7 @@ public class APIWorkoutController : ControllerBase
     }
 
     [HttpPost("AddSetToWorkout")]
-    public IActionResult AddSetToWorkout(Set setRequest, int workoutId)
+    public async Task<IActionResult> AddSetToWorkout(Set setRequest, int workoutId)
     {
         if (setRequest.Reps <= 0 || setRequest.ExerciseID <= 0 || setRequest.Weight <= 0)
         { 
@@ -49,7 +49,7 @@ public class APIWorkoutController : ControllerBase
         {
             return BadRequest("Workout id must be a positive number");
         }
-        int isValid = Convert.ToInt32(_workoutService.AddSetToWorkout(setRequest, workoutId));
+        int isValid = await _workoutService.AddSetToWorkout(setRequest, workoutId);
         
         if (isValid <= 0)
         {
