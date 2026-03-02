@@ -6,11 +6,5 @@ public class Workout
     public DateTime DateOfWorkout { get; set; }
     public string Name { get; set; }
     
-    public Workout(DateTime dateOfWorkout, string name)
-    {
-        DateOfWorkout = dateOfWorkout;
-        Name = name;
-    }
-    
-    public Workout() { }
+    public List<Set>? Sets { get; set; }
 }

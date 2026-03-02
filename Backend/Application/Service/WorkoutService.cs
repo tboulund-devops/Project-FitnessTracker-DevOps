@@ -32,7 +32,15 @@ public class WorkoutService
         int returnIdOfBridgeTableWorkoutSet = Convert.ToInt32(_repo.AddSetToWorkout(newSet, WorkoutID));
         return returnIdOfBridgeTableWorkoutSet;
     }
-    
-    
+
+    public Workout GetWorkout(int workoutId)
+    {
+        if (workoutId <= 0)
+        {
+            throw new ArgumentException("Workout ID is required");
+        }
+        
+        return _repo.getWorkout(workoutId).Result;
+    }
     
 }

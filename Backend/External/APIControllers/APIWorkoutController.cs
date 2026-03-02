@@ -59,10 +59,15 @@ public class APIWorkoutController : ControllerBase
         return Ok("Set successfully added to  workout: " + workoutId);
     }
 
-    [HttpGet("GetWorkoutsForUser/{userId}")]
-    public IActionResult GetWorkoutsForUser(int userId)
+    [HttpGet("GetWorkoutInformation/{workoutId}")]
+    public ActionResult<Workout> GetWorkoutsForUser(int workoutId)
     {
-        return Ok("Workouts for user: " + userId);
+        if (workoutId <= 0)
+        {
+            return BadRequest("Workout id must be a positive number");
+        }
+        
+        return Ok(_workoutService.GetWorkout(workoutId));
     }
     
     

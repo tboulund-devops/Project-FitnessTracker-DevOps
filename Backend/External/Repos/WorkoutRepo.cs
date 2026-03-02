@@ -73,69 +73,132 @@ public class WorkoutRepo : IWorkoutRepo
         }
     }
 
-    public async Task<int> AddSetToWorkout(Set setRequest, int workoutId)
-{
-    if (setRequest == null)
+    public async Task<int> AddSetToWorkout(Set setRequest, int workoutId) 
     {
-        throw new ArgumentNullException(nameof(setRequest));
-    }
-
-    using var connection = _connectionService.GetConnection();
-    await connection.OpenAsync();
-    //transaction combines the 2 inserts to a single "unit" / commit, if not, the first might succede
-    //and the 2nd fail, and you are left with "floating" data in tblSet.
-    using var transaction = await connection.BeginTransactionAsync();
-
-    try
-    {
-        // 1. Insert the set into tblSet
-        int setId;
-        using (var insertSetCmd = connection.CreateCommand())
+        if (setRequest == null)
         {
-            insertSetCmd.Transaction = transaction;
-            insertSetCmd.CommandText = @"
-                INSERT INTO tblSet (fldExerciseID, fldWeight, fldReps, fldRestBetweenSet)
-                VALUES (@exerciseId, @weight, @reps, @rest)
-                RETURNING fldSetID;";
-
-            insertSetCmd.Parameters.AddWithValue("@exerciseId", setRequest.ExerciseID);
-            insertSetCmd.Parameters.AddWithValue("@weight", setRequest.Weight);
-            insertSetCmd.Parameters.AddWithValue("@reps", setRequest.Reps);
-            insertSetCmd.Parameters.AddWithValue("@rest", setRequest.RestBetweenSetInSec);
-
-            var result = await insertSetCmd.ExecuteScalarAsync();
-            if (result == null)
-                throw new Exception("Failed to create set");
-
-            setId = Convert.ToInt32(result);
+            throw new ArgumentNullException(nameof(setRequest));
         }
 
-        // 2. Link the set to the workout in tblWorkoutSet
-        using (var insertBridgeCmd = connection.CreateCommand())
+        using var connection = _connectionService.GetConnection();
+        await connection.OpenAsync();
+        //transaction combines the 2 inserts to a single "unit" / commit, if not, the first might succede
+        //and the 2nd fail, and you are left with "floating" data in tblSet.
+        using var transaction = await connection.BeginTransactionAsync();
+
+        try
         {
-            insertBridgeCmd.Transaction = transaction;
-            insertBridgeCmd.CommandText = @"
-                INSERT INTO tblWorkoutSet (fldSetID, fldWorkoutID)
-                VALUES (@setId, @workoutId)
-                RETURNING fldWorkoutSetID;";
+            // 1. Insert the set into tblSet
+            int setId;
+            using (var insertSetCmd = connection.CreateCommand())
+            {
+                insertSetCmd.Transaction = transaction;
+                insertSetCmd.CommandText = @"
+                    INSERT INTO tblSet (fldExerciseID, fldWeight, fldReps, fldRestBetweenSet)
+                    VALUES (@exerciseId, @weight, @reps, @rest)
+                    RETURNING fldSetID;";
 
-            insertBridgeCmd.Parameters.AddWithValue("@setId", setId);
-            insertBridgeCmd.Parameters.AddWithValue("@workoutId", workoutId);
+                insertSetCmd.Parameters.AddWithValue("@exerciseId", setRequest.ExerciseID);
+                insertSetCmd.Parameters.AddWithValue("@weight", setRequest.Weight);
+                insertSetCmd.Parameters.AddWithValue("@reps", setRequest.Reps);
+                insertSetCmd.Parameters.AddWithValue("@rest", setRequest.RestBetweenSetInSec);
 
-            var result = await insertBridgeCmd.ExecuteScalarAsync();
-            if (result == null)
-                throw new Exception("Failed to link set to workout");
+                var result = await insertSetCmd.ExecuteScalarAsync();
+                if (result == null)
+                    throw new Exception("Failed to create set");
 
-            var workoutSetId = Convert.ToInt32(result);
+                setId = Convert.ToInt32(result);
+            }
 
-            await transaction.CommitAsync();
-            return workoutSetId; // Return the bridge table ID
+            // 2. Link the set to the workout in tblWorkoutSet
+            using (var insertBridgeCmd = connection.CreateCommand())
+            {
+                insertBridgeCmd.Transaction = transaction;
+                insertBridgeCmd.CommandText = @"
+                    INSERT INTO tblWorkoutSet (fldSetID, fldWorkoutID)
+                    VALUES (@setId, @workoutId)
+                    RETURNING fldWorkoutSetID;";
+
+                insertBridgeCmd.Parameters.AddWithValue("@setId", setId);
+                insertBridgeCmd.Parameters.AddWithValue("@workoutId", workoutId);
+
+                var result = await insertBridgeCmd.ExecuteScalarAsync();
+                if (result == null)
+                    throw new Exception("Failed to link set to workout");
+
+                var workoutSetId = Convert.ToInt32(result);
+
+                await transaction.CommitAsync();
+                return workoutSetId; // Return the bridge table ID
+            }
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
         }
     }
-    catch
+
+    public async Task<Workout> getWorkout(int workoutId)
     {
-        await transaction.RollbackAsync();
-        throw;
+        using var connection = _connectionService.GetConnection();
+        await connection.OpenAsync();
+
+        // First, retrieve the workout details
+        Workout workout = null;
+        using (var getWorkoutCmd = connection.CreateCommand())
+        {
+            getWorkoutCmd.CommandText = @"
+            SELECT fldWorkoutID, fldDateOfWorkout, fldName
+            FROM tblWorkout
+            WHERE fldWorkoutID = @workoutId;";
+        
+            getWorkoutCmd.Parameters.AddWithValue("@workoutId", workoutId);
+
+            using var reader = await getWorkoutCmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                workout = new Workout
+                {
+                    WorkoutID = reader.GetInt32(0),
+                    DateOfWorkout = reader.GetDateTime(1),
+                    Name = reader.GetString(2),
+                    Sets = new List<Set>() // Initialize empty list
+                };
+            }
+        }
+
+        // If workout not found, return null
+        if (workout == null)
+        {
+            return null;
+        }
+
+        // retrieve all sets associated with this workout
+        using (var getSetsCmd = connection.CreateCommand())
+        {
+            getSetsCmd.CommandText = @"
+            SELECT s.fldSetID, s.fldExerciseID, s.fldWeight, s.fldReps, s.fldRestBetweenSet
+            FROM tblSet s
+            INNER JOIN tblWorkoutSet ws ON s.fldSetID = ws.fldSetID
+            WHERE ws.fldWorkoutID = @workoutId;";
+        
+            getSetsCmd.Parameters.AddWithValue("@workoutId", workoutId);
+
+            using var reader = await getSetsCmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                var set = new Set
+                {
+                    SetID = reader.GetInt32(0),
+                    ExerciseID = reader.GetInt32(1),
+                    Weight = reader.GetInt32(2),
+                    Reps = reader.GetInt32(3),
+                    RestBetweenSetInSec = reader.GetInt32(4)
+                };
+                workout.Sets.Add(set);
+            }
+        }
+        return workout;
     }
-}
 }
