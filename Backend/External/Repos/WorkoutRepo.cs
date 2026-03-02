@@ -163,7 +163,7 @@ public class WorkoutRepo : IWorkoutRepo
                     WorkoutID = reader.GetInt32(0),
                     DateOfWorkout = reader.GetDateTime(1),
                     Name = reader.GetString(2),
-                    Sets = new List<Set>() // Initialize empty list
+                    Sets = new List<Set>()
                 };
             }
         }
@@ -185,18 +185,52 @@ public class WorkoutRepo : IWorkoutRepo
         
             getSetsCmd.Parameters.AddWithValue("@workoutId", workoutId);
 
-            using var reader = await getSetsCmd.ExecuteReaderAsync();
-            while (await reader.ReadAsync())
+            try
             {
-                var set = new Set
+                using var reader = await getSetsCmd.ExecuteReaderAsync();
+                
+                // Log column information
+                Console.WriteLine($"Number of columns: {reader.FieldCount}");
+                for (int i = 0; i < reader.FieldCount; i++)
                 {
-                    SetID = reader.GetInt32(0),
-                    ExerciseID = reader.GetInt32(1),
-                    Weight = reader.GetInt32(2),
-                    Reps = reader.GetInt32(3),
-                    RestBetweenSetInSec = reader.GetInt32(4)
-                };
-                workout.Sets.Add(set);
+                    Console.WriteLine($"Column {i}: {reader.GetName(i)} - Type: {reader.GetFieldType(i)}");
+                }
+                
+                while (await reader.ReadAsync())
+                {
+                    try
+                    {
+                        var set = new Set
+                        {
+                            SetID = Convert.ToInt32(reader[0]),
+                            ExerciseID = Convert.ToInt32(reader[1]),
+                            Weight = Convert.ToInt32(reader[2]),
+                            Reps = Convert.ToInt32(reader[3]),
+                            RestBetweenSetInSec = Convert.ToInt32(reader[4])
+                        };
+                        workout.Sets.Add(set);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"ERROR reading set data: {ex.Message}");
+                        Console.WriteLine($"Column values: " +
+                            $"SetID={reader[0]}, " +
+                            $"ExerciseID={reader[1]}, " +
+                            $"Weight={reader[2]}, " +
+                            $"Reps={reader[3]}, " +
+                            $"Rest={reader[4]}");
+                        
+                        Console.WriteLine("=== ERROR in getWorkout ===");
+                        Console.WriteLine($"Message: {ex.Message}");
+                        Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+                        throw;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR in set query for workout {workoutId}: {ex.Message}");
+                throw;
             }
         }
         return workout;

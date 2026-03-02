@@ -11,9 +11,9 @@ namespace Backend.External.APIControllers;
 public class APIWorkoutController : ControllerBase
 {
 
-    private readonly WorkoutService _workoutService;
+    private readonly IWorkoutService _workoutService;
 
-    public APIWorkoutController(WorkoutService workoutService)
+    public APIWorkoutController(IWorkoutService workoutService)
     {
         _workoutService = workoutService ?? throw new ArgumentNullException(nameof(workoutService));
     }
@@ -26,7 +26,7 @@ public class APIWorkoutController : ControllerBase
             return BadRequest("Workout must need a creating date and name, and have a positive user id");
         }
 
-        var isValid = _workoutService.CreateWorkout(request, UserId);
+        int isValid = Convert.ToInt32(_workoutService.CreateWorkout(request, UserId));
 
         if (isValid <= 0)
         {
@@ -49,7 +49,7 @@ public class APIWorkoutController : ControllerBase
         {
             return BadRequest("Workout id must be a positive number");
         }
-        var isValid = _workoutService.AddSetToWorkout(setRequest, workoutId);
+        int isValid = Convert.ToInt32(_workoutService.AddSetToWorkout(setRequest, workoutId));
         
         if (isValid <= 0)
         {
@@ -60,14 +60,17 @@ public class APIWorkoutController : ControllerBase
     }
 
     [HttpGet("GetWorkoutInformation/{workoutId}")]
-    public ActionResult<Workout> GetWorkoutsForUser(int workoutId)
+    public async Task<ActionResult<Workout>> GetWorkoutsForUser(int workoutId)
     {
         if (workoutId <= 0)
-        {
             return BadRequest("Workout id must be a positive number");
-        }
-        
-        return Ok(_workoutService.GetWorkout(workoutId));
+
+        var workout = await _workoutService.GetWorkout(workoutId);
+    
+        if (workout == null)
+            return NotFound($"Workout with ID {workoutId} not found");
+
+        return Ok(workout);
     }
     
     

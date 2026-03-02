@@ -15,8 +15,34 @@ public class DatabaseSeedingService :IDatabaseSeedingService
 
     public void Seed()
     {
-        SeedTables();
-        SeedTestData();
+        int maxRetries = 10;
+        int delaySeconds = 2;
+        
+        for (int i = 1; i <= maxRetries; i++)
+        {
+            try
+            {
+                Console.WriteLine($"Attempting to seed database (attempt {i}/{maxRetries})...");
+                SeedTables();
+                SeedTestData();
+                Console.WriteLine("Database seeding completed successfully!");
+                return; // Success - exit the method
+            }
+            catch (Npgsql.PostgresException ex) when (ex.SqlState == "57P03") // "database system is starting up"
+            {
+                Console.WriteLine($"Database not ready yet (attempt {i}/{maxRetries}). Waiting {delaySeconds} seconds...");
+                Thread.Sleep(delaySeconds * 1000);
+                delaySeconds *= 2; // Exponential backoff: 2, 4, 8, 16, 32...
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Unexpected error during seeding: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                throw; // Re-throw other exceptions
+            }
+        }
+        
+        throw new Exception($"Failed to seed database after {maxRetries} attempts");
     }
 
     public void SeedTables()

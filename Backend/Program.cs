@@ -10,8 +10,10 @@ using Backend.Application.Service.Interfaces;
 using Backend.External;
 using Backend.External.APIControllers;
 using Backend.External.Repos;
+using Backend.External.Repos.Interface;
 using Backend.Gateway;
 using Npgsql;
+using ILoginRepo = Backend.Gateway.ILoginRepo;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,11 +53,13 @@ builder.Services.AddSingleton<IConnectionService,ConnectionService>();
 // Repositories
 builder.Services.AddScoped<IUserRepo, UserRepo>();
 builder.Services.AddScoped<ILoginRepo, LoginRepo>();
+builder.Services.AddScoped<IWorkoutRepo, WorkoutRepo>();
 
 // Services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddSingleton<IDatabaseSeedingService, DatabaseSeedingService>();
 builder.Services.AddScoped<ILoginService, LoginService>();
+builder.Services.AddScoped<IWorkoutService, WorkoutService>();
 
 var app = builder.Build();
 
