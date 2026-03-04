@@ -86,7 +86,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.FITNESSTRACKERTOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push Docker image
         run: |
@@ -156,7 +156,7 @@ jobs:
         env:
           TARGET_URL: "http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
         run: |
-          k6 run K6Testing.js -e TARGET_URL="$TARGET_URL"
+          k6 run K6Testing.js -e TARGET_URL="$TARGET_URL" --summary-export=k6-summary.json
 
       # ===== UPLOAD REPORTS =====
       - name: Collect Stryker Report
@@ -166,10 +166,10 @@ jobs:
           name: stryker-report
           path: stryker-report/reports/mutation-report.html
 
-       # ===== upload k6 summary ===== 
-       - name: Upload k6 Report
-         if: always()
-         uses: actions/upload-artifact@v4
-         with:
-           name: k6-report
-           path: k6-summary.json
+      # ===== Upload k6 summary =====
+      - name: Upload k6 Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-report
+          path: k6-summary.json
