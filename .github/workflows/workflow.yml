@@ -107,7 +107,7 @@ jobs:
           host: ${{ vars.STAGING_SERVER_IP }}
           username: ${{ vars.STAGING_SERVER_USERNAME }}
           key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
-          source: "docker-compose.yaml"
+          source: "docker-compose.yml"
           target: dowa/
 
       - name: Create .env file on staging server
