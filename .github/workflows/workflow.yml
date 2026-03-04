@@ -4,6 +4,10 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   integration:
     runs-on: ubuntu-latest
@@ -11,76 +15,161 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Fetch all history for accurate results of code analysis
+          fetch-depth: 0
 
-      # Installs ReportGenerator and Stryker tools
+      # Install required tools
       - name: Install required tools
         run: |
           dotnet tool install -g dotnet-stryker
           dotnet tool install -g dotnet-sonarscanner
-           dotnet tool install -g dotnet-reportgenerator-globaltool
-          
-          
+          dotnet tool install -g dotnet-reportgenerator-globaltool
+
+      # SonarCloud begin
       - name: Start Static Code Analysis
         run: |
           dotnet sonarscanner begin \
-          /k:"${{vars.PROJECT_KEY}}" \
-          /d:sonar.host.url="${{vars.SONAR_URL}}" \
-          /d:sonar.token="${{secrets.FITNESSTRACKERTOKEN}}" \
+          /k:"${{ vars.PROJECT_KEY }}" \
+          /d:sonar.host.url="${{ vars.SONAR_URL }}" \
+          /d:sonar.token="${{ secrets.FITNESSTRACKERTOKEN }}" \
           /d:sonar.projectBaseDir="$(pwd)" \
           /d:sonar.coverageReportPaths="sonarqube-coverage-report/SonarQube.xml" \
           /d:sonar.qualitygate.wait=true \
           /d:sonar.qualitygate.timeout=300
 
+      # Build
       - name: Build
-        run: dotnet build Project-FitnessTracker-DevOps.sln   
-      
-      # Executes unit tests while collecting code coverage
+        run: dotnet build Project-FitnessTracker-DevOps.sln
+
+      # Unit tests with coverage
       - name: Run unit tests with coverage
         run: |
-          # Run tests with coverage collection
           dotnet test UnitTests/UnitTests.csproj \
             --collect:"XPlat Code Coverage" \
             --results-directory TestResults \
             --logger "trx;LogFileName=test_results.trx"
 
+      # Convert coverage to SonarQube format
       - name: Convert coverage to SonarQube format
         run: |
-            # Find the coverage file
-            COVERAGE_FILE=$(find TestResults -name "coverage.cobertura.xml" | head -n 1)
-            echo "Found coverage file: $COVERAGE_FILE"
-            
-            if [ -f "$COVERAGE_FILE" ]; then
-              # Create report directory
-              mkdir -p sonarqube-coverage-report
-            
-              # Convert to SonarQube format
-              reportgenerator \
-                -reports:"$COVERAGE_FILE" \
-                -targetdir:"sonarqube-coverage-report" \
-                -reporttypes:SonarQube
-            
-              echo "✅ Coverage file converted to SonarQube format"
-            else
-              echo "❌ No coverage file found!"
-              exit 1
-            fi
+          COVERAGE_FILE=$(find TestResults -name "coverage.cobertura.xml" | head -n 1)
+          echo "Found coverage file: $COVERAGE_FILE"
+          if [ -f "$COVERAGE_FILE" ]; then
+            mkdir -p sonarqube-coverage-report
+            reportgenerator \
+              -reports:"$COVERAGE_FILE" \
+              -targetdir:"sonarqube-coverage-report" \
+              -reporttypes:SonarQube
+            echo "✅ Coverage file converted to SonarQube format"
+          else
+            echo "❌ No coverage file found!"
+            exit 1
+          fi
 
-      #Static code analysis
+      # SonarCloud end
       - name: Complete Static Code Analysis
         run: |
           dotnet sonarscanner end \
-          /d:sonar.token="${{secrets.FITNESSTRACKERTOKEN}}"  
-      
-      # Executes mutation tests using Stryker with a threshold of 60% mutation score
+          /d:sonar.token="${{ secrets.FITNESSTRACKERTOKEN }}"
+
+      # Mutation tests
       - name: Run Mutation Tests
         working-directory: ./UnitTests
         run: dotnet stryker --project ./UnitTests.csproj --break-at 60 --output "stryker-report"
 
-      # Uploads the Stryker report to the artifacts - make it run always even if previous steps fail
+      # ===== DOCKER BUILD & PUSH TO GHCR =====
+      - name: Convert repository name to lowercase
+        id: repo_lower
+        run: echo "repo_lower=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.FITNESSTRACKERTOKEN }}
+
+      - name: Build and Push Docker image
+        run: |
+          docker build \
+            -t ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}:staging \
+            -f DevOpsWebApplication/Dockerfile .
+          docker push ghcr.io/${{ steps.repo_lower.outputs.repo_lower }} --all-tags
+
+      # ===== DEPLOY TO STAGING SERVER =====
+      - name: Deliver Docker Compose file to staging
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ vars.STAGING_SERVER_IP }}
+          username: ${{ vars.STAGING_SERVER_USERNAME }}
+          key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
+          source: "compose.yaml"
+          target: dowa/
+
+      - name: Create .env file on staging server
+        uses: appleboy/ssh-action@v1.2.1
+        with:
+          host: ${{ vars.STAGING_SERVER_IP }}
+          username: ${{ vars.STAGING_SERVER_USERNAME }}
+          key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
+          script: |
+            cd dowa
+            cat > .env <<EOF
+            CONNECTION_STRING=Host=db;Database=database;Username=MainUser;Password=${{ secrets.DB_PASSWORD }}
+            ASPNETCORE_ENVIRONMENT=Staging
+            EOF
+
+      - name: Run Docker Compose on staging server
+        uses: appleboy/ssh-action@v1.2.1
+        with:
+          host: ${{ vars.STAGING_SERVER_IP }}
+          username: ${{ vars.STAGING_SERVER_USERNAME }}
+          key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
+          script: |
+            cd dowa
+            echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S docker compose pull
+            echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S docker compose up -d
+
+      # ===== WAIT FOR APP TO BE READY =====
+      - name: Wait for Staging to be Ready
+        run: |
+          echo "Waiting for app at http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
+          for i in {1..30}; do
+            if curl -s -f "http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1" > /dev/null; then
+              echo "App is up!"
+              exit 0
+            fi
+            echo "Attempt $i: not ready yet. Sleeping 5s..."
+            sleep 5
+          done
+          echo "App did not become ready in time."
+          exit 1
+
+      # ===== PERFORMANCE TEST WITH K6 =====
+      - name: Install k6
+        run: |
+          curl -L -O https://github.com/grafana/k6/releases/download/v0.54.0/k6-v0.54.0-linux-amd64.tar.gz
+          tar -xzf k6-v0.54.0-linux-amd64.tar.gz
+          sudo mv k6-v0.54.0-linux-amd64/k6 /usr/local/bin/
+          k6 version
+
+      - name: Run Performance Test (k6)
+        env:
+          TARGET_URL: "http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
+        run: |
+          k6 run K6Testing.js -e TARGET_URL="$TARGET_URL"
+
+      # ===== UPLOAD REPORTS =====
       - name: Collect Stryker Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: stryker-report
           path: stryker-report/reports/mutation-report.html
+
+       # ===== upload k6 summary ===== 
+       - name: Upload k6 Report
+         if: always()
+         uses: actions/upload-artifact@v4
+         with:
+           name: k6-report
+           path: k6-summary.json
