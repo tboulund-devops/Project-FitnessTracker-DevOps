@@ -92,11 +92,11 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push Docker image
-        if: always()
         run: |
           docker build \
             -t ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}:staging \
-            -f Backend/Dockerfile . 
+            -f Backend/Dockerfile \
+            Backend/
           docker push ghcr.io/${{ steps.repo_lower.outputs.repo_lower }} --all-tags
 
       # ===== DEPLOY TO STAGING SERVER =====
