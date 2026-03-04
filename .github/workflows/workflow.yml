@@ -73,15 +73,18 @@ jobs:
 
       # Mutation tests
       - name: Run Mutation Tests
+        if: always()
         working-directory: ./UnitTests
         run: dotnet stryker --project ./UnitTests.csproj --break-at 60 --output "stryker-report"
 
       # ===== DOCKER BUILD & PUSH TO GHCR =====
       - name: Convert repository name to lowercase
+        if: always()
         id: repo_lower
         run: echo "repo_lower=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
       - name: Log in to GitHub Container Registry
+        if: always()
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
@@ -89,6 +92,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push Docker image
+        if: always()
         run: |
           docker build \
             -t ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}:staging \
@@ -97,6 +101,7 @@ jobs:
 
       # ===== DEPLOY TO STAGING SERVER =====
       - name: Deliver Docker Compose file to staging
+        if: always()
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ vars.STAGING_SERVER_IP }}
@@ -106,6 +111,7 @@ jobs:
           target: dowa/
 
       - name: Create .env file on staging server
+        if: always()
         uses: appleboy/ssh-action@v1.2.1
         with:
           host: ${{ vars.STAGING_SERVER_IP }}
@@ -119,6 +125,7 @@ jobs:
             EOF
 
       - name: Run Docker Compose on staging server
+        if: always()
         uses: appleboy/ssh-action@v1.2.1
         with:
           host: ${{ vars.STAGING_SERVER_IP }}
@@ -131,6 +138,7 @@ jobs:
 
       # ===== WAIT FOR APP TO BE READY =====
       - name: Wait for Staging to be Ready
+        if: always()
         run: |
           echo "Waiting for app at http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
           for i in {1..30}; do
@@ -146,6 +154,7 @@ jobs:
 
       # ===== PERFORMANCE TEST WITH K6 =====
       - name: Install k6
+        if: always()
         run: |
           curl -L -O https://github.com/grafana/k6/releases/download/v0.54.0/k6-v0.54.0-linux-amd64.tar.gz
           tar -xzf k6-v0.54.0-linux-amd64.tar.gz
