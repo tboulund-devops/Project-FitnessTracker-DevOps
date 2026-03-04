@@ -96,7 +96,7 @@ jobs:
         run: |
           docker build \
             -t ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}:staging \
-            -f DevOpsWebApplication/Dockerfile .
+            -f Backend/Dockerfile . 
           docker push ghcr.io/${{ steps.repo_lower.outputs.repo_lower }} --all-tags
 
       # ===== DEPLOY TO STAGING SERVER =====
@@ -138,18 +138,20 @@ jobs:
 
       # ===== WAIT FOR APP TO BE READY =====
       - name: Wait for Staging to be Ready
-        if: always()
         run: |
+          MAX_ATTEMPTS=10
           echo "Waiting for app at http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
-          for i in {1..30}; do
-            if curl -s -f "http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1" > /dev/null; then
-              echo "App is up!"
+          for i in $(seq 1 $MAX_ATTEMPTS); do
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1")
+            if [ "$HTTP_STATUS" -eq 200 ]; then
+              echo "✅ App is up! (HTTP 200)"
               exit 0
+            else
+              echo "Attempt $i/$MAX_ATTEMPTS: HTTP $HTTP_STATUS - not ready yet. Sleeping 5s..."
             fi
-            echo "Attempt $i: not ready yet. Sleeping 5s..."
             sleep 5
           done
-          echo "App did not become ready in time."
+          echo "❌ App did not become ready in time. Last HTTP status: $HTTP_STATUS"
           exit 1
 
       # ===== PERFORMANCE TEST WITH K6 =====
