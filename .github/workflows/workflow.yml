@@ -76,7 +76,7 @@ jobs:
         working-directory: ./UnitTests
         run: dotnet stryker --project ./UnitTests.csproj --break-at 60 --output "stryker-report"
 
-      # ===== DOCKER BUILD & PUSH TO GHCR =====
+      # ===== DOCKER BUILD & PUSH TO GHCR ====
       - name: Convert repository name to lowercase
         if: always()
         id: repo_lower
