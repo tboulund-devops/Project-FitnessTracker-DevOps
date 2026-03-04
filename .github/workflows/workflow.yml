@@ -136,6 +136,7 @@ jobs:
 
       # ===== WAIT FOR APP TO BE READY =====
       - name: Wait for Staging to be Ready
+        if: always()
         run: |
           MAX_ATTEMPTS=10
           echo "Waiting for app at http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
@@ -162,6 +163,7 @@ jobs:
           k6 version
 
       - name: Run Performance Test (k6)
+        if: always()
         env:
           TARGET_URL: "http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
         run: |
