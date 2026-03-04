@@ -119,10 +119,8 @@ jobs:
           key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
           script: |
             cd dowa
-            cat > .env <<EOF
-            CONNECTION_STRING=Host=db;Database=database;Username=MainUser;Password=${{ secrets.DB_PASSWORD }}
-            ASPNETCORE_ENVIRONMENT=Staging
-            EOF
+            echo "CONNECTION_STRING=Host=db;Database=database;Username=MainUser;Password=${{ secrets.DB_PASSWORD }}" > .env
+            echo "ASPNETCORE_ENVIRONMENT=Staging" >> .env
 
       - name: Run Docker Compose on staging server
         if: always()
