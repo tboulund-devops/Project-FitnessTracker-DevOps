@@ -99,7 +99,7 @@ jobs:
             Backend/
           docker push ghcr.io/${{ steps.repo_lower.outputs.repo_lower }} --all-tags
 
-      # ===== DEPLOY TO STAGING SERVER =====
+      # ===== DEPLOY TO STAGING SERVER ====
       - name: Deliver Docker Compose file to staging
         if: always()
         uses: appleboy/scp-action@v0.1.7
