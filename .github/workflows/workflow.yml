@@ -73,18 +73,15 @@ jobs:
 
       # Mutation tests
       - name: Run Mutation Tests
-        if: always()
         working-directory: ./UnitTests
         run: dotnet stryker --project ./UnitTests.csproj --break-at 60 --output "stryker-report"
 
       # ===== DOCKER BUILD & PUSH TO GHCR =====
       - name: Convert repository name to lowercase
-        if: always()
         id: repo_lower
         run: echo "repo_lower=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
       - name: Log in to GitHub Container Registry
-        if: always()
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
@@ -99,9 +96,8 @@ jobs:
             Backend/
           docker push ghcr.io/${{ steps.repo_lower.outputs.repo_lower }} --all-tags
 
-      # ===== DEPLOY TO STAGING SERVER ====
+      # ===== DEPLOY TO STAGING SERVER =====
       - name: Deliver Docker Compose file to staging
-        if: always()
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ vars.STAGING_SERVER_IP }}
@@ -111,7 +107,6 @@ jobs:
           target: dowa/
 
       - name: Create .env file on staging server
-        if: always()
         uses: appleboy/ssh-action@v1.2.1
         with:
           host: ${{ vars.STAGING_SERVER_IP }}
@@ -123,7 +118,6 @@ jobs:
             echo "ASPNETCORE_ENVIRONMENT=Staging" >> .env
 
       - name: Run Docker Compose on staging server
-        if: always()
         uses: appleboy/ssh-action@v1.2.1
         with:
           host: ${{ vars.STAGING_SERVER_IP }}
@@ -131,12 +125,13 @@ jobs:
           key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
           script: |
             cd dowa
+            # Login to GHCR using the PAT
+            echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_PAT }}
             echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S docker compose pull
             echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S docker compose up -d
 
       # ===== WAIT FOR APP TO BE READY =====
       - name: Wait for Staging to be Ready
-        if: always()
         run: |
           MAX_ATTEMPTS=10
           echo "Waiting for app at http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
@@ -155,7 +150,6 @@ jobs:
 
       # ===== PERFORMANCE TEST WITH K6 =====
       - name: Install k6
-        if: always()
         run: |
           curl -L -O https://github.com/grafana/k6/releases/download/v0.54.0/k6-v0.54.0-linux-amd64.tar.gz
           tar -xzf k6-v0.54.0-linux-amd64.tar.gz
@@ -163,7 +157,6 @@ jobs:
           k6 version
 
       - name: Run Performance Test (k6)
-        if: always()
         env:
           TARGET_URL: "http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
         run: |
@@ -177,7 +170,6 @@ jobs:
           name: stryker-report
           path: stryker-report/reports/mutation-report.html
 
-      # ===== Upload k6 summary =====
       - name: Upload k6 Report
         if: always()
         uses: actions/upload-artifact@v4

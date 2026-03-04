@@ -15,9 +15,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   backend:
-    build:
-      context: ./Backend
-      dockerfile: Dockerfile
+    image: ghcr.io/tboulund-devops/project-fitnesstracker-devops:staging
     container_name: FitnessTrackerBackend
     depends_on:
       - db
