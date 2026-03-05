@@ -65,7 +65,7 @@ jobs:
             exit 1
           fi
 
-      # SonarCloud end
+      # SonarCloud end 
       - name: Complete Static Code Analysis
         run: |
           dotnet sonarscanner end \
