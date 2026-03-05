@@ -147,30 +147,14 @@ jobs:
           key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
           # Use bash -c with a quoted multi‑line string – safe for Fish
           script: |
-            bash -c '
             cd dowa
             echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_PAT }}
             echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose pull
-
-            # Start database detached
             echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose up -d db
-
-            # Wait for database to be healthy
             echo "Waiting for database to be healthy..."
-            # ✅ After — double quotes for --format, dot added
-            while [ "$(sudo docker inspect --format="{{.State.Health.Status}}" FitnessTrackerDBPost)" != "healthy" ]; do
-              sleep 2
-            done
-
-            # Run Flyway migrations in foreground (logs will show in pipeline)
+            while [ "$(sudo docker inspect --format="{{.State.Health.Status}}" FitnessTrackerDBPost)" != "healthy" ]; do sleep 2; done
             echo "Running Flyway migrations..."
             echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose run --rm flyway
-            if [ $? -ne 0 ]; then
-              echo "❌ Flyway migration failed!"
-              exit 1
-            fi
-
-            # Start backend
             echo "Starting backend..."
             echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose up -d backend
 
