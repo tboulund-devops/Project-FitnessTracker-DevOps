@@ -140,7 +140,7 @@ jobs:
       - name: Wait for Staging to be Ready
         if: always()
         run: |
-          MAX_ATTEMPTS=10
+          MAX_ATTEMPTS=100
           echo "Waiting for app at http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
           for i in $(seq 1 $MAX_ATTEMPTS); do
             HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1")
