@@ -23,9 +23,9 @@ jobs:
         with:
           bump_each_commit: true           # Increments on every commit
           
-          major_pattern: '\\(MAJOR\\)'      # matches (MAJOR) case‑insensitively (default)
-          minor_pattern: '\\(MINOR\\)'      # matches (MINOR)
-          patch_pattern: '\\(PATCH\\)'      # matches (PATCH)         
+          major_pattern: "(MAJOR)"
+            minor_pattern: "(MINOR)"
+            bump_each_commit_patch_pattern: "(PATCH)"        
             
       - name: Display Version
         run: echo "Generated version is ${{ steps.semver-app.outputs.version }}"
