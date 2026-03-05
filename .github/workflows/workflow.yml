@@ -157,7 +157,7 @@ jobs:
 
             # Wait for database to be healthy
             echo "Waiting for database to be healthy..."
-            while [ "$(sudo docker inspect --format='{{.State.Health.Status}}' FitnessTrackerDBPost)" != "healthy" ]; do
+            while [ "$(sudo docker inspect --format='{{State.Health.Status}}' FitnessTrackerDBPost)" != "healthy" ]; do
               sleep 2
             done
 
@@ -172,7 +172,7 @@ jobs:
             # Start backend
             echo "Starting backend..."
             echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose up -d backend
-
+          '
       # ===== WAIT FOR APP TO BE READY =====
       - name: Wait for Staging to be Ready
         if: always()
