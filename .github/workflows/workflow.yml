@@ -107,59 +107,61 @@ jobs:
           host: ${{ vars.STAGING_SERVER_IP }}
           username: ${{ vars.STAGING_SERVER_USERNAME }}
           key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
-          source: "docker-compose.yml,db/migrations/**/*.sql"
+          source: "docker-compose.yml,db/migrations/*.sql"
           target: dowa/
-          rm: true # Clean target folder before copy
+          rm: false
 
       - name: Create .env file on staging server
-        if: always()
-        uses: appleboy/ssh-action@v1.2.1
-        with:
-          host: ${{ vars.STAGING_SERVER_IP }}
-          username: ${{ vars.STAGING_SERVER_USERNAME }}
-          key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
-          script: |
-            cd dowa
-            echo "DATABASE_USER=${{ vars.DATABASE_USER }}" > .env
-            echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> .env
-            echo "DATABASE_NAME=${{ vars.DATABASE_NAME }}" >> .env
-            # Connection string for the backend (now using variables)
-            echo "CONNECTION_STRING=Host=db;Database=${{ vars.DATABASE_NAME }};Username=${{ vars.DATABASE_USER }};Password=${{ secrets.DATABASE_PASSWORD }}" >> .env
-            echo "ASPNETCORE_ENVIRONMENT=Staging" >> .env
+          if: always()
+          uses: appleboy/ssh-action@v1.2.1
+          with:
+            host: ${{ vars.STAGING_SERVER_IP }}
+            username: ${{ vars.STAGING_SERVER_USERNAME }}
+            key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
+            script: |
+              cd dowa
+              echo "DATABASE_USER=${{ vars.DATABASE_USER }}" > .env
+              echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> .env
+              echo "DATABASE_NAME=${{ vars.DATABASE_NAME }}" >> .env
+              echo "CONNECTION_STRING=Host=db;Database=${{ vars.DATABASE_NAME }};Username=${{ vars.DATABASE_USER }};Password=${{ secrets.DATABASE_PASSWORD }}" >> .env
+              echo "ASPNETCORE_ENVIRONMENT=Staging" >> .env
 
       - name: Run Docker Compose on staging server
-        if: always()
-        uses: appleboy/ssh-action@v1.2.1
-        with:
-          host: ${{ vars.STAGING_SERVER_IP }}
-          username: ${{ vars.STAGING_SERVER_USERNAME }}
-          key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
-          script: |
-            cd dowa
-            # Login to GHCR using the PAT
-            echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_PAT }}
-            echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S docker compose pull
-
-            # Start database detached
-            echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S docker compose up -d db
-
-            # Wait for database to be healthy
-            echo "Waiting for database to be healthy..."
-            while [ "$(sudo docker inspect --format='{{.State.Health.Status}}' FitnessTrackerDBPost)" != "healthy" ]; do
-              sleep 2
-            done
-
-            # Run Flyway migrations in foreground (logs will show in pipeline)
-            echo "Running Flyway migrations..."
-            sudo docker compose run --rm flyway
-            if [ $? -ne 0 ]; then
-              echo "❌ Flyway migration failed!"
-              exit 1
-            fi
-
-            # Start backend (and any other services)
-            echo "Starting backend..."
-            sudo docker compose up -d backend
+          if: always()
+          uses: appleboy/ssh-action@v1.2.1
+          with:
+            host: ${{ vars.STAGING_SERVER_IP }}
+            username: ${{ vars.STAGING_SERVER_USERNAME }}
+            key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
+            # Use a Bash heredoc to avoid Fish syntax errors
+            script: |
+              bash <<'EOF'
+              cd dowa
+              # Login to GHCR using the PAT
+              echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_PAT }}
+              echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose pull
+              
+              # Start database detached
+              echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose up -d db
+              
+              # Wait for database to be healthy
+              echo "Waiting for database to be healthy..."
+              while [ "$(sudo docker inspect --format='{{.State.Health.Status}}' FitnessTrackerDBPost)" != "healthy" ]; do
+                sleep 2
+              done
+              
+              # Run Flyway migrations in foreground (logs will show in pipeline)
+              echo "Running Flyway migrations..."
+              sudo docker compose run --rm flyway
+              if [ \$? -ne 0 ]; then
+                echo "❌ Flyway migration failed!"
+                exit 1
+              fi
+              
+              # Start backend
+              echo "Starting backend..."
+              sudo docker compose up -d backend
+              EOF
     
       # ===== WAIT FOR APP TO BE READY =====
       - name: Wait for Staging to be Ready
