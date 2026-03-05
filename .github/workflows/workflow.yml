@@ -163,7 +163,7 @@ jobs:
 
             # Run Flyway migrations in foreground (logs will show in pipeline)
             echo "Running Flyway migrations..."
-            sudo docker compose run --rm flyway
+            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose run --rm flyway
             if [ $? -ne 0 ]; then
               echo "❌ Flyway migration failed!"
               exit 1
@@ -171,8 +171,7 @@ jobs:
 
             # Start backend
             echo "Starting backend..."
-            sudo docker compose up -d backend
-            '
+            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose up -d backend
 
       # ===== WAIT FOR APP TO BE READY =====
       - name: Wait for Staging to be Ready
