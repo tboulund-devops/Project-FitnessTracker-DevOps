@@ -15,19 +15,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0  
+      # ----- SEMANTIC VERSIONING -----
+      - name: Application Version
+        id: semver-app
+        uses: paulhatch/semantic-version@v5.4.0
+        with:
+          bump_each_commit: true           # Increments on every commit
           
-          
-        # ----- SEMANTIC VERSIONING -----
-        - name: Application Version
-          id: semver-app
-          uses: paulhatch/semantic-version@v5.4.0
-          with:
-            bump_each_commit: true           # Increments on every commit
-            
-            major_pattern: "BREAKING CHANGE:|^[a-z]+!:"   # breaking change detection fx. majorrelease! <- ! at the end
-            minor_pattern: "^feat:"                       # new feature
-            patch_pattern: "^(?i)(fix|perf):"             # matches fix, Fix, FIX, etc.
+          major_pattern: "BREAKING CHANGE:|^[a-z]+!:"   # breaking change detection fx. majorrelease! <- ! at the end
+          minor_pattern: "^feat:"                       # new feature
+          patch_pattern: "^(?i)(fix|perf):"             # matches fix, Fix, FIX, etc.
             
       - name: Display Version
         run: echo "Generated version is ${{ steps.semver-app.outputs.version }}"
