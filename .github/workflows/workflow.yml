@@ -153,7 +153,7 @@ jobs:
             echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose pull
             echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose up -d db
             echo "Waiting for database to be healthy..."
-            while [ "$(sudo docker inspect --format='{{.State.Health.Status}}' FitnessTrackerDBPost)" != "healthy" ]; do
+            while [ "$(sudo docker inspect --format="{{.State.Health.Status}}" FitnessTrackerDBPost)" != "healthy" ]; do
               sleep 2
             done
             echo "Running Flyway migrations..."
