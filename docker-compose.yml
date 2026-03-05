@@ -31,6 +31,7 @@ services:
       FLYWAY_PASSWORD: ${DATABASE_PASSWORD}
       FLYWAY_CONNECT_RETRIES: 10
       FLYWAY_LOCATIONS: filesystem:/flyway/sql
+      FLYWAY_BASELINE_ON_MIGRATE: true
     volumes:
       - ./db/migrations:/flyway/sql
     command: migrate
