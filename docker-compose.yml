@@ -41,8 +41,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      flyway:
-        condition: service_completed_successfully
     environment:
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__DefaultConnection: ${CONNECTION_STRING}

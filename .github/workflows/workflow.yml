@@ -139,7 +139,27 @@ jobs:
             # Login to GHCR using the PAT
             echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_PAT }}
             echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S docker compose pull
-            echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S docker compose up -d
+
+            # Start database detached
+            echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S docker compose up -d db
+
+            # Wait for database to be healthy
+            echo "Waiting for database to be healthy..."
+            while [ "$(sudo docker inspect --format='{{.State.Health.Status}}' FitnessTrackerDBPost)" != "healthy" ]; do
+              sleep 2
+            done
+
+            # Run Flyway migrations in foreground (logs will show in pipeline)
+            echo "Running Flyway migrations..."
+            sudo docker compose run --rm flyway
+            if [ $? -ne 0 ]; then
+              echo "❌ Flyway migration failed!"
+              exit 1
+            fi
+
+            # Start backend (and any other services)
+            echo "Starting backend..."
+            sudo docker compose up -d backend
     
       # ===== WAIT FOR APP TO BE READY =====
       - name: Wait for Staging to be Ready
