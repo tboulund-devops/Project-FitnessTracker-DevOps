@@ -64,11 +64,11 @@ builder.Services.AddScoped<IWorkoutService, WorkoutService>();
 var app = builder.Build();
 
 // Seed database
-using (var scope = app.Services.CreateScope())
-{
-    var seeder = scope.ServiceProvider.GetRequiredService<IDatabaseSeedingService>();
-    seeder.Seed();
-}
+// using (var scope = app.Services.CreateScope())
+// {
+//     var seeder = scope.ServiceProvider.GetRequiredService<IDatabaseSeedingService>();
+//     seeder.Seed();
+// }
 
 // Static files setup
 app.UseDefaultFiles();

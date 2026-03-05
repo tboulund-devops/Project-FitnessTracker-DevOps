@@ -107,8 +107,9 @@ jobs:
           host: ${{ vars.STAGING_SERVER_IP }}
           username: ${{ vars.STAGING_SERVER_USERNAME }}
           key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
-          source: "docker-compose.yml"
+            source: "docker-compose.yml,db/migrations/**/*.sql"
           target: dowa/
+          rm: true # Clean target folder before copy
 
       - name: Create .env file on staging server
         if: always()
@@ -119,7 +120,11 @@ jobs:
           key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
           script: |
             cd dowa
-            echo "CONNECTION_STRING=Host=db;Database=database;Username=MainUser;Password=${{ secrets.DB_PASSWORD }}" > .env
+            echo "DATABASE_USER=${{ vars.DATABASE_USER }}" > .env
+            echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> .env
+            echo "DATABASE_NAME=${{ vars.DATABASE_NAME }}" >> .env
+            # Connection string for the backend (now using variables)
+            echo "CONNECTION_STRING=Host=db;Database=${{ vars.DATABASE_NAME }};Username=${{ vars.DATABASE_USER }};Password=${{ secrets.DATABASE_PASSWORD }}" >> .env
             echo "ASPNETCORE_ENVIRONMENT=Staging" >> .env
 
       - name: Run Docker Compose on staging server
@@ -135,14 +140,7 @@ jobs:
             echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_PAT }}
             echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S docker compose pull
             echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S docker compose up -d
-            
-      - name: Debug network connectivity from runner
-        if: always()
-        run: |
-          echo "Testing TCP connection to ${{ vars.STAGING_SERVER_IP }}:8081"
-          timeout 5 nc -zv ${{ vars.STAGING_SERVER_IP }} 8081 || echo "nc failed (exit $?)"
-          curl -4 -v --connect-timeout 5 http://${{ vars.STAGING_SERVER_IP }}:8081/ || true
-          
+    
       # ===== WAIT FOR APP TO BE READY =====
       - name: Wait for Staging to be Ready
         if: always()
