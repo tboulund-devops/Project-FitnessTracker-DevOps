@@ -45,7 +45,7 @@ SELECT s.fldSetID, w.fldWorkoutID
 FROM tblSet s, tblWorkout w
 WHERE s.fldWeight = 185
   AND s.fldReps = 10
-  AND s.fldRestBetweenSet = 9000
+  AND s.fldRestBetweenSet = 90
   AND w.fldName = 'Morning Chest Day'
   AND w.fldDateOfWorkout = CURRENT_DATE - INTERVAL '2 days'   -- ensure correct workout
 ON CONFLICT (fldSetID, fldWorkoutID) DO NOTHING;
