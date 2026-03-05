@@ -147,16 +147,20 @@ jobs:
           key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
           # Use bash -c with a quoted multi‑line string – safe for Fish
           script: |
+            bash << 'EOF'
             cd dowa
             echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_PAT }}
             echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose pull
             echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose up -d db
             echo "Waiting for database to be healthy..."
-            while [ "$(sudo docker inspect --format="{{.State.Health.Status}}" FitnessTrackerDBPost)" != "healthy" ]; do sleep 2; done
+            while [ "$(sudo docker inspect --format='{{.State.Health.Status}}' FitnessTrackerDBPost)" != "healthy" ]; do
+              sleep 2
+            done
             echo "Running Flyway migrations..."
-            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose run --rm flyway
+            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose run --rm flyway || { echo "❌ Flyway migration failed!"; exit 1; }
             echo "Starting backend..."
             echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose up -d backend
+            EOF
 
       # ===== WAIT FOR APP TO BE READY =====
       - name: Wait for Staging to be Ready
