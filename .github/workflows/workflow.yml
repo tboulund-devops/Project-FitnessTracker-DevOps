@@ -113,12 +113,12 @@ jobs:
 
       - name: Create .env file on staging server
         if: always()
-          uses: appleboy/ssh-action@v1.2.1
-          with:
-            host: ${{ vars.STAGING_SERVER_IP }}
-            username: ${{ vars.STAGING_SERVER_USERNAME }}
-            key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
-            script: |
+        uses: appleboy/ssh-action@v1.2.1
+        with:
+          host: ${{ vars.STAGING_SERVER_IP }}
+          username: ${{ vars.STAGING_SERVER_USERNAME }}
+          key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
+          script: |
               cd dowa
               echo "DATABASE_USER=${{ vars.DATABASE_USER }}" > .env
               echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> .env
@@ -128,13 +128,13 @@ jobs:
 
       - name: Run Docker Compose on staging server
         if: always()
-          uses: appleboy/ssh-action@v1.2.1
-          with:
-            host: ${{ vars.STAGING_SERVER_IP }}
-            username: ${{ vars.STAGING_SERVER_USERNAME }}
-            key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
-            # Use a Bash heredoc to avoid Fish syntax errors
-            script: |
+        uses: appleboy/ssh-action@v1.2.1
+        with:
+          host: ${{ vars.STAGING_SERVER_IP }}
+          username: ${{ vars.STAGING_SERVER_USERNAME }}
+          key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
+          # Use a Bash heredoc to avoid Fish syntax errors
+          script: |
               bash <<'EOF'
               cd dowa
               # Login to GHCR using the PAT
