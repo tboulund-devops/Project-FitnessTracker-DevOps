@@ -157,7 +157,8 @@ jobs:
 
             # Wait for database to be healthy
             echo "Waiting for database to be healthy..."
-            while [ "$(sudo docker inspect --format='{{State.Health.Status}}' FitnessTrackerDBPost)" != "healthy" ]; do
+            # ✅ After — double quotes for --format, dot added
+            while [ "$(sudo docker inspect --format="{{.State.Health.Status}}" FitnessTrackerDBPost)" != "healthy" ]; do
               sleep 2
             done
 
