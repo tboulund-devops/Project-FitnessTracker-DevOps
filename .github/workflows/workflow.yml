@@ -112,7 +112,7 @@ jobs:
           rm: false
 
       - name: Create .env file on staging server
-          if: always()
+        if: always()
           uses: appleboy/ssh-action@v1.2.1
           with:
             host: ${{ vars.STAGING_SERVER_IP }}
@@ -127,7 +127,7 @@ jobs:
               echo "ASPNETCORE_ENVIRONMENT=Staging" >> .env
 
       - name: Run Docker Compose on staging server
-          if: always()
+        if: always()
           uses: appleboy/ssh-action@v1.2.1
           with:
             host: ${{ vars.STAGING_SERVER_IP }}
