@@ -135,16 +135,23 @@ jobs:
             echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_PAT }}
             echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S docker compose pull
             echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S docker compose up -d
-
-      # ===== WAIT FOR APP TO BE READY =====
-      - name: Wait for Staging to be Ready
+            
+      - name: Debug network connectivity from runner
         if: always()
         run: |
-          MAX_ATTEMPTS=100
-          echo "Waiting for app at http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
+          echo "Testing TCP connection to ${{ vars.STAGING_SERVER_IP }}:8081"
+          timeout 5 nc -zv ${{ vars.STAGING_SERVER_IP }} 8081 || echo "nc failed (exit $?)"
+          curl -4 -v --connect-timeout 5 http://${{ vars.STAGING_SERVER_IP }}:8081/ || true
+          
+      # ===== WAIT FOR APP TO BE READY =====
+      - name: Wait for Staging to be Ready
+        run: |
+          MAX_ATTEMPTS=30
+          URL="http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
+          echo "Waiting for app at $URL"
           for i in $(seq 1 $MAX_ATTEMPTS); do
-            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1")
-            if [ "$HTTP_STATUS" -eq 200 ]; then
+            HTTP_STATUS=$(curl -4 -s -o /dev/null -w "%{http_code}" --connect-timeout 5 "$URL" || echo "000")
+            if [ "$HTTP_STATUS" = "200" ]; then
               echo "✅ App is up! (HTTP 200)"
               exit 0
             else
