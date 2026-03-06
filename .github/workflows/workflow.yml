@@ -212,7 +212,22 @@ jobs:
           TARGET_URL: "http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
         run: |
           k6 run K6Testing.js -e TARGET_URL="$TARGET_URL" --summary-export=k6-summary.json
-          
+        
+      # ===== Frontedn Build =====
+      - name: Install Node.js
+        if: always()
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - name: Install Frontend Dependencies
+        if: always()
+        working-directory: ./Frontend/vite-project
+        run: npm install
+      - name: Build Frontend
+        if: always()
+        working-directory: ./Frontend/vite-project
+        run: npm run build
+
       # ===== E2E TESTING =====
       - name: Install TestCafe
         if: always()
@@ -242,3 +257,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: e2e-report
+          path: e2e-report.html
