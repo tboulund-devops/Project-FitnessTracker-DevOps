@@ -57,18 +57,10 @@ builder.Services.AddScoped<IWorkoutRepo, WorkoutRepo>();
 
 // Services
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddSingleton<IDatabaseSeedingService, DatabaseSeedingService>();
 builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<IWorkoutService, WorkoutService>();
 
 var app = builder.Build();
-
-// Seed database
-// using (var scope = app.Services.CreateScope())
-// {
-//     var seeder = scope.ServiceProvider.GetRequiredService<IDatabaseSeedingService>();
-//     seeder.Seed();
-// }
 
 // Static files setup
 app.UseDefaultFiles();
