@@ -212,6 +212,15 @@ jobs:
           TARGET_URL: "http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
         run: |
           k6 run K6Testing.js -e TARGET_URL="$TARGET_URL" --summary-export=k6-summary.json
+          
+      # ===== E2E TESTING =====
+      - name: Install TestCafe
+        if: always()
+        run: npm install -g testcafe
+        
+      - name: Run E2E Tests
+        if: always()
+        run: testcafe chrome e2e-tests/ --reporter html:e2e-report.html
 
       # ===== UPLOAD REPORTS =====
       - name: Collect Stryker Report
@@ -227,3 +236,9 @@ jobs:
         with:
           name: k6-report
           path: UnitTests/k6-summary.json
+      
+      - name: Collect E2E Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
