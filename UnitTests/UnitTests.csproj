@@ -27,7 +27,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Backend\Backend.csproj" />
-    <ProjectReference Include="..\Frontend\Frontend.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Frontend-UnitTests\Services\" />
   </ItemGroup>
 
 </Project>

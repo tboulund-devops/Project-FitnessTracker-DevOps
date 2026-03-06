@@ -28,7 +28,7 @@ public class WorkoutRepo : IWorkoutRepo
         using var transaction = await connection.BeginTransactionAsync();
 
         try
-        {
+        { 
             int workoutId;
             using (var insertWorkoutCmd = connection.CreateCommand())
             {
