@@ -56,7 +56,7 @@ jobs:
       # Unit tests with coverage
       - name: Run unit tests with coverage
         run: |
-          dotnet test UnitTests/UnitTests.csproj \
+          dotnet test Tests/Tests.csproj \
             --collect:"XPlat Code Coverage" \
             --results-directory TestResults \
             --logger "trx;LogFileName=test_results.trx"
@@ -86,8 +86,8 @@ jobs:
 
       # Mutation tests
       - name: Run Mutation Tests
-        working-directory: ./UnitTests
-        run: dotnet stryker --project ./UnitTests.csproj --break-at 60 --output "stryker-report"
+        working-directory: ./Tests
+        run: dotnet stryker --project ./Tests.csproj --break-at 60 --output "stryker-report"
 
       # ===== DOCKER BUILD & PUSH TO GHCR ====
       - name: Convert repository name to lowercase
@@ -204,11 +204,11 @@ jobs:
           node-version: '18'
       - name: Install Frontend Dependencies
         if: always()
-        working-directory: ./Frontend/vite-project
+        working-directory: ./Frontend/
         run: npm install
       - name: Build Frontend
         if: always()
-        working-directory: ./Frontend/vite-project
+        working-directory: ./Frontend/
         run: npm run build
 
       # ===== PERFORMANCE TEST WITH K6 =====
@@ -222,7 +222,7 @@ jobs:
 
       - name: Run Performance Test (k6)
         if: always()
-        working-directory: ./UnitTests
+        working-directory: ./Tests
         env:
           TARGET_URL: "http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
         run: |
@@ -250,7 +250,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: k6-report
-          path: UnitTests/k6-summary.json
+          path: Tests/k6-summary.json
       
       - name: Collect E2E Report
         if: always()
