@@ -232,7 +232,7 @@ jobs:
           k6 version
 
       - name: Run Performance Test (k6)
-        if: always()
+        #if: always()
         working-directory: ./Tests
         env:
           TARGET_URL: "http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
@@ -242,7 +242,7 @@ jobs:
       # ===== E2E TESTING =====
       - name: Install TestCafe
         if: always()
-        run: npm install -g testcafe
+        run: npm install -g testcafe testcafe-reporter-html
         
       - name: Run E2E Tests
         if: always()
