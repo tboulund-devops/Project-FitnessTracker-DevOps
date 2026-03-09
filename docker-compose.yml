@@ -49,9 +49,7 @@ services:
       - "8081:8080"
 
   frontend:
-    build:
-      context: ./Frontend
-      dockerfile: Dockerfile
+    image: ghcr.io/tboulund-devops/project-fitnesstracker-devops-frontend:staging
     container_name: FitnessTrackerFrontend
     depends_on:
       - backend
