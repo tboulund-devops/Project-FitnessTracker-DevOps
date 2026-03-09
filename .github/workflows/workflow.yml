@@ -103,7 +103,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and Push Docker image
+      - name: Build and Push Backend Docker image
         if: always()
         run: |
           docker build \
@@ -111,6 +111,15 @@ jobs:
             -f Backend/Dockerfile \
             Backend/
           docker push ghcr.io/${{ steps.repo_lower.outputs.repo_lower }} --all-tags
+
+      - name: Build and Push Frontend Docker image
+        if: always()
+        run: |
+          docker build \
+            -t ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}-frontend:staging \
+            -f Frontend/Dockerfile \
+            Frontend/
+          docker push ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}-frontend --all-tags
 
         # ===== DEPLOY TO STAGING SERVER =====
       - name: Ensure target directory exists and is writable
@@ -175,6 +184,8 @@ jobs:
             end
             echo "Starting backend..."
             echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose up -d backend
+            echo "Starting frontend..."
+            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose up -d frontend
 
       # ===== WAIT FOR APP TO BE READY =====
       - name: Wait for Staging to be Ready

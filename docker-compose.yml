@@ -48,5 +48,13 @@ services:
     ports:
       - "8081:8080"
 
+  frontend:
+    image: ghcr.io/tboulund-devops/project-fitnesstracker-devops-frontend:staging
+    container_name: FitnessTrackerFrontend
+    depends_on:
+      - backend
+    ports:
+      - "8030:3000"
+
 volumes:
   postgres_data:
