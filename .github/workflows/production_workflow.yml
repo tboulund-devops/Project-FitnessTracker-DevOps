@@ -109,7 +109,7 @@ jobs:
            dotnet sonarscanner end \
            /d:sonar.token="${{ secrets.FITNESSTRACKERTOKEN }}"
 
-      # Mutation tests
+      # Mutation tests 
       - name: Run Mutation Tests
         working-directory: ./Tests
         run: dotnet stryker --project ./Tests.csproj --break-at 60 --output "stryker-report"
