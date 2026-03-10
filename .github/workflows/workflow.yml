@@ -246,7 +246,7 @@ jobs:
         
       - name: Run E2E Tests
         if: always()
-        working-directory: ./../Tests/
+        working-directory: ./Tests
         run: testcafe chrome:headless E2ETest.js --reporter html:e2e-report.html
 
       # ===== UPLOAD REPORTS =====
