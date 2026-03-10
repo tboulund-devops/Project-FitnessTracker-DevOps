@@ -21,12 +21,12 @@ export let options = {
     },
     stages: [
         // Simulate a normal business day: ramp up to typical load, stay there, then ramp down
-        { duration: '30s', target: 20 },   // morning ramp-up
-        { duration: '90s', target: 20 },   // steady typical load
-        { duration: '30s', target: 50 },   // lunch peak
-        { duration: '120s', target: 50 },   // extended peak
-        { duration: '30s', target: 10 },   // afternoon decline
-        { duration: '60s', target: 0 },    // cooldown
+        { duration: '3s', target: 200 },   // morning ramp-up
+        { duration: '3s', target: 200 },   // steady typical load
+        { duration: '3s', target: 500 },   // lunch peak
+        { duration: '9s', target: 500 },   // extended peak
+        { duration: '3s', target: 100 },   // afternoon decline
+        { duration: '2s', target: 0 },    // cooldown
     ],
     // Disable TLS verification for testing (if using self-signed certificates)
     insecureSkipTLSVerify: true,

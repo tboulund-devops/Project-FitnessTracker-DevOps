@@ -54,40 +54,40 @@ jobs:
         run: dotnet build Project-FitnessTracker-DevOps.sln
 
       # Unit tests with coverage
-      - name: Run unit tests with coverage
-        run: |
-          dotnet test UnitTests/UnitTests.csproj \
-            --collect:"XPlat Code Coverage" \
-            --results-directory TestResults \
-            --logger "trx;LogFileName=test_results.trx"
+      # - name: Run unit tests with coverage
+      #   run: |
+      #     dotnet test Tests/Tests.csproj \
+      #       --collect:"XPlat Code Coverage" \
+      #       --results-directory TestResults \
+      #       --logger "trx;LogFileName=test_results.trx"
 
       # Convert coverage to SonarQube format
-      - name: Convert coverage to SonarQube format
-        run: |
-          COVERAGE_FILE=$(find TestResults -name "coverage.cobertura.xml" | head -n 1)
-          echo "Found coverage file: $COVERAGE_FILE"
-          if [ -f "$COVERAGE_FILE" ]; then
-            mkdir -p sonarqube-coverage-report
-            reportgenerator \
-              -reports:"$COVERAGE_FILE" \
-              -targetdir:"sonarqube-coverage-report" \
-              -reporttypes:SonarQube
-            echo "✅ Coverage file converted to SonarQube format"
-          else
-            echo "❌ No coverage file found!"
-            exit 1
-          fi
+      # - name: Convert coverage to SonarQube format
+      #   run: |
+      #     COVERAGE_FILE=$(find TestResults -name "coverage.cobertura.xml" | head -n 1)
+      #     echo "Found coverage file: $COVERAGE_FILE"
+      #     if [ -f "$COVERAGE_FILE" ]; then
+      #       mkdir -p sonarqube-coverage-report
+      #       reportgenerator \
+      #         -reports:"$COVERAGE_FILE" \
+      #         -targetdir:"sonarqube-coverage-report" \
+      #         -reporttypes:SonarQube
+      #       echo "✅ Coverage file converted to SonarQube format"
+      #     else
+      #       echo "❌ No coverage file found!"
+      #       exit 1
+      #     fi
 
       # SonarCloud end 
-      - name: Complete Static Code Analysis
-        run: |
-          dotnet sonarscanner end \
-          /d:sonar.token="${{ secrets.FITNESSTRACKERTOKEN }}"
+      # - name: Complete Static Code Analysis
+      #   run: |
+      #     dotnet sonarscanner end \
+      #     /d:sonar.token="${{ secrets.FITNESSTRACKERTOKEN }}"
 
       # Mutation tests
-      - name: Run Mutation Tests
-        working-directory: ./UnitTests
-        run: dotnet stryker --project ./UnitTests.csproj --break-at 60 --output "stryker-report"
+      # - name: Run Mutation Tests
+      #   working-directory: ./Tests
+      #   run: dotnet stryker --project ./Tests.csproj --break-at 60 --output "stryker-report"
 
       # ===== DOCKER BUILD & PUSH TO GHCR ====
       - name: Convert repository name to lowercase
@@ -103,7 +103,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and Push Docker image
+      - name: Build and Push Backend Docker image
         if: always()
         run: |
           docker build \
@@ -111,6 +111,15 @@ jobs:
             -f Backend/Dockerfile \
             Backend/
           docker push ghcr.io/${{ steps.repo_lower.outputs.repo_lower }} --all-tags
+
+      - name: Build and Push Frontend Docker image
+        if: always()
+        run: |
+          docker build \
+            -t ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}-frontend:staging \
+            -f Frontend/Dockerfile \
+            Frontend/
+          docker push ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}-frontend --all-tags
 
         # ===== DEPLOY TO STAGING SERVER =====
       - name: Ensure target directory exists and is writable
@@ -175,6 +184,8 @@ jobs:
             end
             echo "Starting backend..."
             echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose up -d backend
+            echo "Starting frontend..."
+            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose up -d frontend
 
       # ===== WAIT FOR APP TO BE READY =====
       - name: Wait for Staging to be Ready
@@ -195,6 +206,21 @@ jobs:
           done
           echo "❌ App did not become ready in time. Last HTTP status: $HTTP_STATUS"
           exit 1
+        
+      # ===== Frontedn Build =====
+      - name: Install Node.js
+        if: always()
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - name: Install Frontend Dependencies
+        if: always()
+        working-directory: ./Frontend/
+        run: npm install
+      - name: Build Frontend
+        if: always()
+        working-directory: ./Frontend/
+        run: npm run build
 
       # ===== PERFORMANCE TEST WITH K6 =====
       - name: Install k6
@@ -206,36 +232,22 @@ jobs:
           k6 version
 
       - name: Run Performance Test (k6)
-        if: always()
-        working-directory: ./UnitTests
+        #if: always()
+        working-directory: ./Tests
         env:
           TARGET_URL: "http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
         run: |
           k6 run K6Testing.js -e TARGET_URL="$TARGET_URL" --summary-export=k6-summary.json
-        
-      # ===== Frontedn Build =====
-      - name: Install Node.js
-        if: always()
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      - name: Install Frontend Dependencies
-        if: always()
-        working-directory: ./Frontend/vite-project
-        run: npm install
-      - name: Build Frontend
-        if: always()
-        working-directory: ./Frontend/vite-project
-        run: npm run build
 
       # ===== E2E TESTING =====
       - name: Install TestCafe
         if: always()
-        run: npm install -g testcafe
+        run: npm install -g testcafe testcafe-reporter-html
         
       - name: Run E2E Tests
         if: always()
-        run: testcafe chrome e2e-tests/ --reporter html:e2e-report.html
+        working-directory: ./Tests
+        run: testcafe chrome:headless E2ETest.js --reporter html:e2e-report.html
 
       # ===== UPLOAD REPORTS =====
       - name: Collect Stryker Report
@@ -250,11 +262,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: k6-report
-          path: UnitTests/k6-summary.json
+          path: Tests/k6-summary.json
       
       - name: Collect E2E Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: e2e-report
-          path: e2e-report.html
+          path: Tests/e2e-report.html

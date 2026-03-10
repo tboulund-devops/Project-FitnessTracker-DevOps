@@ -29,7 +29,7 @@ Front-End: Avalonia Application
 3 Tier based:
 
 Tier 1.
-Front-End: Avalonia
+Front-End: React + vite
 
 Tier 2.
 Back-End: Clean Architechture
@@ -47,9 +47,9 @@ _Kick-off week - no features to be planned here_
 
 ### Week 6
 
-**Feature 1:** Login Frontend
+**Feature 1:** Login Backend
 
-**Feature 2:** Login Backend
+**Feature 2:** Login Frontend
 
 ### Week 7
 
@@ -57,27 +57,27 @@ _Winter vacation - nothing planned._
 
 ### Week 8
 
-**Feature 1:** Add Navbar for navigating between pages.
+**Feature 1:** Add Workout Backend
 
-**Feature 2:** [...]
+**Feature 2:** Add set to workout Backend
 
 ### Week 9
 
-**Feature 1:** [...]
+**Feature 1:** Get workout backend
 
-**Feature 2:** [...]
+**Feature 2:** SPA Setup Frontend 
 
 ### Week 10
 
-**Feature 1:** [...]
+**Feature 1:** Home page frontend basic setup
 
-**Feature 2:** [...]
+**Feature 2:** Get Workout frontend
 
 ### Week 11
 
-**Feature 1:** [...]
+**Feature 1:** Add workout frontend
 
-**Feature 2:** [...]
+**Feature 2:** Add set to workout frontend
 
 ### Week 12
 

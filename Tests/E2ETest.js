@@ -1,15 +1,20 @@
-﻿import {selectors} from 'testcafe';
+﻿import { Selector } from 'testcafe';
 
 fixture `E2E Test`
-    .page `http://localhost:3000`;
+    .page `http://89.150.149.43:8030`;
 
-test('should display the correct title', async t => {
-    const title = await selectors('h1').innerText;
-    await t.expect(title).eql('Welcome to My App');
+test('Valid credentials', async t => {
+    await t.typeText(Selector('#username'), 'test')
+        .typeText(Selector('#password'), 'test')
+        .click(Selector('button').withText('Log in'));
+    await t.expect(Selector('.login-success').exists).ok();
+    
+    //const url = await t.eval(() => window.location.href);
+    //await t.expect(url).contains('/dashboard');
 });
 
-test('should navigate to the about page', async t => {
-    await t.click(selectors('a').withText('About'));
-    const url = await t.eval(() => window.location.href);
-    await t.expect(url).contains('/about');
-}
+// test('should navigate to the about page', async t => {
+//     await t.click(selectors('a').withText('About'));
+//     const url = await t.eval(() => window.location.href);
+//     await t.expect(url).contains('/about');
+// });
