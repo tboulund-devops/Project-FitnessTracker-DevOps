@@ -65,19 +65,19 @@ _Winter vacation - nothing planned._
 
 **Feature 1:** Get workout backend
 
-**Feature 2:** [...]
+**Feature 2:** SPA Setup Frontend 
 
 ### Week 10
 
-**Feature 1:** [...]
+**Feature 1:** Home page frontend basic setup
 
-**Feature 2:** [...]
+**Feature 2:** Get Workout frontend
 
 ### Week 11
 
-**Feature 1:** [...]
+**Feature 1:** Add workout frontend
 
-**Feature 2:** [...]
+**Feature 2:** Add set to workout frontend
 
 ### Week 12
 

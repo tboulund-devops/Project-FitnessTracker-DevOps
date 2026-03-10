@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from "react";
-import "./LoginPage.css";
+import "./../../LoginPage.css";
+import { useNavigate } from "react-router-dom";
+
 
 function LoginPage() {
   const [username, setUsername] = useState("");
@@ -7,6 +9,9 @@ function LoginPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  
+  
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -24,6 +29,7 @@ function LoginPage() {
       if (response.ok) {
         const message = await response.text();
         setSuccess(message);
+        navigate("/homepage");
       } else {
         const message = await response.text();
         setError(message || "Login failed");
