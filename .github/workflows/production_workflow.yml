@@ -1,5 +1,9 @@
 ﻿name: production_workflow.yml
 on:
+  push:            #This is only to test if the workflow works
+    branches:      #it wil not trigger on commit and merge from main
+      - Production #might be a good idea to remove later
+
   # This workflow ONLY runs when a PR targets the Production branch
   pull_request:
     branches:
