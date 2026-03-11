@@ -10,14 +10,14 @@ function AppContent() {
     const location = useLocation();
 
     // Don't show NavBar on login page
-    const showNavBar = location.pathname !== '/login';
+    const showNavBar = location.pathname !== '/';
 
     return (
         <>
             {showNavBar && <NavBar />}
             <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/login" element={<Login />} />
+                <Route path="/" element={<Login />} />
+                <Route path="/home" element={<HomePage />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/new-workout" element={<NewWorkout />} />
                 <Route path="/old-workouts" element={<OldWorkouts />} />
