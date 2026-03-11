@@ -1,4 +1,5 @@
-﻿function OldWorkouts() {
+﻿import "../../index.css";
+function OldWorkouts() {
     return (
         <div>
             <h1>Old Workouts</h1>

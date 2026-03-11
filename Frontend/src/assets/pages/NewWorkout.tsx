@@ -1,4 +1,5 @@
-﻿function NewWorkout() {
+﻿import "../../index.css";
+function NewWorkout() {
     return (
         <div>
             <h1>New Workout Page</h1>

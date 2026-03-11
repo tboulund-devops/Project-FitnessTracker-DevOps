@@ -19,7 +19,7 @@ public class APIWorkoutController : ControllerBase
     }
     
     [HttpPost("CreateWorkout")]
-    public async Task<IActionResult> CheckCredentials(Workout request, int UserId)
+    public async Task<IActionResult> CreateWorkout(Workout request, int UserId)
     {
         if (request == null ||request.DateOfWorkout == null || string.IsNullOrWhiteSpace(request.Name) || UserId <= 0)
         {
