@@ -1,0 +1,76 @@
+services:
+  db:
+    image: postgres:15
+    container_name: FitnessTrackerDBPost-Dev
+    restart: always
+    environment:
+      POSTGRES_USER: ${DATABASE_USER:-postgres}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-postgres}
+      POSTGRES_DB: ${DATABASE_NAME:-fitnesstracker}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER:-postgres} -d ${DATABASE_NAME:-fitnesstracker}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  flyway:
+    image: flyway/flyway:latest
+    container_name: FitnessTrackerFlyway-Dev
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      FLYWAY_URL: jdbc:postgresql://db:5432/${DATABASE_NAME:-fitnesstracker}
+      FLYWAY_USER: ${DATABASE_USER:-postgres}
+      FLYWAY_PASSWORD: ${DATABASE_PASSWORD:-postgres}
+      FLYWAY_CONNECT_RETRIES: 10
+      FLYWAY_LOCATIONS: filesystem:/flyway/sql
+      FLYWAY_BASELINE_ON_MIGRATE: true
+    volumes:
+      - ./db/migrations:/flyway/sql
+    command: migrate
+
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: FitnessTrackerBackend-Dev
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: >-
+        Host=db;Port=5432;Database=${DATABASE_NAME:-fitnesstracker};Username=${DATABASE_USER:-postgres};Password=${DATABASE_PASSWORD:-postgres}
+    ports:
+      - "8081:8080"
+
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile.dev
+    container_name: FitnessTrackerFrontend-Dev
+    depends_on:
+      - backend
+    environment:
+      VITE_API_URL: http://backend:8080
+    volumes:
+      - ./Frontend/src:/app/src
+      - ./Frontend/public:/app/public
+      - ./Frontend/index.html:/app/index.html
+      - ./Frontend/vite.config.ts:/app/vite.config.ts
+      - ./Frontend/tsconfig.json:/app/tsconfig.json
+      - ./Frontend/tsconfig.app.json:/app/tsconfig.app.json
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data_dev:
+
+
