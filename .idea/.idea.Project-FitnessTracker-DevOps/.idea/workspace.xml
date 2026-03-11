@@ -11,8 +11,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e2afaec2-b280-4f41-904b-a1a848a4ccc0" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/docker-compose.dev.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.dev.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/Domain/ProfileStats.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/assets/Components/NavBar.css" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/assets/Components/NavBar.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/assets/pages/HomePage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/assets/pages/HomePage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/assets/pages/ProfilePage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/assets/pages/ProfilePage.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
