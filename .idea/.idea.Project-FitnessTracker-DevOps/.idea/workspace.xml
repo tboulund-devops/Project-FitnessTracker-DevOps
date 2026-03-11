@@ -10,6 +10,22 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
+    <list default="true" id="e2afaec2-b280-4f41-904b-a1a848a4ccc0" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Frontend/Dockerfile.dev" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Project-FitnessTracker-DevOps/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Project-FitnessTracker-DevOps/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/vite.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/vite.config.ts" afterDir="false" />
+    </list>
+    <list default="true" id="e2afaec2-b280-4f41-904b-a1a848a4ccc0" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Frontend/src/assets/Components/NavBar.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/assets/Components/NavBar.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/assets/pages/NewWorkout.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/assets/pages/OldWorkouts.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/assets/pages/ProfilePage.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/assets/pages/Settings.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Project-FitnessTracker-DevOps/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Project-FitnessTracker-DevOps/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/assets/pages/HomePage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/assets/pages/HomePage.tsx" afterDir="false" />
+    </list>
     <list default="true" id="e2afaec2-b280-4f41-904b-a1a848a4ccc0" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,13 +47,16 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="JavaScript File" />
+        <option value="CSS File" />
+        <option value="TypeScript File" />
+        <option value="TypeScript JSX File" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="Feature/Main-Page" />
+        <entry key="$PROJECT_DIR$" value="Dev-Branch" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -91,6 +110,25 @@
     "nodejs_package_manager_path": "npm",
     "settings.editor.selected.configurable": "sshConsole",
     "ts.external.directory.path": "C:\\Users\\jakob\\RiderProjects\\Project-FitnessTracker-DevOps\\Frontend\\node_modules\\typescript\\lib",
+    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    ".NET Launch Settings Profile.Backend: http.executor": "Run",
+    ".NET Project.Frontend.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "SONARLINT_PRECOMMIT_ANALYSIS": "true",
+    "git-widget-placeholder": "Feature/NavBar",
+    "list.type.of.created.stylesheet": "CSS",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "org.jetbrains.plugins.github.ui.GithubSettingsConfigurable",
+    "ts.external.directory.path": "C:\\Users\\mbert\\RiderProjects\\Project-FitnessTracker-DevOps\\Frontend\\node_modules\\typescript\\lib",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -194,6 +232,23 @@
       <workItem from="1772786074312" duration="1496000" />
       <workItem from="1772795281682" duration="9123000" />
       <workItem from="1773125739088" duration="5970000" />
+      <workItem from="1773211623065" duration="6193000" />
+    </task>
+    <task id="LOCAL-00005" summary="made some homepage stuff">
+      <option name="closed" value="true" />
+      <created>1771234713895</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1771234713895</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Sonarqube">
+      <option name="closed" value="true" />
+      <created>1771329448481</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1771329448481</updated>
     </task>
     <task id="LOCAL-00007" summary="Sonarqube">
       <option name="closed" value="true" />
@@ -620,6 +675,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
+    <MESSAGE value="indentation" />
+    <MESSAGE value="debug" />
     <MESSAGE value="program unit test" />
     <MESSAGE value="som small changes to unit test" />
     <MESSAGE value="small change" />
