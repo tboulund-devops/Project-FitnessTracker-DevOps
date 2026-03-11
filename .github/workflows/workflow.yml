@@ -171,6 +171,7 @@ jobs:
           script: |
             cd dowa
             echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_PAT }}
+            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose down
             echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose pull
             echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose up -d db
             echo "Waiting for database to be healthy..."
