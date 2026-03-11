@@ -11,22 +11,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e2afaec2-b280-4f41-904b-a1a848a4ccc0" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Frontend/Dockerfile.dev" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.Project-FitnessTracker-DevOps/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Project-FitnessTracker-DevOps/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/vite.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/vite.config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/main.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/main.tsx" afterDir="false" />
     </list>
-    <list default="true" id="e2afaec2-b280-4f41-904b-a1a848a4ccc0" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Frontend/src/assets/Components/NavBar.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/assets/Components/NavBar.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/assets/pages/NewWorkout.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/assets/pages/OldWorkouts.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/assets/pages/ProfilePage.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/assets/pages/Settings.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.Project-FitnessTracker-DevOps/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Project-FitnessTracker-DevOps/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/App.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/assets/pages/HomePage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/assets/pages/HomePage.tsx" afterDir="false" />
-    </list>
-    <list default="true" id="e2afaec2-b280-4f41-904b-a1a848a4ccc0" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -233,30 +219,6 @@
       <workItem from="1772795281682" duration="9123000" />
       <workItem from="1773125739088" duration="5970000" />
       <workItem from="1773211623065" duration="6193000" />
-    </task>
-    <task id="LOCAL-00005" summary="made some homepage stuff">
-      <option name="closed" value="true" />
-      <created>1771234713895</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1771234713895</updated>
-    </task>
-    <task id="LOCAL-00006" summary="Sonarqube">
-      <option name="closed" value="true" />
-      <created>1771329448481</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1771329448481</updated>
-    </task>
-    <task id="LOCAL-00007" summary="Sonarqube">
-      <option name="closed" value="true" />
-      <created>1771330103073</created>
-      <option name="number" value="00007" />
-      <option name="presentableId" value="LOCAL-00007" />
-      <option name="project" value="LOCAL" />
-      <updated>1771330103073</updated>
     </task>
     <task id="LOCAL-00008" summary="unit test check">
       <option name="closed" value="true" />
@@ -642,7 +604,15 @@
       <option name="project" value="LOCAL" />
       <updated>1773218016379</updated>
     </task>
-    <option name="localTasksCounter" value="56" />
+    <task id="LOCAL-00056" summary="merged main into main, got a change in workspace.xml that's interresting">
+      <option name="closed" value="true" />
+      <created>1773218788171</created>
+      <option name="number" value="00056" />
+      <option name="presentableId" value="LOCAL-00056" />
+      <option name="project" value="LOCAL" />
+      <updated>1773218788172</updated>
+    </task>
+    <option name="localTasksCounter" value="57" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -675,7 +645,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="indentation" />
     <MESSAGE value="debug" />
     <MESSAGE value="program unit test" />
     <MESSAGE value="som small changes to unit test" />
@@ -702,7 +671,8 @@
     <MESSAGE value="(MINIOR)feat: Made a Frontend Homepage and basic setup for navigation" />
     <MESSAGE value="(ADD) ProfilePage: Implement user profile overview and navigation options" />
     <MESSAGE value="(PATCH) DevelopmentTool(DockerCompose):Create docker-compose.dev.yml for local development" />
-    <option name="LAST_COMMIT_MESSAGE" value="(PATCH) DevelopmentTool(DockerCompose):Create docker-compose.dev.yml for local development" />
+    <MESSAGE value="merged main into main, got a change in workspace.xml that's interresting" />
+    <option name="LAST_COMMIT_MESSAGE" value="merged main into main, got a change in workspace.xml that's interresting" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
