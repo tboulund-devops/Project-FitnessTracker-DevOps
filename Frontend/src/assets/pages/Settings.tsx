@@ -1,4 +1,5 @@
-﻿function Settings(){
+﻿import "../../index.css";
+function Settings(){
     return(
         <div>
             <h1>Settings</h1>

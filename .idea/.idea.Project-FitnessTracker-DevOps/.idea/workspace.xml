@@ -22,6 +22,15 @@
       <change beforePath="$PROJECT_DIR$/Backend/Gateway/RepoGateway/IUserRepo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/Gateway/RepoGateway/IUserRepo.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Tests/Backend-UnitTest/UserTests/UserRepoTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/Backend-UnitTest/UserTests/UserRepoTests.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Tests/Backend-UnitTest/WorkoutTests/APIWorkoutControllerTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/Backend-UnitTest/WorkoutTests/APIWorkoutControllerTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/assets/Components/NavBar.css" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/assets/Components/NavBar.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/assets/Components/NavBar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/assets/Components/NavBar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/assets/pages/HomePage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/assets/pages/HomePage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/assets/pages/LoginPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/assets/pages/LoginPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/assets/pages/NewWorkout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/assets/pages/NewWorkout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/assets/pages/OldWorkouts.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/assets/pages/OldWorkouts.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/assets/pages/ProfilePage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/assets/pages/ProfilePage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/assets/pages/Settings.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/assets/pages/Settings.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/index.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -96,6 +105,25 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    ".NET Launch Settings Profile.Backend: http.executor": "Run",
+    ".NET Project.Frontend.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "SONARLINT_PRECOMMIT_ANALYSIS": "true",
+    "git-widget-placeholder": "Feature/NavBar",
+    "list.type.of.created.stylesheet": "CSS",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.github.copilot.settings.ApplicationConfigurable",
+    "ts.external.directory.path": "C:\\Users\\mbert\\RiderProjects\\Project-FitnessTracker-DevOps\\Frontend\\node_modules\\typescript\\lib",
+    "vue.rearranger.settings.migration": "true"
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     ".NET Launch Settings Profile.Backend: http.executor": "Run",
@@ -218,22 +246,6 @@
       <workItem from="1772795281682" duration="9123000" />
       <workItem from="1773125739088" duration="5970000" />
       <workItem from="1773211623065" duration="6193000" />
-    </task>
-    <task id="LOCAL-00010" summary="yml">
-      <option name="closed" value="true" />
-      <created>1771331585971</created>
-      <option name="number" value="00010" />
-      <option name="presentableId" value="LOCAL-00010" />
-      <option name="project" value="LOCAL" />
-      <updated>1771331585971</updated>
-    </task>
-    <task id="LOCAL-00011" summary="testing workflow">
-      <option name="closed" value="true" />
-      <created>1771332167382</created>
-      <option name="number" value="00011" />
-      <option name="presentableId" value="LOCAL-00011" />
-      <option name="project" value="LOCAL" />
-      <updated>1771332167382</updated>
     </task>
     <task id="LOCAL-00012" summary="yml test">
       <option name="closed" value="true" />
@@ -611,7 +623,23 @@
       <option name="project" value="LOCAL" />
       <updated>1773219548763</updated>
     </task>
-    <option name="localTasksCounter" value="59" />
+    <task id="LOCAL-00059" summary="(PATCH)feat: stuff meade with navbar">
+      <option name="closed" value="true" />
+      <created>1773221233416</created>
+      <option name="number" value="00059" />
+      <option name="presentableId" value="LOCAL-00059" />
+      <option name="project" value="LOCAL" />
+      <updated>1773221233417</updated>
+    </task>
+    <task id="LOCAL-00060" summary="(PATCH)Feat: navbar stuff">
+      <option name="closed" value="true" />
+      <created>1773221364942</created>
+      <option name="number" value="00060" />
+      <option name="presentableId" value="LOCAL-00060" />
+      <option name="project" value="LOCAL" />
+      <updated>1773221364942</updated>
+    </task>
+    <option name="localTasksCounter" value="61" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -644,8 +672,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="som small changes to unit test" />
-    <MESSAGE value="small change" />
     <MESSAGE value="build" />
     <MESSAGE value="sonarqube" />
     <MESSAGE value="COVERLET" />
@@ -671,7 +697,9 @@
     <MESSAGE value="merged main into main, got a change in workspace.xml that's interresting" />
     <MESSAGE value="(PATCH) main: Remove BrowserRouter wrapper from main.tsx" />
     <MESSAGE value="(PATCH) FrontEnd: changes routing, should start on loginpage now" />
-    <option name="LAST_COMMIT_MESSAGE" value="(PATCH) FrontEnd: changes routing, should start on loginpage now" />
+    <MESSAGE value="(PATCH)feat: stuff meade with navbar" />
+    <MESSAGE value="(PATCH)Feat: navbar stuff" />
+    <option name="LAST_COMMIT_MESSAGE" value="(PATCH)Feat: navbar stuff" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -690,6 +718,10 @@
         </breakpoint>
       </breakpoints>
     </breakpoint-manager>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>
