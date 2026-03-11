@@ -10,7 +10,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e2afaec2-b280-4f41-904b-a1a848a4ccc0" name="Changes" comment="" />
+    <list default="true" id="e2afaec2-b280-4f41-904b-a1a848a4ccc0" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Frontend/Dockerfile.dev" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Project-FitnessTracker-DevOps/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Project-FitnessTracker-DevOps/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/vite.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/vite.config.ts" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -74,25 +78,26 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;.NET Launch Settings Profile.Backend: http.executor&quot;: &quot;Run&quot;,
-    &quot;.NET Project.Frontend.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;SONARLINT_PRECOMMIT_ANALYSIS&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;org.jetbrains.plugins.github.ui.GithubSettingsConfigurable&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;C:\\Users\\mbert\\RiderProjects\\Project-FitnessTracker-DevOps\\Frontend\\node_modules\\typescript\\lib&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    ".NET Launch Settings Profile.Backend: http.executor": "Run",
+    ".NET Project.Frontend.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "SONARLINT_PRECOMMIT_ANALYSIS": "true",
+    "git-widget-placeholder": "main",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "sshConsole",
+    "ts.external.directory.path": "C:\\Users\\jakob\\RiderProjects\\Project-FitnessTracker-DevOps\\Frontend\\node_modules\\typescript\\lib",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RunManager" selected=".NET Project.Frontend">
     <configuration name="Frontend" type="DotNetProject" factoryName=".NET Project">
       <option name="EXE_PATH" value="" />
@@ -193,14 +198,6 @@
       <workItem from="1772786074312" duration="1496000" />
       <workItem from="1772795281682" duration="9123000" />
       <workItem from="1773125739088" duration="5970000" />
-    </task>
-    <task id="LOCAL-00005" summary="made some homepage stuff">
-      <option name="closed" value="true" />
-      <created>1771234713895</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1771234713895</updated>
     </task>
     <task id="LOCAL-00006" summary="Sonarqube">
       <option name="closed" value="true" />
@@ -586,7 +583,15 @@
       <option name="project" value="LOCAL" />
       <updated>1773144584390</updated>
     </task>
-    <option name="localTasksCounter" value="54" />
+    <task id="LOCAL-00054" summary="(ADD) ProfilePage: Implement user profile overview and navigation options">
+      <option name="closed" value="true" />
+      <created>1773216127318</created>
+      <option name="number" value="00054" />
+      <option name="presentableId" value="LOCAL-00054" />
+      <option name="project" value="LOCAL" />
+      <updated>1773216127320</updated>
+    </task>
+    <option name="localTasksCounter" value="55" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -619,7 +624,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="indentation" />
     <MESSAGE value="debug" />
     <MESSAGE value="program unit test" />
     <MESSAGE value="som small changes to unit test" />
@@ -644,7 +648,8 @@
     <MESSAGE value="(PATCH)Unversioned files" />
     <MESSAGE value="(PATCH) workflow: testcafe mistake" />
     <MESSAGE value="(MINIOR)feat: Made a Frontend Homepage and basic setup for navigation" />
-    <option name="LAST_COMMIT_MESSAGE" value="(MINIOR)feat: Made a Frontend Homepage and basic setup for navigation" />
+    <MESSAGE value="(ADD) ProfilePage: Implement user profile overview and navigation options" />
+    <option name="LAST_COMMIT_MESSAGE" value="(ADD) ProfilePage: Implement user profile overview and navigation options" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
