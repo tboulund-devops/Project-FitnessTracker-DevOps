@@ -43,7 +43,7 @@ public class APIWorkoutControllerTests
     public async Task CreateWorkout_NullRequest_ReturnsBadRequest()
     {
         // Act
-        var result = await _controller.CheckCredentials(null!, 1);
+        var result = await _controller.CreateWorkout(null!, 1);
 
         // Assert
         var badRequest = Assert.IsType<BadRequestObjectResult>(result);
@@ -62,7 +62,7 @@ public class APIWorkoutControllerTests
 
         // Act - DateOfWorkout is DateTime (non-nullable value type), so this path
         // won't trigger the null check for DateOfWorkout. Test the name path instead.
-        var result = await _controller.CheckCredentials(workout, 1);
+        var result = await _controller.CreateWorkout(workout, 1);
 
         // Assert - Valid workout with default date should still proceed
         // since DateTime default is not null
@@ -80,7 +80,7 @@ public class APIWorkoutControllerTests
         };
 
         // Act
-        var result = await _controller.CheckCredentials(workout, 1);
+        var result = await _controller.CreateWorkout(workout, 1);
 
         // Assert
         var badRequest = Assert.IsType<BadRequestObjectResult>(result);
@@ -98,7 +98,7 @@ public class APIWorkoutControllerTests
         };
 
         // Act
-        var result = await _controller.CheckCredentials(workout, 1);
+        var result = await _controller.CreateWorkout(workout, 1);
 
         // Assert
         var badRequest = Assert.IsType<BadRequestObjectResult>(result);
@@ -116,7 +116,7 @@ public class APIWorkoutControllerTests
         };
 
         // Act
-        var result = await _controller.CheckCredentials(workout, 1);
+        var result = await _controller.CreateWorkout(workout, 1);
 
         // Assert
         var badRequest = Assert.IsType<BadRequestObjectResult>(result);
@@ -134,7 +134,7 @@ public class APIWorkoutControllerTests
         };
 
         // Act
-        var result = await _controller.CheckCredentials(workout, 0);
+        var result = await _controller.CreateWorkout(workout, 0);
 
         // Assert
         var badRequest = Assert.IsType<BadRequestObjectResult>(result);
@@ -152,7 +152,7 @@ public class APIWorkoutControllerTests
         };
 
         // Act
-        var result = await _controller.CheckCredentials(workout, -1);
+        var result = await _controller.CreateWorkout(workout, -1);
 
         // Assert
         var badRequest = Assert.IsType<BadRequestObjectResult>(result);
@@ -171,7 +171,7 @@ public class APIWorkoutControllerTests
         _mockWorkoutService.Setup(s => s.CreateWorkout(workout, 1)).ReturnsAsync(0);
 
         // Act
-        var result = await _controller.CheckCredentials(workout, 1);
+        var result = await _controller.CreateWorkout(workout, 1);
 
         // Assert
         var notFound = Assert.IsType<NotFoundObjectResult>(result);
@@ -190,7 +190,7 @@ public class APIWorkoutControllerTests
         _mockWorkoutService.Setup(s => s.CreateWorkout(workout, 1)).ReturnsAsync(-1);
 
         // Act
-        var result = await _controller.CheckCredentials(workout, 1);
+        var result = await _controller.CreateWorkout(workout, 1);
 
         // Assert
         var notFound = Assert.IsType<NotFoundObjectResult>(result);
@@ -209,7 +209,7 @@ public class APIWorkoutControllerTests
         _mockWorkoutService.Setup(s => s.CreateWorkout(workout, 1)).ReturnsAsync(1);
 
         // Act
-        var result = await _controller.CheckCredentials(workout, 1);
+        var result = await _controller.CreateWorkout(workout, 1);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
