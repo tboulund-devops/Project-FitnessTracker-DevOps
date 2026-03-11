@@ -1,4 +1,4 @@
-﻿interface ProfileStats {
+﻿export interface ProfileStats {
     name: string;
     timeOfRegistry: string;
     totalAmountOfWorkouts: number;
@@ -9,5 +9,3 @@
     bestStreakWeeks: number;
     favoriteExercise: string;
 }
-
-export default ProfileStats;

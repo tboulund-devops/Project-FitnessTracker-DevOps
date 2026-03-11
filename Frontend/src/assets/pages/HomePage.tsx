@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import type ProfileStats from "../../Domain/ProfileStats";
+import type { ProfileStats } from "../../Domain/ProfileStats";
 import "../../index.css";
 function HomePage() {
     const [stats, setStats] = useState<ProfileStats | null>(null);
@@ -12,7 +12,7 @@ function HomePage() {
     useEffect(() => {
         async function fetchProfile() {
             try {
-                const response = await fetch(`/api/user/APIUser/GetProfileOverview/${userId}`);
+                const response = await fetch(`/api/user/APIUser/GetUserInformation/${userId}`);
                 if (response.ok) {
                     const data: ProfileStats = await response.json();
                     setStats(data);

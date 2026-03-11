@@ -11,26 +11,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e2afaec2-b280-4f41-904b-a1a848a4ccc0" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Backend/Domain/UserInformationDTO.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Backend/External/APIControllers/APIUserController.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Project-FitnessTracker-DevOps/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Project-FitnessTracker-DevOps/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Backend/Application/Service/Interfaces/IUserService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/Application/Service/Interfaces/IUserService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Backend/Application/Service/UserService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/Application/Service/UserService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Backend/Domain/User.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/Domain/User.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Backend/External/APIControllers/APIWorkoutController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/External/APIControllers/APIWorkoutController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Backend/External/Repos/UserRepo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/External/Repos/UserRepo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Backend/Gateway/RepoGateway/IUserRepo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/Gateway/RepoGateway/IUserRepo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tests/Backend-UnitTest/UserTests/UserRepoTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/Backend-UnitTest/UserTests/UserRepoTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tests/Backend-UnitTest/WorkoutTests/APIWorkoutControllerTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/Backend-UnitTest/WorkoutTests/APIWorkoutControllerTests.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/assets/Components/NavBar.css" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/assets/Components/NavBar.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/assets/Components/NavBar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/assets/Components/NavBar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/Domain/ProfileStats.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/Domain/ProfileStats.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Frontend/src/assets/pages/HomePage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/assets/pages/HomePage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/assets/pages/LoginPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/assets/pages/LoginPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/assets/pages/NewWorkout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/assets/pages/NewWorkout.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/assets/pages/OldWorkouts.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/assets/pages/OldWorkouts.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/assets/pages/ProfilePage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/assets/pages/ProfilePage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/assets/pages/Settings.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/assets/pages/Settings.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/index.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -61,7 +44,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="main" />
+        <entry key="$PROJECT_DIR$" value="Dev-Branch" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -114,7 +97,7 @@
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "SONARLINT_PRECOMMIT_ANALYSIS": "true",
-    "git-widget-placeholder": "Feature/NavBar",
+    "git-widget-placeholder": "main",
     "list.type.of.created.stylesheet": "CSS",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -122,25 +105,6 @@
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "settings.editor.selected.configurable": "com.github.copilot.settings.ApplicationConfigurable",
-    "ts.external.directory.path": "C:\\Users\\mbert\\RiderProjects\\Project-FitnessTracker-DevOps\\Frontend\\node_modules\\typescript\\lib",
-    "vue.rearranger.settings.migration": "true"
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    ".NET Launch Settings Profile.Backend: http.executor": "Run",
-    ".NET Project.Frontend.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "SONARLINT_PRECOMMIT_ANALYSIS": "true",
-    "git-widget-placeholder": "Feature/Backend-APIUserController",
-    "list.type.of.created.stylesheet": "CSS",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "org.jetbrains.plugins.github.ui.GithubSettingsConfigurable",
     "ts.external.directory.path": "C:\\Users\\jakob\\RiderProjects\\Project-FitnessTracker-DevOps\\Frontend\\node_modules\\typescript\\lib",
     "vue.rearranger.settings.migration": "true"
   }
@@ -246,14 +210,6 @@
       <workItem from="1772795281682" duration="9123000" />
       <workItem from="1773125739088" duration="5970000" />
       <workItem from="1773211623065" duration="6193000" />
-    </task>
-    <task id="LOCAL-00012" summary="yml test">
-      <option name="closed" value="true" />
-      <created>1771332436474</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1771332436474</updated>
     </task>
     <task id="LOCAL-00013" summary="yml test">
       <option name="closed" value="true" />
@@ -639,7 +595,15 @@
       <option name="project" value="LOCAL" />
       <updated>1773221364942</updated>
     </task>
-    <option name="localTasksCounter" value="61" />
+    <task id="LOCAL-00061" summary="(PATCH) IRepo: Removed doub repo, and moved another one">
+      <option name="closed" value="true" />
+      <created>1773226096816</created>
+      <option name="number" value="00061" />
+      <option name="presentableId" value="LOCAL-00061" />
+      <option name="project" value="LOCAL" />
+      <updated>1773226096818</updated>
+    </task>
+    <option name="localTasksCounter" value="62" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -672,7 +636,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="build" />
     <MESSAGE value="sonarqube" />
     <MESSAGE value="COVERLET" />
     <MESSAGE value="project" />
@@ -699,7 +662,8 @@
     <MESSAGE value="(PATCH) FrontEnd: changes routing, should start on loginpage now" />
     <MESSAGE value="(PATCH)feat: stuff meade with navbar" />
     <MESSAGE value="(PATCH)Feat: navbar stuff" />
-    <option name="LAST_COMMIT_MESSAGE" value="(PATCH)Feat: navbar stuff" />
+    <MESSAGE value="(PATCH) IRepo: Removed doub repo, and moved another one" />
+    <option name="LAST_COMMIT_MESSAGE" value="(PATCH) IRepo: Removed doub repo, and moved another one" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
