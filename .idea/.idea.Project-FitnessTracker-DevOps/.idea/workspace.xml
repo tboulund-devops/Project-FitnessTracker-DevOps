@@ -10,11 +10,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e2afaec2-b280-4f41-904b-a1a848a4ccc0" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Frontend/Dockerfile.dev" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.Project-FitnessTracker-DevOps/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Project-FitnessTracker-DevOps/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/vite.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/vite.config.ts" afterDir="false" />
-    </list>
+    <list default="true" id="e2afaec2-b280-4f41-904b-a1a848a4ccc0" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -198,14 +194,6 @@
       <workItem from="1772786074312" duration="1496000" />
       <workItem from="1772795281682" duration="9123000" />
       <workItem from="1773125739088" duration="5970000" />
-    </task>
-    <task id="LOCAL-00006" summary="Sonarqube">
-      <option name="closed" value="true" />
-      <created>1771329448481</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1771329448481</updated>
     </task>
     <task id="LOCAL-00007" summary="Sonarqube">
       <option name="closed" value="true" />
@@ -591,7 +579,15 @@
       <option name="project" value="LOCAL" />
       <updated>1773216127320</updated>
     </task>
-    <option name="localTasksCounter" value="55" />
+    <task id="LOCAL-00055" summary="(PATCH) DevelopmentTool(DockerCompose):Create docker-compose.dev.yml for local development">
+      <option name="closed" value="true" />
+      <created>1773218016378</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1773218016379</updated>
+    </task>
+    <option name="localTasksCounter" value="56" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -624,7 +620,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="debug" />
     <MESSAGE value="program unit test" />
     <MESSAGE value="som small changes to unit test" />
     <MESSAGE value="small change" />
@@ -649,7 +644,8 @@
     <MESSAGE value="(PATCH) workflow: testcafe mistake" />
     <MESSAGE value="(MINIOR)feat: Made a Frontend Homepage and basic setup for navigation" />
     <MESSAGE value="(ADD) ProfilePage: Implement user profile overview and navigation options" />
-    <option name="LAST_COMMIT_MESSAGE" value="(ADD) ProfilePage: Implement user profile overview and navigation options" />
+    <MESSAGE value="(PATCH) DevelopmentTool(DockerCompose):Create docker-compose.dev.yml for local development" />
+    <option name="LAST_COMMIT_MESSAGE" value="(PATCH) DevelopmentTool(DockerCompose):Create docker-compose.dev.yml for local development" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
