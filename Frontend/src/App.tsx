@@ -1,20 +1,37 @@
-import LoginPage from './assets/pages/LoginPage'
-import { Routes, Route} from 'react-router-dom'
-import HomePage from './assets/pages/HomePage'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import NavBar from './assets/Components/NavBar';
+import HomePage from './assets/pages/HomePage';
+import Login from './assets/pages/LoginPage';
+import Profile from './assets/pages/ProfilePage';
+import NewWorkout from './assets/pages/NewWorkout';
+import OldWorkouts from './assets/pages/OldWorkouts';
 
+function AppContent() {
+    const location = useLocation();
+
+    // Don't show NavBar on login page
+    const showNavBar = location.pathname !== '/login';
+
+    return (
+        <>
+            {showNavBar && <NavBar />}
+            <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/new-workout" element={<NewWorkout />} />
+                <Route path="/old-workouts" element={<OldWorkouts />} />
+            </Routes>
+        </>
+    );
+}
 
 function App() {
     return (
-        <div className="app-container">
-            <main className="main-content">
-                <div className="content-container">
-                    <Routes>
-                        <Route path="/" element={<LoginPage />} />
-                        <Route path="/homepage" element={<HomePage/>} />
-                    </Routes>
-                </div>
-            </main>
-        </div>)
+        <BrowserRouter>
+            <AppContent />
+        </BrowserRouter>
+    );
 }
 
-export default App
+export default App;
