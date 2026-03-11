@@ -28,8 +28,8 @@ function LoginPage() {
 
       if (response.ok) {
         const message = await response.text();
-        setSuccess(message + " Redirecting to profile…");
-        navigate("/profile");
+        setSuccess(message + " Redirecting to home…");
+        navigate("/home");
       } else {
         const message = await response.text();
         setError(message || "Login failed");

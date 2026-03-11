@@ -1,5 +1,6 @@
 import {useEffect, useState} from "react";
 import type ProfileStats from "../../Domain/ProfileStats";
+import "../../index.css";
 function HomePage() {
     const [stats, setStats] = useState<ProfileStats | null>(null);
     const [error, setError] = useState("");
@@ -39,9 +40,9 @@ function HomePage() {
 
     if (loading) {
         return (
-            <div className="profile-container">
+            <div className="home-container">
                 <div className="profile-card">
-                    <h1>Profile Overview</h1>
+                    <h1>Homepage</h1>
                     <p className="profile-loading">Loading profile…</p>
                 </div>
             </div>
@@ -52,7 +53,7 @@ function HomePage() {
         return (
             <div className="profile-container">
                 <div className="profile-card">
-                    <h1>Profile Overview</h1>
+                    <h1>Homepage</h1>
                     <p className="profile-error">{error}</p>
                 </div>
             </div>
