@@ -81,9 +81,9 @@ _Winter vacation - nothing planned._
 
 ### Week 12
 
-**Feature 1:** [...]
+**Feature 1:** Navigation via Nav Bar
 
-**Feature 2:** [...]
+**Feature 2:** Log out
 
 ### Week 13
 
