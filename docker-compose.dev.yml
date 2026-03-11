@@ -68,7 +68,7 @@ services:
       - ./Frontend/tsconfig.app.json:/app/tsconfig.app.json
       - /app/node_modules
     ports:
-      - "3000:3000"
+      - "8030:3000"
 
 volumes:
   postgres_data_dev:

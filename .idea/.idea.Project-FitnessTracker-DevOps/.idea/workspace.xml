@@ -11,7 +11,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e2afaec2-b280-4f41-904b-a1a848a4ccc0" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Frontend/src/main.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/main.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.dev.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.dev.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -219,22 +220,6 @@
       <workItem from="1772795281682" duration="9123000" />
       <workItem from="1773125739088" duration="5970000" />
       <workItem from="1773211623065" duration="6193000" />
-    </task>
-    <task id="LOCAL-00008" summary="unit test check">
-      <option name="closed" value="true" />
-      <created>1771330801461</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1771330801461</updated>
-    </task>
-    <task id="LOCAL-00009" summary="unit test fix">
-      <option name="closed" value="true" />
-      <created>1771331036565</created>
-      <option name="number" value="00009" />
-      <option name="presentableId" value="LOCAL-00009" />
-      <option name="project" value="LOCAL" />
-      <updated>1771331036565</updated>
     </task>
     <task id="LOCAL-00010" summary="yml">
       <option name="closed" value="true" />
@@ -612,7 +597,23 @@
       <option name="project" value="LOCAL" />
       <updated>1773218788172</updated>
     </task>
-    <option name="localTasksCounter" value="57" />
+    <task id="LOCAL-00057" summary="(PATCH) main: Remove BrowserRouter wrapper from main.tsx">
+      <option name="closed" value="true" />
+      <created>1773219098314</created>
+      <option name="number" value="00057" />
+      <option name="presentableId" value="LOCAL-00057" />
+      <option name="project" value="LOCAL" />
+      <updated>1773219098314</updated>
+    </task>
+    <task id="LOCAL-00058" summary="(PATCH) FrontEnd: changes routing, should start on loginpage now">
+      <option name="closed" value="true" />
+      <created>1773219548762</created>
+      <option name="number" value="00058" />
+      <option name="presentableId" value="LOCAL-00058" />
+      <option name="project" value="LOCAL" />
+      <updated>1773219548763</updated>
+    </task>
+    <option name="localTasksCounter" value="59" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -645,8 +646,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="debug" />
-    <MESSAGE value="program unit test" />
     <MESSAGE value="som small changes to unit test" />
     <MESSAGE value="small change" />
     <MESSAGE value="build" />
@@ -672,7 +671,9 @@
     <MESSAGE value="(ADD) ProfilePage: Implement user profile overview and navigation options" />
     <MESSAGE value="(PATCH) DevelopmentTool(DockerCompose):Create docker-compose.dev.yml for local development" />
     <MESSAGE value="merged main into main, got a change in workspace.xml that's interresting" />
-    <option name="LAST_COMMIT_MESSAGE" value="merged main into main, got a change in workspace.xml that's interresting" />
+    <MESSAGE value="(PATCH) main: Remove BrowserRouter wrapper from main.tsx" />
+    <MESSAGE value="(PATCH) FrontEnd: changes routing, should start on loginpage now" />
+    <option name="LAST_COMMIT_MESSAGE" value="(PATCH) FrontEnd: changes routing, should start on loginpage now" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
