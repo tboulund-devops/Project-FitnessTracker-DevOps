@@ -195,6 +195,7 @@ jobs:
           script: |
             cd dowa
             sudo -S docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_PAT }}
+            sudo -S docker-compose down --force
             sudo -S docker-compose pull
             sudo -S docker-compose up -d db
             echo "Waiting for database to be healthy..."

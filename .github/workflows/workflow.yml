@@ -15,21 +15,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  
+          fetch-depth: 0
       # ----- SEMANTIC VERSIONING -----
       - name: Application Version
         id: semver-app
         uses: paulhatch/semantic-version@v5.4.0
         with:
-          bump_each_commit: true           # Increments on every commit
-          
+          bump_each_commit: true # Increments on every commit
+
           major_pattern: "(MAJOR)"
           minor_pattern: "(MINOR)"
-          bump_each_commit_patch_pattern: "(PATCH)"        
-            
+          bump_each_commit_patch_pattern: "(PATCH)"
+
       - name: Display Version
         run: echo "Generated version is ${{ steps.semver-app.outputs.version }}"
-        
+
       # Install required tools
       - name: Install required tools
         run: |
@@ -78,7 +78,7 @@ jobs:
       #       exit 1
       #     fi
 
-      # SonarCloud end 
+      # SonarCloud end
       # - name: Complete Static Code Analysis
       #   run: |
       #     dotnet sonarscanner end \
@@ -143,7 +143,7 @@ jobs:
           key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
           source: "docker-compose.yml,db/migrations/*.sql"
           target: dowa/
-          rm: false   # Overwrite existing files
+          rm: false # Overwrite existing files
 
       - name: Create .env file on staging server
         if: always()
@@ -174,9 +174,9 @@ jobs:
             end
 
             run_sudo docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_PAT }}
-            run_sudo docker compose down
-            run_sudo docker compose pull
-            run_sudo docker compose up -d db
+            run_sudo docker-compose down --force
+            run_sudo docker-compose pull
+            run_sudo docker-compose up -d db
 
             echo "Waiting for database to be healthy..."
             while test (run_sudo docker inspect --format='{{.State.Health.Status}}' FitnessTrackerDBPost) != "healthy"
@@ -231,13 +231,13 @@ jobs:
           done
           echo "❌ App did not become ready in time. Last HTTP status: $HTTP_STATUS"
           exit 1
-        
+
       # ===== Frontedn Build =====
       - name: Install Node.js
         if: always()
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: "18"
       - name: Install Frontend Dependencies
         if: always()
         working-directory: ./Frontend/
@@ -257,7 +257,7 @@ jobs:
           k6 version
 
       - name: Run Performance Test (k6)
-        #if: always() 
+        #if: always()
         working-directory: ./Tests
         env:
           TARGET_URL: "http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
@@ -268,7 +268,7 @@ jobs:
       - name: Install TestCafe
         if: always()
         run: npm install -g testcafe testcafe-reporter-html
-        
+
       - name: Run E2E Tests
         if: always()
         working-directory: ./Tests
@@ -288,7 +288,7 @@ jobs:
         with:
           name: k6-report
           path: Tests/k6-summary.json
-      
+
       - name: Collect E2E Report
         if: always()
         uses: actions/upload-artifact@v4
