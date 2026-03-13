@@ -235,4 +235,76 @@ public class WorkoutRepo : IWorkoutRepo
         }
         return workout;
     }
+    
+   public async Task<List<Workout>> GetWorkoutsByUserID(int userId)
+{
+    var workouts = new List<Workout>();
+    var workoutDict = new Dictionary<int, Workout>();
+
+    using var connection = _connectionService.GetConnection();
+    await connection.OpenAsync();
+
+    using var cmd = connection.CreateCommand();
+    cmd.CommandText = @"
+        SELECT 
+            w.fldWorkoutID, 
+            w.fldDateOfWorkout, 
+            w.fldName,
+            s.fldSetID,
+            s.fldExerciseID,
+            e.fldName as ExerciseName,
+            s.fldWeight,
+            s.fldReps,
+            s.fldRestBetweenSet
+        FROM tblWorkout w
+        INNER JOIN tblUserWorkout uw ON w.fldWorkoutID = uw.fldWorkoutID
+        LEFT JOIN tblWorkoutSet ws ON w.fldWorkoutID = ws.fldWorkoutID
+        LEFT JOIN tblSet s ON ws.fldSetID = s.fldSetID
+        LEFT JOIN tblExercise e ON s.fldExerciseID = e.fldExerciseID 
+        WHERE uw.fldUserID = @userId
+        ORDER BY w.fldDateOfWorkout DESC, w.fldWorkoutID;";
+    
+    cmd.Parameters.AddWithValue("@userId", userId);
+
+    using var reader = await cmd.ExecuteReaderAsync();
+    while (await reader.ReadAsync())
+    {
+        var workoutId = reader.GetInt32(0);
+        
+        // Check if we've already created this workout
+        if (!workoutDict.TryGetValue(workoutId, out var workout))
+        {
+            workout = new Workout
+            {
+                WorkoutID = workoutId,
+                DateOfWorkout = reader.GetDateTime(1),
+                Name = reader.GetString(2),
+                Sets = new List<Set>()
+            };
+            workoutDict.Add(workoutId, workout);
+            workouts.Add(workout);
+        }
+        else
+        {
+            workout = workoutDict[workoutId];
+        }
+
+        // Check if there's a set (might be null if no sets)
+        if (!reader.IsDBNull(3)) // Check if fldSetID is not null
+        {
+            var set = new Set
+            {
+                SetID = reader.GetInt32(3),
+                ExerciseID = reader.GetInt32(4),
+                ExerciseName = reader.GetString(5),
+                Weight = reader.GetInt32(6),
+                Reps = reader.GetInt32(7),
+                RestBetweenSetInSec = reader.GetInt32(8)
+            };
+            workout.Sets.Add(set);
+        }
+    }
+
+    return workouts;
+}
 }
