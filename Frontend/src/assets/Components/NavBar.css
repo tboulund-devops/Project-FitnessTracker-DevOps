@@ -17,6 +17,7 @@
 
 .navbar-links {
     display: flex;
+    width: 100%;
     gap: 2rem;
     list-style: none;
     margin: 0;
@@ -31,4 +32,7 @@
 
 .navbar-links a:hover {
     color: #646cff;
+}
+.logout-item {
+    margin-left: auto;
 }
