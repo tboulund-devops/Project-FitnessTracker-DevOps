@@ -1,4 +1,4 @@
-﻿
+﻿﻿
 -- Adds unique constraints required for idempotent test data insertion.
     
 -- Constraint on tblUserCredentials (fldUsername)
@@ -16,6 +16,7 @@ BEGIN
 ALTER TABLE tblUser ADD CONSTRAINT uq_user_credentials UNIQUE (fldCredentialsID);
 END IF;
 END $$;
+
 
 -- Constraint on tblWorkout (fldDateOfWorkout, fldName)
 DO $$

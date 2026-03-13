@@ -69,27 +69,27 @@ function HomePage() {
 
                 <div className="profile-stats">
                     <div className="stat-row">
-                        <span className="stat-label">Name</span>
+                        <span className="stat-label">Name: </span>
                         <span className="stat-value">{stats.name}</span>
                     </div>
 
                     <div className="stat-row">
-                        <span className="stat-label">Member Since</span>
+                        <span className="stat-label">Member Since: </span>
                         <span className="stat-value">{formatDate(stats.timeOfRegistry)}</span>
                     </div>
 
                     <div className="stat-row">
-                        <span className="stat-label">Total Workouts</span>
+                        <span className="stat-label">Total Workouts: </span>
                         <span className="stat-value highlight">{stats.totalAmountOfWorkouts}</span>
                     </div>
 
                     <div className="stat-row">
-                        <span className="stat-label">Total Time Trained</span>
+                        <span className="stat-label">Total Time Trained: </span>
                         <span className="stat-value">{stats.totalAmountOfTimeTrained}</span>
                     </div>
 
                     <div className="stat-row">
-                        <span className="stat-label">Current Streak</span>
+                        <span className="stat-label">Current Streak: </span>
                         <span className="stat-value highlight">
                             <span className="streak-detail">
                                 {stats.currentStreakDays}
@@ -101,19 +101,19 @@ function HomePage() {
                     </div>
 
                     <div className="stat-row">
-                        <span className="stat-label">Best Streak</span>
+                        <span className="stat-label">Best Streak: </span>
                         <span className="stat-value">
                             <span className="streak-detail">
                                 {stats.bestStreakDays}
-                                <span className="streak-unit">days</span>
+                                <span className="streak-unit">days: </span>
                                 ({stats.bestStreakWeeks}
-                                <span className="streak-unit">weeks</span>)
+                                <span className="streak-unit">weeks: </span>)
                             </span>
                         </span>
                     </div>
 
                     <div className="stat-row">
-                        <span className="stat-label">Favorite Exercise</span>
+                        <span className="stat-label">Favorite Exercise: </span>
                         <span className="stat-value highlight">{stats.favoriteExercise}</span>
                     </div>
                 </div>

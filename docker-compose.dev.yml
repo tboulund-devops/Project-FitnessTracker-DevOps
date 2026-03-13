@@ -32,7 +32,7 @@ services:
       FLYWAY_BASELINE_ON_MIGRATE: true
     volumes:
       - ./db/migrations:/flyway/sql
-    command: migrate
+    command: repair migrate
 
   backend:
     build:

@@ -63,7 +63,7 @@ public class WorkoutRepo : IWorkoutRepo
                     throw new Exception("Failed to add workout to bridge table");
 
                 await transaction.CommitAsync();
-                return Convert.ToInt32(result);
+                return workoutId; // Return the actual workout ID, not the bridge table ID
             }
         }
         catch

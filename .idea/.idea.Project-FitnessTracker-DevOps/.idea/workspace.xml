@@ -11,9 +11,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e2afaec2-b280-4f41-904b-a1a848a4ccc0" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Frontend/src/NewWorkoutPage.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/db/migrations/V3__Remove_workout_name_date_constraint.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Project-FitnessTracker-DevOps/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Project-FitnessTracker-DevOps/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/Domain/ProfileStats.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/Domain/ProfileStats.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Backend/External/APIControllers/APIWorkoutController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/External/APIControllers/APIWorkoutController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Backend/External/Repos/WorkoutRepo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/External/Repos/WorkoutRepo.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Frontend/src/assets/pages/HomePage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/assets/pages/HomePage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/assets/pages/NewWorkout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/assets/pages/NewWorkout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/migrations/V2__Add_missing_constraints.sql" beforeDir="false" afterPath="$PROJECT_DIR$/db/migrations/V2__Add_missing_constraints.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.dev.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.dev.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -22,6 +28,7 @@
   </component>
   <component name="CopilotPersistence">
     <persistenceIdMap>
+      <entry key="_C:/Users/jakob/RiderProjects/Project-FitnessTracker-DevOps" value="3Aq1IC9dm2uQdMbMRs90uRyOyVG" />
       <entry key="_C:/Users/mbert/RiderProjects/Project-FitnessTracker-DevOps" value="39IJVzHW80TUMBWrzUg4RGhnsop" />
     </persistenceIdMap>
   </component>
@@ -44,7 +51,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="Dev-Branch" />
+        <entry key="$PROJECT_DIR$" value="Feature/Frontend-NewWorkout" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -58,7 +65,7 @@
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
     &quot;url&quot;: &quot;https://github.com/tboulund-devops/Project-FitnessTracker-DevOps.git&quot;,
-    &quot;accountId&quot;: &quot;1db01424-efa5-474a-be1a-e5977ac26157&quot;
+    &quot;accountId&quot;: &quot;dd5ba70b-f9a1-42bc-8c04-86a451d45305&quot;
   }
 }</component>
   <component name="HighlightingSettingsPerFile">
@@ -88,27 +95,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    ".NET Launch Settings Profile.Backend: http.executor": "Run",
-    ".NET Project.Frontend.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "SONARLINT_PRECOMMIT_ANALYSIS": "true",
-    "git-widget-placeholder": "main",
-    "list.type.of.created.stylesheet": "CSS",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.github.copilot.settings.ApplicationConfigurable",
-    "ts.external.directory.path": "C:\\Users\\jakob\\RiderProjects\\Project-FitnessTracker-DevOps\\Frontend\\node_modules\\typescript\\lib",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;.NET Launch Settings Profile.Backend: http.executor&quot;: &quot;Run&quot;,
+    &quot;.NET Project.Frontend.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;SONARLINT_PRECOMMIT_ANALYSIS&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;Feature/Frontend/New-Workout&quot;,
+    &quot;list.type.of.created.stylesheet&quot;: &quot;CSS&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.github.copilot.settings.ApplicationConfigurable&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;C:\\Users\\jakob\\RiderProjects\\Project-FitnessTracker-DevOps\\Frontend\\node_modules\\typescript\\lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected=".NET Project.Frontend">
     <configuration name="Frontend" type="DotNetProject" factoryName=".NET Project">
       <option name="EXE_PATH" value="" />
@@ -210,22 +217,8 @@
       <workItem from="1772795281682" duration="9123000" />
       <workItem from="1773125739088" duration="5970000" />
       <workItem from="1773211623065" duration="6193000" />
-    </task>
-    <task id="LOCAL-00013" summary="yml test">
-      <option name="closed" value="true" />
-      <created>1771332559208</created>
-      <option name="number" value="00013" />
-      <option name="presentableId" value="LOCAL-00013" />
-      <option name="project" value="LOCAL" />
-      <updated>1771332559208</updated>
-    </task>
-    <task id="LOCAL-00014" summary="yml">
-      <option name="closed" value="true" />
-      <created>1771332681642</created>
-      <option name="number" value="00014" />
-      <option name="presentableId" value="LOCAL-00014" />
-      <option name="project" value="LOCAL" />
-      <updated>1771332681642</updated>
+      <workItem from="1773305202992" duration="794000" />
+      <workItem from="1773306028655" duration="8127000" />
     </task>
     <task id="LOCAL-00015" summary="build">
       <option name="closed" value="true" />
@@ -603,7 +596,23 @@
       <option name="project" value="LOCAL" />
       <updated>1773226096818</updated>
     </task>
-    <option name="localTasksCounter" value="62" />
+    <task id="LOCAL-00062" summary="(PATCH) HomePage: updated API endpoint and improved ProfileStats interface export">
+      <option name="closed" value="true" />
+      <created>1773226698837</created>
+      <option name="number" value="00062" />
+      <option name="presentableId" value="LOCAL-00062" />
+      <option name="project" value="LOCAL" />
+      <updated>1773226698837</updated>
+    </task>
+    <task id="LOCAL-00063" summary="Branch Check">
+      <option name="closed" value="true" />
+      <created>1773305919802</created>
+      <option name="number" value="00063" />
+      <option name="presentableId" value="LOCAL-00063" />
+      <option name="project" value="LOCAL" />
+      <updated>1773305919802</updated>
+    </task>
+    <option name="localTasksCounter" value="64" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -622,7 +631,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="main" />
+                        <option value="Feature/Frontend-NewWorkout" />
                       </list>
                     </value>
                   </entry>
@@ -636,8 +645,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="sonarqube" />
-    <MESSAGE value="COVERLET" />
     <MESSAGE value="project" />
     <MESSAGE value="SONAR" />
     <MESSAGE value="small fix" />
@@ -663,7 +670,9 @@
     <MESSAGE value="(PATCH)feat: stuff meade with navbar" />
     <MESSAGE value="(PATCH)Feat: navbar stuff" />
     <MESSAGE value="(PATCH) IRepo: Removed doub repo, and moved another one" />
-    <option name="LAST_COMMIT_MESSAGE" value="(PATCH) IRepo: Removed doub repo, and moved another one" />
+    <MESSAGE value="(PATCH) HomePage: updated API endpoint and improved ProfileStats interface export" />
+    <MESSAGE value="Branch Check" />
+    <option name="LAST_COMMIT_MESSAGE" value="Branch Check" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
