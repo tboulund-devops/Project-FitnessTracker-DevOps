@@ -7,4 +7,6 @@ public interface IWorkoutService
     Task<int> CreateWorkout(Workout request, int userId);
     Task<int> AddSetToWorkout(Set newSet, int WorkoutID);
     Task<Workout> GetWorkout(int workoutId);
+    
+    Task<List<Workout>> GetWorkoutsByUserID(int userId);
 }

@@ -10,6 +10,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
+    <list default="true" id="1e15e4f8-aa9e-49d3-9fbf-b201571f0781" name="Changes" comment="">
     <list default="true" id="e2afaec2-b280-4f41-904b-a1a848a4ccc0" name="Changes" comment="">
       <change afterPath="$PROJECT_DIR$/Frontend/src/NewWorkoutPage.css" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/db/migrations/V3__Remove_workout_name_date_constraint.sql" afterDir="false" />
@@ -56,6 +57,13 @@
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "git-widget-placeholder": "Dev-Branch",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)"
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
     &quot;state&quot;: &quot;OPEN&quot;,
@@ -115,6 +123,7 @@
     &quot;ts.external.directory.path&quot;: &quot;C:\\Users\\jakob\\RiderProjects\\Project-FitnessTracker-DevOps\\Frontend\\node_modules\\typescript\\lib&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
+}]]></component>
 }</component>
   <component name="RunManager" selected=".NET Project.Frontend">
     <configuration name="Frontend" type="DotNetProject" factoryName=".NET Project">
@@ -615,10 +624,6 @@
     <option name="localTasksCounter" value="64" />
     <servers />
   </component>
-  <component name="TypeScriptGeneratedFilesManager">
-    <option name="version" value="3" />
-  </component>
-  <component name="UnityCheckinConfiguration" checkUnsavedScenes="true" />
   <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">

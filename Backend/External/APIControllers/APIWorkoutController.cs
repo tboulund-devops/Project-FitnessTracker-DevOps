@@ -73,6 +73,20 @@ public class APIWorkoutController : ControllerBase
         return Ok(workout);
     }
     
+    [HttpGet("GetWorkoutsByUserID/{userId}")]
+    public async Task<ActionResult<List<Workout>>> GetWorkoutsByUserID(int userId)
+    {
+        if (userId <= 0)
+            return BadRequest("User id must be a positive number");
+
+        var workouts = await _workoutService.GetWorkoutsByUserID(userId);
+    
+        if (workouts == null || workouts.Count == 0)
+            return NotFound($"No workouts found for user with ID {userId}");
+
+        return Ok(workouts);
+     }
+    
     
     
 }
