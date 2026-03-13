@@ -1,4 +1,4 @@
-﻿using Backend.Application.Service;
+﻿﻿using Backend.Application.Service;
 using Backend.Application.Service.Interfaces;
 using Backend.Domain;
 using Microsoft.AspNetCore.Mvc;
@@ -21,7 +21,7 @@ public class APIWorkoutController : ControllerBase
     [HttpPost("CreateWorkout")]
     public async Task<ActionResult<int>> CreateWorkout(Workout request, int UserId)
     {
-        if (request == null ||request.DateOfWorkout == null || string.IsNullOrWhiteSpace(request.Name) || UserId <= 0)
+        if (request == null || string.IsNullOrWhiteSpace(request.Name) || UserId <= 0)
         {
             return BadRequest("Workout must need a creating date and name, and have a positive user id");
         }

@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+﻿﻿import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../index.css";
 import "../../NewWorkoutPage.css";
@@ -33,8 +33,6 @@ const EXERCISES = [
     { id: 10, name: "Lat Pulldown" },
 ];
 
-// TODO: replace with auth context
-const CURRENT_USER_ID = 1;
 
 let _nextId = 1;
 const nextId = () => _nextId++;
@@ -119,6 +117,12 @@ function NewWorkout() {
         setError("");
         setSuccess("");
 
+        const currentUserId = localStorage.getItem("userID");
+        if (!currentUserId) {
+            setError("User ID not found. Please log in again.");
+            return;
+        }
+
         if (!workoutName.trim()) {
             setError("Please enter a workout name.");
             return;
@@ -148,7 +152,7 @@ function NewWorkout() {
             };
 
             const createRes = await fetch(
-                `/api/workout/APIWorkout/CreateWorkout?UserId=${CURRENT_USER_ID}`,
+                `/api/workout/APIWorkout/CreateWorkout?UserId=${currentUserId}`,
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
