@@ -202,14 +202,14 @@ jobs:
               sleep 2
             end
             echo "Running Flyway migrations..."
-            if not sudo -S docker compose run --rm flyway
+            if not sudo -S docker-compose run --rm flyway
               echo "❌ Flyway migration failed!"
               exit 1
             end
             echo "Starting backend..."
-            sudo -S docker compose up -d backend
+            sudo -S docker-compose up -d backend
             echo "Starting frontend..."
-            sudo -S docker compose up -d frontend
+            sudo -S docker-compose up -d frontend
       # ===== WAIT FOR APP TO BE READY =====
       - name: Wait for Production to be Ready
         if: always()
