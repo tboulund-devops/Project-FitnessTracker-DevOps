@@ -1,0 +1,58 @@
+﻿services:
+  db:
+    image: postgres:15
+    container_name: FitnessTrackerDBPost
+    restart: always
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  flyway:
+    image: flyway/flyway:latest
+    container_name: FitnessTrackerFlyway
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      FLYWAY_URL: jdbc:postgresql://db:5432/${DATABASE_NAME}
+      FLYWAY_USER: ${DATABASE_USER}
+      FLYWAY_PASSWORD: ${DATABASE_PASSWORD}
+      FLYWAY_CONNECT_RETRIES: 10
+      FLYWAY_LOCATIONS: filesystem:/flyway/sql
+      FLYWAY_BASELINE_ON_MIGRATE: "true"
+    volumes:
+      - ./db/migrations:/flyway/sql
+    command: migrate
+
+  backend:
+    image: ghcr.io/tboulund-devops/project-fitnesstracker-devops:staging
+    container_name: FitnessTrackerBackend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: ${CONNECTION_STRING}
+    ports:
+      - "8081:8080"
+
+  frontend:
+    image: ghcr.io/tboulund-devops/project-fitnesstracker-devops-frontend:staging
+    container_name: FitnessTrackerFrontend
+    depends_on:
+      - backend
+    ports:
+      - "8030:3000"
+
+volumes:
+  postgres_data:

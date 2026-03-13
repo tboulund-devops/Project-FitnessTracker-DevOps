@@ -142,7 +142,7 @@ jobs:
           host: ${{ vars.STAGING_SERVER_IP }}
           username: ${{ vars.STAGING_SERVER_USERNAME }}
           key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
-          source: "docker-compose.yml,db/migrations/*.sql"
+          source: "docker-compose.staging.yml,db/migrations/*.sql"
           target: dowa/
           rm: false
 
@@ -182,13 +182,14 @@ jobs:
             run_sudo docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_PAT }}
             
             # Stop and remove containers, then pull fresh images
-            run_sudo docker compose down
+            run_sudo docker compose -f docker-compose.staging.yml down
             # Force removal of old images to ensure fresh pull
             run_sudo docker rmi ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}:staging ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}-frontend:staging 2>/dev/null || true
-            run_sudo docker compose pull
+            
+            run_sudo docker compose -f docker-compose.staging.yml pull 
             
             # Start database
-            run_sudo docker compose up -d db
+            run_sudo docker compose -f docker-compose.staging.yml up -d db
             
             echo "Waiting for database to be healthy..."
             while test (run_sudo docker inspect --format='{{.State.Health.Status}}' FitnessTrackerDBPost) != "healthy"
@@ -197,14 +198,14 @@ jobs:
             
             # Flyway validation and migration
             echo "Running Flyway validation..."
-            set flyway_validate_output (run_sudo docker compose run --rm flyway validate 2>&1)
+            set flyway_validate_output (run_sudo docker compose -f docker-compose.staging.yml run --rm flyway validate 2>&1)
             set flyway_validate_exit $status
             
             if test $flyway_validate_exit -ne 0
               echo "$flyway_validate_output"
               if string match -rqi "Migration checksum mismatch|checksum mismatch" -- "$flyway_validate_output"
                 echo "Checksum mismatch detected. Running one-time Flyway repair..."
-                if not run_sudo docker compose run --rm flyway repair
+                if not run_sudo docker compose -f docker-compose.staging.yml run --rm flyway repair
                   echo "❌ Flyway repair failed!"
                   exit 1
                 end
@@ -215,16 +216,16 @@ jobs:
             end
             
             echo "Running Flyway migrate..."
-            if not run_sudo docker compose run --rm flyway migrate
+            if not run_sudo docker compose -f docker-compose.staging.yml run --rm flyway migrate
               echo "❌ Flyway migration failed!"
               exit 1
             end
             
             # Start backend and frontend
             echo "Starting backend..."
-            run_sudo docker compose up -d backend
+            run_sudo docker compose -f docker-compose.staging.yml up -d backend
             echo "Starting frontend..."
-            run_sudo docker compose up -d frontend
+            run_sudo docker compose -f docker-compose.staging.yml up -d frontend
       
       # ===== WAIT FOR APP TO BE READY =====
       - name: Wait for Backend to be Ready
