@@ -27,8 +27,9 @@ function LoginPage() {
       });
 
       if (response.ok) {
-        const message = await response.text();
-        setSuccess(message + " Redirecting to home…");
+        const UserID = await response.text();
+        setSuccess(UserID + " Redirecting to home…");
+        localStorage.setItem("userID",UserID)
         navigate("/home");
       } else {
         const message = await response.text();

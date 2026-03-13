@@ -9,18 +9,17 @@ using Backend.Application.Service;
 using Backend.Application.Service.Interfaces;
 using Backend.Gateway;
 
-namespace Backend.Tests.Gateway
+namespace UnitTests.Backend_UnitTest.LoginTests
 {
     public class LoginRepoTests : IAsyncLifetime
     {
         private readonly PostgreSqlContainer _postgreSqlContainer;
-        private IConnectionService _connectionService;
-        private LoginRepo _loginRepo;
+        private IConnectionService _connectionService = null!;
+        private LoginRepo _loginRepo = null!;
 
         public LoginRepoTests()
         {
-            _postgreSqlContainer = new PostgreSqlBuilder()
-                .WithImage("postgres:15-alpine")
+            _postgreSqlContainer = new PostgreSqlBuilder("postgres:15-alpine")
                 .WithDatabase("testdb")
                 .WithUsername("testuser")
                 .WithPassword("testpass")
@@ -51,6 +50,17 @@ namespace Backend.Tests.Gateway
                     fldCredentialsID SERIAL PRIMARY KEY,
                     fldUsername VARCHAR(255) UNIQUE NOT NULL,
                     fldPassword VARCHAR(255) NOT NULL
+                );
+
+                CREATE TABLE IF NOT EXISTS tblUser (
+                    fldUserID SERIAL PRIMARY KEY,
+                    fldCredentialsID INT NOT NULL,
+                    fldName VARCHAR(100) NOT NULL,
+                    fldEmail VARCHAR(100) NOT NULL,
+                    fldTotalWorkoutTime INT,
+                    fldTimeOfRegistration TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (fldCredentialsID) REFERENCES tblUserCredentials(fldCredentialsID),
+                    CONSTRAINT uq_user_credentials UNIQUE (fldCredentialsID)
                 );";
             await createTableCmd.ExecuteNonQueryAsync();
 
@@ -58,8 +68,18 @@ namespace Backend.Tests.Gateway
             insertCmd.CommandText = @"
                 INSERT INTO tblUserCredentials (fldUsername, fldPassword) VALUES
                 ('john_doe', 'password123'),
-                (' jane_doe ', ' pass123 '),   -- spaces to test trimming
-                ('test_user', 'test_pass');";
+                (' jane_doe ', ' pass123 '),
+                ('test_user', 'test_pass');
+
+                INSERT INTO tblUser (fldCredentialsID, fldName, fldEmail, fldTotalWorkoutTime)
+                SELECT c.fldCredentialsID, 'John Doe', 'john@fit.test', 10
+                FROM tblUserCredentials c
+                WHERE c.fldUsername = 'john_doe';
+
+                INSERT INTO tblUser (fldCredentialsID, fldName, fldEmail, fldTotalWorkoutTime)
+                SELECT c.fldCredentialsID, 'Jane Doe', 'jane@fit.test', 20
+                FROM tblUserCredentials c
+                WHERE c.fldUsername = ' jane_doe ';";
             await insertCmd.ExecuteNonQueryAsync();
 
             _loginRepo = new LoginRepo(_connectionService);
@@ -122,6 +142,29 @@ namespace Backend.Tests.Gateway
 
             // Assert
             Assert.Empty(result);
+        }
+
+        [Fact]
+        public void GetUserID_ExistingUser_ReturnsUserId()
+        {
+            var result = _loginRepo.getUserID("john_doe");
+
+            Assert.True(result > 0);
+        }
+
+        [Fact]
+        public void GetUserID_NonExistingUser_ReturnsMinusOne()
+        {
+            var result = _loginRepo.getUserID("missing_user");
+
+            Assert.Equal(-1, result);
+        }
+
+        [Fact]
+        public void GetUserID_NullOrEmptyUsername_ReturnsMinusOne()
+        {
+            Assert.Equal(-1, _loginRepo.getUserID(null));
+            Assert.Equal(-1, _loginRepo.getUserID(""));
         }
     }
 }

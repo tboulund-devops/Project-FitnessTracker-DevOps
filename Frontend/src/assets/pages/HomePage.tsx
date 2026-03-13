@@ -6,8 +6,7 @@ function HomePage() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
 
-    // TODO: replace with actual logged-in user ID (e.g. from auth context)
-    const userId = 1;
+    const userId = localStorage.getItem("userId");
 
     useEffect(() => {
         async function fetchProfile() {

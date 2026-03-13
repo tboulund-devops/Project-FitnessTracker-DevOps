@@ -1,10 +1,6 @@
 using Backend.Application.Service.Interfaces;
 using Backend.Domain;
-using Backend.Gateway;
-using Backend.Service;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Npgsql;
 
 namespace Backend.External.APIControllers;
 
@@ -25,21 +21,21 @@ public class APILoginController : ControllerBase
     
     
     [HttpPost("Login_CheckCredentials")]
-    public IActionResult CheckCredentials(LoginRequest request)
+    public ActionResult<int> CheckCredentials(LoginRequest? request)
     {
-        if (request == null ||string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
+        if (request == null || string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
         {
             return Unauthorized("Credtials Can not be empty");
         }
 
-        var isValid = _loginService.CheckCredentials(request);
+        var returnUserId = _loginService.CheckCredentials(request);
 
-        if (!isValid)
+        if (returnUserId <= 0)
         {
             return Unauthorized("Invalid username or password");
         }
         
-        return Ok("Valid Credentials"); 
+        return Ok(returnUserId); 
         
     }
 }

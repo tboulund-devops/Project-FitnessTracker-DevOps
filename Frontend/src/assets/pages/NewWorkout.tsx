@@ -33,8 +33,7 @@ const EXERCISES = [
     { id: 10, name: "Lat Pulldown" },
 ];
 
-// TODO: replace with auth context
-const CURRENT_USER_ID = 1;
+const CURRENT_USER_ID = localStorage.getItem("userID");
 
 let _nextId = 1;
 const nextId = () => _nextId++;
