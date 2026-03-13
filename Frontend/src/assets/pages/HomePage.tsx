@@ -6,9 +6,15 @@ function HomePage() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
 
-    const userId = localStorage.getItem("userId");
+    const userId = localStorage.getItem("userID") ?? localStorage.getItem("userId");
 
     useEffect(() => {
+        if (!userId) {
+            setError("Please log in");
+            setLoading(false);
+            return;
+        }
+
         async function fetchProfile() {
             try {
                 const response = await fetch(`/api/user/APIUser/GetUserInformation/${userId}`);
