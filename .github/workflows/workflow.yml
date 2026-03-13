@@ -251,7 +251,7 @@ jobs:
       - name: Verify Frontend is Serving
         if: always()
         run: |
-          FRONTEND_URL="http://${{ vars.STAGING_SERVER_IP }}:3000"  # adjust port if needed
+          FRONTEND_URL="http://${{ vars.STAGING_SERVER_IP }}:8030"
           curl -f -s -o /dev/null "$FRONTEND_URL" || (echo "❌ Frontend not reachable" && exit 1)
           echo "✅ Frontend is reachable
           
