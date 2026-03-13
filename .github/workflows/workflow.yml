@@ -253,7 +253,7 @@ jobs:
         run: |
           FRONTEND_URL="http://${{ vars.STAGING_SERVER_IP }}:8030"
           curl -f -s -o /dev/null "$FRONTEND_URL" || (echo "❌ Frontend not reachable" && exit 1)
-          echo "✅ Frontend is reachable
+          echo "✅ Frontend is reachable"
           
       # ===== WAIT FOR APP TO BE READY =====
       - name: Wait for Staging to be Ready
