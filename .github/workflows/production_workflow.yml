@@ -158,7 +158,7 @@ jobs:
             # Take ownership of the directory (requires sudo)
             sudo -S chown -R $(whoami) dowa
       #
-      - name: Deliver Docker Compose file and migrations to staging
+      - name: Deliver Docker Compose file and migrations to Production
         if: always()
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -169,7 +169,7 @@ jobs:
           target: dowa/
           rm: false # Overwrite existing files
 
-      - name: Create .env file on staging server
+      - name: Create .env file on Production server
         if: always()
         uses: appleboy/ssh-action@v1.2.1
         with:
@@ -182,9 +182,9 @@ jobs:
             echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> .env
             echo "DATABASE_NAME=${{ vars.DATABASE_NAME }}" >> .env
             echo "CONNECTION_STRING=Host=db;Database=${{ vars.DATABASE_NAME }};Username=${{ vars.DATABASE_USER }};Password=${{ secrets.DATABASE_PASSWORD }}" >> .env
-            echo "ASPNETCORE_ENVIRONMENT=Staging" >> .env
+            echo "ASPNETCORE_ENVIRONMENT=Production" >> .env
 
-      - name: Run Docker Compose on staging server
+      - name: Run Docker Compose on Production server
         if: always()
         uses: appleboy/ssh-action@v1.2.1
         with:
@@ -195,8 +195,8 @@ jobs:
           script: |
             cd dowa
             sudo -S docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_PAT }}
-            sudo -S docker compose pull
-            sudo -S docker compose up -d db
+            sudo -S docker-compose pull
+            sudo -S docker-compose up -d db
             echo "Waiting for database to be healthy..."
             while test (sudo docker inspect --format='{{.State.Health.Status}}' FitnessTrackerDBPost) != "healthy"
               sleep 2
