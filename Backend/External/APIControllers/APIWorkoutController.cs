@@ -1,4 +1,4 @@
-﻿using Backend.Application.Service;
+﻿﻿using Backend.Application.Service;
 using Backend.Application.Service.Interfaces;
 using Backend.Domain;
 using Microsoft.AspNetCore.Mvc;
@@ -19,21 +19,21 @@ public class APIWorkoutController : ControllerBase
     }
     
     [HttpPost("CreateWorkout")]
-    public async Task<IActionResult> CheckCredentials(Workout request, int UserId)
+    public async Task<ActionResult<int>> CreateWorkout(Workout request, int UserId)
     {
-        if (request == null ||request.DateOfWorkout == null || string.IsNullOrWhiteSpace(request.Name) || UserId <= 0)
+        if (request == null || string.IsNullOrWhiteSpace(request.Name) || UserId <= 0)
         {
             return BadRequest("Workout must need a creating date and name, and have a positive user id");
         }
 
-        int isValid = await _workoutService.CreateWorkout(request, UserId);
+        int returnWorkoutID = await _workoutService.CreateWorkout(request, UserId);
 
-        if (isValid <= 0)
+        if (returnWorkoutID <= 0)
         {
             return NotFound("Unable to create workout");
         }
         
-        return Ok("Workout created successfully"); 
+        return Ok(returnWorkoutID); 
         
     }
 
@@ -72,6 +72,20 @@ public class APIWorkoutController : ControllerBase
 
         return Ok(workout);
     }
+    
+    [HttpGet("GetWorkoutsByUserID/{userId}")]
+    public async Task<ActionResult<List<Workout>>> GetWorkoutsByUserID(int userId)
+    {
+        if (userId <= 0)
+            return BadRequest("User id must be a positive number");
+
+        var workouts = await _workoutService.GetWorkoutsByUserID(userId);
+    
+        if (workouts == null || workouts.Count == 0)
+            return NotFound($"No workouts found for user with ID {userId}");
+
+        return Ok(workouts);
+     }
     
     
     

@@ -1,0 +1,38 @@
+﻿/* Navbar styles (to match the theme) */
+.navbar {
+    background-color: #16213e;
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar-logo a {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #646cff;
+    text-decoration: none;
+}
+
+.navbar-links {
+    display: flex;
+    width: 100%;
+    gap: 2rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar-links a {
+    color: #e0e0e0;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.navbar-links a:hover {
+    color: #646cff;
+}
+.logout-item {
+    margin-left: auto;
+}
