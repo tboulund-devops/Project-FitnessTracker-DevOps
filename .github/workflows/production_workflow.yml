@@ -202,7 +202,7 @@ jobs:
               sleep 2
             end
             echo "Running Flyway migrations..."
-            if not echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose run --rm flyway
+            if not sudo -S docker compose run --rm flyway
               echo "❌ Flyway migration failed!"
               exit 1
             end
