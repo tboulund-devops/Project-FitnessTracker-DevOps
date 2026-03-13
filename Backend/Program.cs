@@ -88,7 +88,7 @@ app.UseStaticFiles(new StaticFileOptions
     ServeUnknownFileTypes = true
 });
 
-// Swagger middleware
+// Swagger middleware 
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
