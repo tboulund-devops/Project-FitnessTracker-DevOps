@@ -22,7 +22,7 @@ jobs:
           echo "Pull request #${{ github.event.number }}"
           echo "Target branch (base): ${{ github.base_ref }}"
           echo "Source branch (head): ${{ github.head_ref }}"
-          
+
           # This is the core validation logic
           if [ "${{ github.head_ref }}" != "main" ]; then
             echo "::error::Merge blocked: Only the 'main' branch can be merged into 'Production'. Attempted merge from '${{ github.head_ref }}'."
@@ -33,28 +33,28 @@ jobs:
 
   # SECOND JOB: All your integration steps (only runs if source check passes)
   integration:
-    needs: check-merge-source  # This ensures integration only runs if source check passes
+    needs: check-merge-source # This ensures integration only runs if source check passes
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          
+
       # ----- SEMANTIC VERSIONING -----
       - name: Application Version
         id: semver-app
         uses: paulhatch/semantic-version@v5.4.0
         with:
-          bump_each_commit: true           # Increments on every commit
-          
+          bump_each_commit: true # Increments on every commit
+
           major_pattern: "(MAJOR)"
           minor_pattern: "(MINOR)"
           bump_each_commit_patch_pattern: "(PATCH)"
 
       - name: Display Version
         run: echo "Generated version is ${{ steps.semver-app.outputs.version }}"
-      
+
       # Install required tools
       - name: Install required tools
         run: |
@@ -81,35 +81,35 @@ jobs:
       # Unit tests with coverage
       - name: Run unit tests with coverage
         run: |
-           dotnet test Tests/Tests.csproj \
-             --collect:"XPlat Code Coverage" \
-             --results-directory TestResults \
-             --logger "trx;LogFileName=test_results.trx"
+          dotnet test Tests/Tests.csproj \
+            --collect:"XPlat Code Coverage" \
+            --results-directory TestResults \
+            --logger "trx;LogFileName=test_results.trx"
 
       # Convert coverage to SonarQube format
       - name: Convert coverage to SonarQube format
         run: |
-           COVERAGE_FILE=$(find TestResults -name "coverage.cobertura.xml" | head -n 1)
-           echo "Found coverage file: $COVERAGE_FILE"
-           if [ -f "$COVERAGE_FILE" ]; then
-             mkdir -p sonarqube-coverage-report
-             reportgenerator \
-               -reports:"$COVERAGE_FILE" \
-               -targetdir:"sonarqube-coverage-report" \
-               -reporttypes:SonarQube
-             echo "✅ Coverage file converted to SonarQube format"
-           else
-             echo "❌ No coverage file found!"
-             exit 1
-           fi
+          COVERAGE_FILE=$(find TestResults -name "coverage.cobertura.xml" | head -n 1)
+          echo "Found coverage file: $COVERAGE_FILE"
+          if [ -f "$COVERAGE_FILE" ]; then
+            mkdir -p sonarqube-coverage-report
+            reportgenerator \
+              -reports:"$COVERAGE_FILE" \
+              -targetdir:"sonarqube-coverage-report" \
+              -reporttypes:SonarQube
+            echo "✅ Coverage file converted to SonarQube format"
+          else
+            echo "❌ No coverage file found!"
+            exit 1
+          fi
 
       # SonarCloud end
       - name: Complete Static Code Analysis
         run: |
-           dotnet sonarscanner end \
-           /d:sonar.token="${{ secrets.FITNESSTRACKERTOKEN }}"
+          dotnet sonarscanner end \
+          /d:sonar.token="${{ secrets.FITNESSTRACKERTOKEN }}"
 
-      # Mutation tests 
+      # Mutation tests
       - name: Run Mutation Tests
         working-directory: ./Tests
         run: dotnet stryker --project ./Tests.csproj --break-at 60 --output "stryker-report"
@@ -132,7 +132,7 @@ jobs:
         if: always()
         run: |
           docker build \
-            -t ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}:staging \
+            -t ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}:production \
             -f Backend/Dockerfile \
             Backend/
           docker push ghcr.io/${{ steps.repo_lower.outputs.repo_lower }} --all-tags
@@ -141,102 +141,101 @@ jobs:
         if: always()
         run: |
           docker build \
-            -t ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}-frontend:staging \
+            -t ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}-frontend:production \
             -f Frontend/Dockerfile \
             Frontend/
           docker push ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}-frontend --all-tags
 
         # ===== DEPLOY TO PRODUCTION SERVER =====
-#      - name: Ensure target directory exists and is writable
-#        uses: appleboy/ssh-action@v1.2.1
-#        with:
-#          host: ${{ vars.STAGING_SERVER_IP }}
-#          username: ${{ vars.STAGING_SERVER_USERNAME }}
-#          key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
-#          script: |
-#            mkdir -p dowa
-#            # Take ownership of the directory (requires sudo)
-#            echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S chown -R $(whoami) dowa
-#
-#      - name: Deliver Docker Compose file and migrations to staging
-#        if: always()
-#        uses: appleboy/scp-action@v0.1.7
-#        with:
-#          host: ${{ vars.STAGING_SERVER_IP }}
-#          username: ${{ vars.STAGING_SERVER_USERNAME }}
-#          key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
-#          source: "docker-compose.yml,db/migrations/*.sql"
-#          target: dowa/
-#          rm: false   # Overwrite existing files
-#
-#      - name: Create .env file on staging server
-#        if: always()
-#        uses: appleboy/ssh-action@v1.2.1
-#        with:
-#          host: ${{ vars.STAGING_SERVER_IP }}
-#          username: ${{ vars.STAGING_SERVER_USERNAME }}
-#          key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
-#          script: |
-#            cd dowa
-#            echo "DATABASE_USER=${{ vars.DATABASE_USER }}" > .env
-#            echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> .env
-#            echo "DATABASE_NAME=${{ vars.DATABASE_NAME }}" >> .env
-#            echo "CONNECTION_STRING=Host=db;Database=${{ vars.DATABASE_NAME }};Username=${{ vars.DATABASE_USER }};Password=${{ secrets.DATABASE_PASSWORD }}" >> .env
-#            echo "ASPNETCORE_ENVIRONMENT=Staging" >> .env
-#
-#      - name: Run Docker Compose on staging server
-#        if: always()
-#        uses: appleboy/ssh-action@v1.2.1
-#        with:
-#          host: ${{ vars.STAGING_SERVER_IP }}
-#          username: ${{ vars.STAGING_SERVER_USERNAME }}
-#          key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
-#          # Use bash -c with a quoted multi‑line string – safe for Fish
-#          script: |
-#            cd dowa
-#            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_PAT }}
-#            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose pull
-#            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose up -d db
-#            echo "Waiting for database to be healthy..."
-#            while test (sudo docker inspect --format='{{.State.Health.Status}}' FitnessTrackerDBPost) != "healthy"
-#              sleep 2
-#            end
-#            echo "Running Flyway migrations..."
-#            if not echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose run --rm flyway
-#              echo "❌ Flyway migration failed!"
-#              exit 1
-#            end
-#            echo "Starting backend..."
-#            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose up -d backend
-#            echo "Starting frontend..."
-#            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose up -d frontend
-#
-#      # ===== WAIT FOR APP TO BE READY =====
-#      - name: Wait for Staging to be Ready
-#        if: always()
-#        run: |
-#          MAX_ATTEMPTS=30
-#          URL="http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
-#          echo "Waiting for app at $URL"
-#          for i in $(seq 1 $MAX_ATTEMPTS); do
-#            HTTP_STATUS=$(curl -4 -s -o /dev/null -w "%{http_code}" --connect-timeout 5 "$URL" || echo "000")
-#            if [ "$HTTP_STATUS" = "200" ]; then
-#              echo "✅ App is up! (HTTP 200)"
-#              exit 0
-#            else
-#              echo "Attempt $i/$MAX_ATTEMPTS: HTTP $HTTP_STATUS - not ready yet. Sleeping 5s..."
-#            fi
-#            sleep 5
-#          done
-#          echo "❌ App did not become ready in time. Last HTTP status: $HTTP_STATUS"
-#          exit 1
-      
+      - name: Ensure target directory exists and is writable
+        uses: appleboy/ssh-action@v1.2.1
+        with:
+          host: ${{ vars.PRODUCTION_SERVER_IP }}
+          username: ${{ vars.PRODUCTION_SERVER_USERNAME }}
+          key: ${{ secrets.PRODUCTION_SERVER_SSH_KEY }}
+          script: |
+            mkdir -p dowa
+            # Take ownership of the directory (requires sudo)
+            sudo -S chown -R $(whoami) dowa
+      #
+      - name: Deliver Docker Compose file and migrations to Production
+        if: always()
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ vars.PRODUCTION_SERVER_IP }}
+          username: ${{ vars.PRODUCTION_SERVER_USERNAME }}
+          key: ${{ secrets.PRODUCTION_SERVER_SSH_KEY }}
+          source: "docker-compose.yml,db/migrations/*.sql"
+          target: dowa/
+          rm: false # Overwrite existing files
+
+      - name: Create .env file on Production server
+        if: always()
+        uses: appleboy/ssh-action@v1.2.1
+        with:
+          host: ${{ vars.PRODUCTION_SERVER_IP }}
+          username: ${{ vars.PRODUCTION_SERVER_USERNAME }}
+          key: ${{ secrets.PRODUCTION_SERVER_SSH_KEY }}
+          script: |
+            cd dowa
+            echo "DATABASE_USER=${{ vars.DATABASE_USER }}" > .env
+            echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> .env
+            echo "DATABASE_NAME=${{ vars.DATABASE_NAME }}" >> .env
+            echo "CONNECTION_STRING=Host=db;Database=${{ vars.DATABASE_NAME }};Username=${{ vars.DATABASE_USER }};Password=${{ secrets.DATABASE_PASSWORD }}" >> .env
+            echo "ASPNETCORE_ENVIRONMENT=Production" >> .env
+
+      - name: Run Docker Compose on Production server
+        if: always()
+        uses: appleboy/ssh-action@v1.2.1
+        with:
+          host: ${{ vars.PRODUCTION_SERVER_IP }}
+          username: ${{ vars.PRODUCTION_SERVER_USERNAME }}
+          key: ${{ secrets.PRODUCTION_SERVER_SSH_KEY }}
+          # Use bash -c with a quoted multi‑line string – safe for Fish
+          script: |
+            cd dowa
+            sudo -S docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_PAT }}
+            sudo -S docker-compose pull
+            sudo -S docker-compose up -d db
+            echo "Waiting for database to be healthy..."
+            while test (sudo docker inspect --format='{{.State.Health.Status}}' FitnessTrackerDBPost) != "healthy"
+              sleep 2
+            end
+            echo "Running Flyway migrations..."
+            if not sudo -S docker-compose run --rm flyway
+              echo "❌ Flyway migration failed!"
+              exit 1
+            end
+            echo "Starting backend..."
+            sudo -S docker-compose up -d backend
+            echo "Starting frontend..."
+            sudo -S docker-compose up -d frontend
+      # ===== WAIT FOR APP TO BE READY =====
+      - name: Wait for Production to be Ready
+        if: always()
+        run: |
+          MAX_ATTEMPTS=30
+          URL="http://${{ vars.PRODUCTION_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
+          echo "Waiting for app at $URL"
+          for i in $(seq 1 $MAX_ATTEMPTS); do
+            HTTP_STATUS=$(curl -4 -s -o /dev/null -w "%{http_code}" --connect-timeout 5 "$URL" || echo "000")
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "✅ App is up! (HTTP 200)"
+              exit 0
+            else
+              echo "Attempt $i/$MAX_ATTEMPTS: HTTP $HTTP_STATUS - not ready yet. Sleeping 5s..."
+            fi
+            sleep 5
+          done
+          echo "❌ App did not become ready in time. Last HTTP status: $HTTP_STATUS"
+          exit 1
+
       # ===== Frontedn Build =====
       - name: Install Node.js
         if: always()
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: "18"
       - name: Install Frontend Dependencies
         if: always()
         working-directory: ./Frontend/
