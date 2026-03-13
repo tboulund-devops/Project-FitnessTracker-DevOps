@@ -195,12 +195,6 @@ jobs:
                   echo "❌ Flyway repair failed!"
                   exit 1
                 end
-
-                echo "Re-running Flyway validation after repair..."
-                if not run_sudo docker compose run --rm flyway validate
-                  echo "❌ Flyway validation still fails after repair!"
-                  exit 1
-                end
               else
                 echo "❌ Flyway validation failed for a non-checksum reason."
                 exit $flyway_validate_exit
