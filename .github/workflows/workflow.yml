@@ -90,6 +90,7 @@ jobs:
       #   run: dotnet stryker --project ./Tests.csproj --break-at 60 --output "stryker-report"
 
       # ===== DOCKER BUILD & PUSH TO GHCR ====
+      # ===== DOCKER BUILD & PUSH TO GHCR =====
       - name: Convert repository name to lowercase
         if: always()
         id: repo_lower
@@ -116,12 +117,13 @@ jobs:
         if: always()
         run: |
           docker build \
+            --build-arg REACT_APP_API_URL=http://${{ vars.STAGING_SERVER_IP }}:8081 \
             -t ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}-frontend:staging \
             -f Frontend/Dockerfile \
             Frontend/
           docker push ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}-frontend --all-tags
-
-        # ===== DEPLOY TO STAGING SERVER =====
+      
+      # ===== DEPLOY TO STAGING SERVER =====
       - name: Ensure target directory exists and is writable
         if: always()
         uses: appleboy/ssh-action@v1.2.1
@@ -131,7 +133,6 @@ jobs:
           key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
           script: |
             mkdir -p dowa
-            # Take ownership of the directory (requires sudo)
             echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S chown -R $(whoami) dowa
 
       - name: Deliver Docker Compose file and migrations to staging
@@ -143,7 +144,7 @@ jobs:
           key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
           source: "docker-compose.yml,db/migrations/*.sql"
           target: dowa/
-          rm: false # Overwrite existing files
+          rm: false
 
       - name: Create .env file on staging server
         if: always()
@@ -159,7 +160,9 @@ jobs:
             echo "DATABASE_NAME=${{ vars.DATABASE_NAME }}" >> .env
             echo "CONNECTION_STRING=Host=db;Database=${{ vars.DATABASE_NAME }};Username=${{ vars.DATABASE_USER }};Password=${{ secrets.DATABASE_PASSWORD }}" >> .env
             echo "ASPNETCORE_ENVIRONMENT=Staging" >> .env
-
+            # Add any runtime frontend variables if needed (e.g., for a config.js)
+            # echo "REACT_APP_API_URL=http://${{ vars.STAGING_SERVER_IP }}:8081" >> .env
+  
       - name: Run Docker Compose on staging server
         if: always()
         uses: appleboy/ssh-action@v1.2.1
@@ -169,24 +172,34 @@ jobs:
           key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
           script: |
             cd dowa
+            
+            # Function to run commands with sudo (no password prompt)
             function run_sudo
               echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S -p '' $argv
             end
-
+            
+            # Log in to GHCR
             run_sudo docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_PAT }}
-            run_sudo docker-compose down --force
-            run_sudo docker-compose pull
-            run_sudo docker-compose up -d db
-
+            
+            # Stop and remove containers, then pull fresh images
+            run_sudo docker compose down
+            # Force removal of old images to ensure fresh pull
+            run_sudo docker rmi ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}:staging ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}-frontend:staging 2>/dev/null || true
+            run_sudo docker compose pull
+            
+            # Start database
+            run_sudo docker compose up -d db
+            
             echo "Waiting for database to be healthy..."
             while test (run_sudo docker inspect --format='{{.State.Health.Status}}' FitnessTrackerDBPost) != "healthy"
               sleep 2
             end
-
+            
+            # Flyway validation and migration
             echo "Running Flyway validation..."
             set flyway_validate_output (run_sudo docker compose run --rm flyway validate 2>&1)
             set flyway_validate_exit $status
-
+            
             if test $flyway_validate_exit -ne 0
               echo "$flyway_validate_output"
               if string match -rqi "Migration checksum mismatch|checksum mismatch" -- "$flyway_validate_output"
@@ -200,18 +213,48 @@ jobs:
                 exit $flyway_validate_exit
               end
             end
-
+            
             echo "Running Flyway migrate..."
             if not run_sudo docker compose run --rm flyway migrate
               echo "❌ Flyway migration failed!"
               exit 1
             end
-
+            
+            # Start backend and frontend
             echo "Starting backend..."
             run_sudo docker compose up -d backend
             echo "Starting frontend..."
             run_sudo docker compose up -d frontend
+      
+      # ===== WAIT FOR APP TO BE READY =====
+      - name: Wait for Backend to be Ready
+        if: always()
+        run: |
+          MAX_ATTEMPTS=30
+          URL="http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
+          echo "Waiting for backend at $URL"
+          for i in $(seq 1 $MAX_ATTEMPTS); do
+            HTTP_STATUS=$(curl -4 -s -o /dev/null -w "%{http_code}" --connect-timeout 5 "$URL" || echo "000")
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "✅ Backend is up! (HTTP 200)"
+              break
+            else
+              echo "Attempt $i/$MAX_ATTEMPTS: HTTP $HTTP_STATUS - not ready yet. Sleeping 5s..."
+            fi
+            sleep 5
+          done
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "❌ Backend did not become ready in time. Last HTTP status: $HTTP_STATUS"
+            exit 1
+          fi
 
+      - name: Verify Frontend is Serving
+        if: always()
+        run: |
+          FRONTEND_URL="http://${{ vars.STAGING_SERVER_IP }}:3000"  # adjust port if needed
+          curl -f -s -o /dev/null "$FRONTEND_URL" || (echo "❌ Frontend not reachable" && exit 1)
+          echo "✅ Frontend is reachable
+          
       # ===== WAIT FOR APP TO BE READY =====
       - name: Wait for Staging to be Ready
         if: always()
