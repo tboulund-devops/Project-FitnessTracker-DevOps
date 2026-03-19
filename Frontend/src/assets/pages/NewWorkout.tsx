@@ -89,26 +89,26 @@ function NewWorkout() {
         value: number
     ) => {
         setExercises((prev) =>
-            prev.map((ex) =>
-                ex.localId !== exLocalId
-                    ? ex
-                    : {
-                          ...ex,
-                          sets: ex.sets.map((s) =>
-                              s.localId === setLocalId ? { ...s, [field]: value } : s
-                          ),
-                      }
-            )
+            prev.map((ex) => {
+                if (ex.localId !== exLocalId) return ex;
+                
+                return {
+                    ...ex,
+                    sets: ex.sets.map((s) =>
+                        s.localId === setLocalId ? { ...s, [field]: value } : s
+                    ),
+                };
+            })
         );
     };
 
     const removeSet = (exLocalId: number, setLocalId: number) => {
         setExercises((prev) =>
-            prev.map((ex) =>
-                ex.localId !== exLocalId
-                    ? ex
-                    : { ...ex, sets: ex.sets.filter((s) => s.localId !== setLocalId) }
-            )
+            prev.map((ex) => {
+                if (ex.localId !== exLocalId) return ex;
+                
+                return { ...ex, sets: ex.sets.filter((s) => s.localId !== setLocalId) };
+            })
         );
     };
     
@@ -127,25 +127,26 @@ function NewWorkout() {
             setError("Please enter a workout name.");
             return;
         }
+        
         if (exercises.length === 0) {
             setError("Please add at least one exercise.");
             return;
         }
+        
         const allSets = exercises.flatMap((e) => e.sets);
         if (allSets.length === 0) {
             setError("Please add at least one set.");
             return;
         }
 
-        const invalidSet = allSets.find((s) => s.reps <= 0 || s.weight <= 0);
-        if (invalidSet) {
+        const hasInvalidSet = allSets.some((s) => s.reps <= 0 || s.weight <= 0);
+        if (hasInvalidSet) {
             setError("Every set must have at least 1 rep and a weight greater than 0 kg.");
             return;
         }
 
         setSaving(true);
         try {
-            // 1. Create the workout
             const workoutPayload = {
                 dateOfWorkout: startTime.toISOString(),
                 name: workoutName.trim(),
@@ -174,7 +175,6 @@ function NewWorkout() {
                 return;
             }
 
-            // 2. Add all sets
             for (const set of allSets) {
                 const setPayload = {
                     ExerciseID: set.exerciseId,

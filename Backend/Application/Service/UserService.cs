@@ -57,35 +57,36 @@ public class UserService : IUserService
         if (sortedDatesDesc.Count == 0)
             return (0, 0);
 
-        int currentStreak = 0;
-        int bestStreak = 0;
-        int streak = 0;
-
-        // Check if current streak is still active (last workout was today or yesterday)
         var today = DateTime.Today;
         var daysSinceLast = (today - sortedDatesDesc[0].Date).Days;
-        bool currentStreakActive = daysSinceLast <= 1;
+        bool isCurrentStreakActive = daysSinceLast <= 1;
+
+        int currentStreak = 0;
+        int bestStreak = 0;
+        int runningStreak = 1;
 
         for (int i = 1; i < sortedDatesDesc.Count; i++)
         {
-            var diff = (sortedDatesDesc[i - 1].Date - sortedDatesDesc[i].Date).Days;
-            if (diff == 1)
+            var daysBetween = (sortedDatesDesc[i - 1].Date - sortedDatesDesc[i].Date).Days;
+            
+            if (daysBetween == 1)
             {
-                streak++;
+                runningStreak++;
             }
             else
             {
-                if (i == 1 || currentStreakActive)
-                    currentStreak = streak;
-                currentStreakActive = false;
-                bestStreak = Math.Max(bestStreak, streak);
-                streak = 1;
+                if (i == 1 && isCurrentStreakActive)
+                    currentStreak = runningStreak;
+                    
+                bestStreak = Math.Max(bestStreak, runningStreak);
+                runningStreak = 1;
+                isCurrentStreakActive = false;
             }
         }
 
-        bestStreak = Math.Max(bestStreak, streak);
-        if (currentStreakActive)
-            currentStreak = streak;
+        bestStreak = Math.Max(bestStreak, runningStreak);
+        if (isCurrentStreakActive)
+            currentStreak = runningStreak;
 
         return (currentStreak, bestStreak);
     }
