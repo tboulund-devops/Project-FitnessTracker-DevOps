@@ -22,9 +22,6 @@ public class WorkoutRepo : IWorkoutRepo
 
         using var connection = _connectionService.GetConnection();
         await connection.OpenAsync();
-        
-        //transaction combines the 2 inserts to a single "unit" / commit, if not, the first might succede
-        //and the 2nd fail, and you are left with "floating" data in tblWorkout.
         using var transaction = await connection.BeginTransactionAsync();
 
         try
@@ -82,8 +79,6 @@ public class WorkoutRepo : IWorkoutRepo
 
         using var connection = _connectionService.GetConnection();
         await connection.OpenAsync();
-        //transaction combines the 2 inserts to a single "unit" / commit, if not, the first might succede
-        //and the 2nd fail, and you are left with "floating" data in tblSet.
         using var transaction = await connection.BeginTransactionAsync();
 
         try
@@ -185,52 +180,18 @@ public class WorkoutRepo : IWorkoutRepo
         
             getSetsCmd.Parameters.AddWithValue("@workoutId", workoutId);
 
-            try
+            using var reader = await getSetsCmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
             {
-                using var reader = await getSetsCmd.ExecuteReaderAsync();
-                
-                // Log column information
-                Console.WriteLine($"Number of columns: {reader.FieldCount}");
-                for (int i = 0; i < reader.FieldCount; i++)
+                var set = new Set
                 {
-                    Console.WriteLine($"Column {i}: {reader.GetName(i)} - Type: {reader.GetFieldType(i)}");
-                }
-                
-                while (await reader.ReadAsync())
-                {
-                    try
-                    {
-                        var set = new Set
-                        {
-                            SetID = Convert.ToInt32(reader[0]),
-                            ExerciseID = Convert.ToInt32(reader[1]),
-                            Weight = Convert.ToInt32(reader[2]),
-                            Reps = Convert.ToInt32(reader[3]),
-                            RestBetweenSetInSec = Convert.ToInt32(reader[4])
-                        };
-                        workout.Sets.Add(set);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"ERROR reading set data: {ex.Message}");
-                        Console.WriteLine($"Column values: " +
-                            $"SetID={reader[0]}, " +
-                            $"ExerciseID={reader[1]}, " +
-                            $"Weight={reader[2]}, " +
-                            $"Reps={reader[3]}, " +
-                            $"Rest={reader[4]}");
-                        
-                        Console.WriteLine("=== ERROR in getWorkout ===");
-                        Console.WriteLine($"Message: {ex.Message}");
-                        Console.WriteLine($"Stack Trace: {ex.StackTrace}");
-                        throw;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"ERROR in set query for workout {workoutId}: {ex.Message}");
-                throw;
+                    SetID = Convert.ToInt32(reader[0]),
+                    ExerciseID = Convert.ToInt32(reader[1]),
+                    Weight = Convert.ToInt32(reader[2]),
+                    Reps = Convert.ToInt32(reader[3]),
+                    RestBetweenSetInSec = Convert.ToInt32(reader[4])
+                };
+                workout.Sets.Add(set);
             }
         }
         return workout;
@@ -271,7 +232,6 @@ public class WorkoutRepo : IWorkoutRepo
     {
         var workoutId = reader.GetInt32(0);
         
-        // Check if we've already created this workout
         if (!workoutDict.TryGetValue(workoutId, out var workout))
         {
             workout = new Workout
@@ -284,13 +244,8 @@ public class WorkoutRepo : IWorkoutRepo
             workoutDict.Add(workoutId, workout);
             workouts.Add(workout);
         }
-        else
-        {
-            workout = workoutDict[workoutId];
-        }
 
-        // Check if there's a set (might be null if no sets)
-        if (!reader.IsDBNull(3)) // Check if fldSetID is not null
+        if (!reader.IsDBNull(3))
         {
             var set = new Set
             {
