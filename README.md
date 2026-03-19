@@ -39,6 +39,102 @@ Database: PostgreSQL
 
 ---
 
+## Automation & CI/CD
+
+### GitHub Workflows
+
+This project uses GitHub Actions for continuous integration, deployment, and automated maintenance.
+
+#### CI/CD Pipelines
+
+**Main Branch Workflow** (`workflow.yml`)
+- **Trigger**: Push to `main` branch
+- **Purpose**: Continuous integration and deployment to staging environment
+- **Key Steps**:
+  - Semantic versioning (automatic version bumps)
+  - Static code analysis with SonarCloud
+  - Build .NET solution
+  - Docker image build and push to GHCR
+  - Deploy to staging server with Docker Compose
+  - Database migrations with Flyway
+  - Performance testing with k6
+  - E2E testing with TestCafe
+  - Frontend build and deployment
+
+**Production Workflow** (`production_workflow.yml`)
+- **Trigger**: Pull request to `Production` branch (only accepts merges from `main`)
+- **Purpose**: Production deployment with comprehensive testing
+- **Key Steps**:
+  - Source branch validation (enforces main → Production flow)
+  - Full test suite (unit tests, mutation tests, coverage)
+  - SonarCloud quality gate validation
+  - Docker image build with production tags
+  - Production server deployment
+  - Performance and E2E testing validation
+
+#### Agentic Workflows
+
+Automated AI-powered workflows that maintain and improve the repository:
+
+**Daily Documentation Updater** (`daily-doc-updater`)
+- **Schedule**: Weekly (configurable via workflow_dispatch)
+- **Purpose**: Automatically reviews merged PRs from the last 24 hours and updates documentation
+- **Features**:
+  - Scans for new features, changes, and breaking changes
+  - Updates README and other documentation files
+  - Creates pull requests with documentation improvements
+  - Maintains consistent documentation style
+- **Labels**: `documentation`, `automation`
+
+**Daily Repository Status** (`daily-repo-status`)
+- **Schedule**: Weekly (configurable via workflow_dispatch)
+- **Purpose**: Creates daily status reports as GitHub issues
+- **Features**:
+  - Summarizes recent repository activity
+  - Tracks issues, PRs, discussions, and releases
+  - Provides productivity insights and recommendations
+  - Highlights community contributions
+  - Suggests actionable next steps for maintainers
+- **Labels**: `report`, `daily-status`
+
+### Docker & Deployment
+
+The project uses Docker Compose for orchestration with separate configurations:
+- `docker-compose.yml` - Production environment
+- `docker-compose.staging.yml` - Staging environment
+- `docker-compose.dev.yml` - Local development
+
+**Services**:
+- Frontend (React + Vite) - Port 8030 (staging)
+- Backend (ASP.NET Core) - Port 8081 (staging)
+- Database (PostgreSQL) - Internal
+- Flyway - Database migrations
+
+### How to Use Automated Workflows
+
+**Trigger Manual Documentation Updates**:
+```bash
+# Go to Actions tab in GitHub
+# Select "Daily Documentation Updater"
+# Click "Run workflow" button
+# The bot will review recent changes and create a documentation PR if needed
+```
+
+**Trigger Manual Repository Status Report**:
+```bash
+# Go to Actions tab in GitHub
+# Select "Daily Repository Status"
+# Click "Run workflow" button
+# The bot will create an issue with the latest repository status
+```
+
+**View Workflow Results**:
+- Documentation PRs are labeled with `documentation` and `automation`
+- Status reports are created as issues with labels `report` and `daily-status`
+- All workflow runs can be monitored in the Actions tab
+
+---
+
 ## Feature plan
 
 ### Week 5
