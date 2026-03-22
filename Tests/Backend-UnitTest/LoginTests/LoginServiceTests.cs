@@ -1,4 +1,5 @@
 ﻿using Backend.Domain;
+using Backend.External.Repos;
 using Backend.Gateway;
 using Backend.Service;
 using Moq;
@@ -8,18 +9,20 @@ namespace UnitTests.Backend_UnitTest.LoginTests;
 public class LoginServiceTests
 {
     private readonly Mock<ILoginRepo> _mockRepo;
+    private readonly Mock<IUserRepo> _mockUserRepo;
     private readonly LoginService _loginService;
 
     public LoginServiceTests()
     {
         _mockRepo = new Mock<ILoginRepo>();
-        _loginService = new LoginService(_mockRepo.Object);
+        _mockUserRepo = new Mock<IUserRepo>();
+        _loginService = new LoginService(_mockRepo.Object, _mockUserRepo.Object);
     }
 
     [Fact]
     public void Constructor_WithValidRepo_InitializesService()
     {
-        var service = new LoginService(_mockRepo.Object);
+        var service = new LoginService(_mockRepo.Object, _mockUserRepo.Object);
 
         Assert.NotNull(service);
     }
@@ -27,7 +30,7 @@ public class LoginServiceTests
     [Fact]
     public void Constructor_WithNullRepo_ThrowsArgumentNullException()
     {
-        var exception = Assert.Throws<ArgumentNullException>(() => new LoginService(null!));
+        var exception = Assert.Throws<ArgumentNullException>(() => new LoginService(null!, _mockUserRepo.Object));
 
         Assert.Equal("repo", exception.ParamName);
     }

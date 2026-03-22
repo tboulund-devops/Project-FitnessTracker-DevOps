@@ -108,7 +108,7 @@ public class APILoginControllerTest
 
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
         Assert.Equal("Request body is required", badRequestResult.Value);
-        _mockLoginService.Verify(x => x.RegisterLoginCredentials(It.IsAny<LoginRequest>()), Times.Never);
+        _mockLoginService.Verify(x => x.RegisterLoginCredentials(It.IsAny<RegisterUserRequest>()), Times.Never);
     }
 
     [Theory]
@@ -130,7 +130,7 @@ public class APILoginControllerTest
 
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
         Assert.Equal("Username, password, name and email are required", badRequestResult.Value);
-        _mockLoginService.Verify(x => x.RegisterLoginCredentials(It.IsAny<LoginRequest>()), Times.Never);
+        _mockLoginService.Verify(x => x.RegisterLoginCredentials(It.IsAny<RegisterUserRequest>()), Times.Never);
     }
 
     [Fact]
@@ -142,7 +142,7 @@ public class APILoginControllerTest
 
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
         Assert.Equal("Total workout time must be zero or greater", badRequestResult.Value);
-        _mockLoginService.Verify(x => x.RegisterLoginCredentials(It.IsAny<LoginRequest>()), Times.Never);
+        _mockLoginService.Verify(x => x.RegisterLoginCredentials(It.IsAny<RegisterUserRequest>()), Times.Never);
     }
 
     [Fact]
@@ -150,16 +150,16 @@ public class APILoginControllerTest
     {
         var request = CreateRegisterRequest("username", "password", "Name", "email@test.com", 0);
         _mockLoginService
-            .Setup(x => x.RegisterLoginCredentials(It.Is<LoginRequest>(r => r.Username == "username" && r.Password == "password")))
+            .Setup(x => x.RegisterLoginCredentials(It.Is<RegisterUserRequest>(r => r.Username == "username" && r.Password == "password")))
             .Returns(false);
 
         IActionResult result = _controller.RegisterLoginCredentials(request);
 
         var conflictResult = Assert.IsType<ConflictObjectResult>(result);
         Assert.Equal("Registration failed. Username may already exist", conflictResult.Value);
-        _mockLoginService.Verify(
-            x => x.RegisterLoginCredentials(It.Is<LoginRequest>(r => r.Username == "username" && r.Password == "password")),
-            Times.Once);
+        _mockLoginService.Verify<bool>(
+            x => x.RegisterLoginCredentials(It.Is<RegisterUserRequest>(r => r.Username == "username" && r.Password == "password")),
+            Times.Once());
     }
 
     [Fact]
@@ -167,16 +167,16 @@ public class APILoginControllerTest
     {
         var request = CreateRegisterRequest("username", "password", "Name", "email@test.com", 0);
         _mockLoginService
-            .Setup(x => x.RegisterLoginCredentials(It.Is<LoginRequest>(r => r.Username == "username" && r.Password == "password")))
+            .Setup(x => x.RegisterLoginCredentials(It.Is<RegisterUserRequest>(r => r.Username == "username" && r.Password == "password")))
             .Returns(true);
 
         IActionResult result = _controller.RegisterLoginCredentials(request);
 
         var okResult = Assert.IsType<OkObjectResult>(result);
         Assert.Equal("Credentials registered. User profile fields received", okResult.Value);
-        _mockLoginService.Verify(
-            x => x.RegisterLoginCredentials(It.Is<LoginRequest>(r => r.Username == "username" && r.Password == "password")),
-            Times.Once);
+        _mockLoginService.Verify<bool>(
+            x => x.RegisterLoginCredentials(It.Is<RegisterUserRequest>(r => r.Username == "username" && r.Password == "password")),
+            Times.Once());
     }
 
     private static LoginRequest CreateRequest(string? username, string? password) => new()

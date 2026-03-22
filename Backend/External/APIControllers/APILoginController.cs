@@ -53,7 +53,7 @@ public class APILoginController : ControllerBase
             return BadRequest("Username, password, name and email are required");
         }
 
-        if (request.TotalWorkoutTime == 0)
+        if (request.TotalWorkoutTime > 0)
         {
             return BadRequest("Total workout time must be less that 1");
         }
