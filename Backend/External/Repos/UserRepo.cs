@@ -94,4 +94,27 @@ public class UserRepo : IUserRepo
 
         return await cmd.ExecuteScalarAsync() as string;
     }
+
+    public bool addUserInformation(int credentialsId, string? name, string? email, int totalWorkoutTime)
+    {
+        if (credentialsId <= 0 || string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(email) || totalWorkoutTime < 0)
+        {
+            return false;
+        }
+
+        using var connection = _connectionService.GetConnection();
+        connection.Open();
+
+        using var cmd = new NpgsqlCommand(
+            "INSERT INTO tblUser (fldCredentialsID, fldName, fldEmail, fldTotalWorkoutTime) VALUES (@credentialsId, @name, @email, @totalWorkoutTime)",
+            connection);
+
+        cmd.Parameters.AddWithValue("@credentialsId", credentialsId);
+        cmd.Parameters.AddWithValue("@name", name);
+        cmd.Parameters.AddWithValue("@email", email);
+        cmd.Parameters.AddWithValue("@totalWorkoutTime", totalWorkoutTime);
+
+        int rowsAffected = cmd.ExecuteNonQuery();
+        return rowsAffected > 0;
+    }
 }

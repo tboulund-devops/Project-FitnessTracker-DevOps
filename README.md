@@ -183,7 +183,7 @@ _Winter vacation - nothing planned._
 
 ### Week 13
 
-**Feature 1:** [...]
+**Feature 1:** Registration option, front and backend
 
 **Feature 2:** [...]
 
