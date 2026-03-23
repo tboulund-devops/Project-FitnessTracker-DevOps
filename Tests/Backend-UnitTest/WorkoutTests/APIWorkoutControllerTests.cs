@@ -1,4 +1,4 @@
-﻿using Backend.Application.Service.Interfaces;
+﻿﻿using Backend.Application.Service.Interfaces;
 using Backend.Domain;
 using Backend.External.APIControllers;
 using Microsoft.AspNetCore.Mvc;
@@ -43,10 +43,10 @@ public class APIWorkoutControllerTests
     public async Task CreateWorkout_NullRequest_ReturnsBadRequest()
     {
         // Act
-        var result = await _controller.CheckCredentials(null!, 1);
+        var result = await _controller.CreateWorkout(null!, 1);
 
         // Assert
-        var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+        var badRequest = Assert.IsType<BadRequestObjectResult>(result.Result);
         Assert.Equal("Workout must need a creating date and name, and have a positive user id", badRequest.Value);
     }
 
@@ -62,11 +62,11 @@ public class APIWorkoutControllerTests
 
         // Act - DateOfWorkout is DateTime (non-nullable value type), so this path
         // won't trigger the null check for DateOfWorkout. Test the name path instead.
-        var result = await _controller.CheckCredentials(workout, 1);
+        var result = await _controller.CreateWorkout(workout, 1);
 
         // Assert - Valid workout with default date should still proceed
         // since DateTime default is not null
-        Assert.IsNotType<BadRequestObjectResult>(result);
+        Assert.IsNotType<BadRequestObjectResult>(result.Result);
     }
 
     [Fact]
@@ -80,10 +80,10 @@ public class APIWorkoutControllerTests
         };
 
         // Act
-        var result = await _controller.CheckCredentials(workout, 1);
+        var result = await _controller.CreateWorkout(workout, 1);
 
         // Assert
-        var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+        var badRequest = Assert.IsType<BadRequestObjectResult>(result.Result);
         Assert.Equal("Workout must need a creating date and name, and have a positive user id", badRequest.Value);
     }
 
@@ -98,10 +98,10 @@ public class APIWorkoutControllerTests
         };
 
         // Act
-        var result = await _controller.CheckCredentials(workout, 1);
+        var result = await _controller.CreateWorkout(workout, 1);
 
         // Assert
-        var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+        var badRequest = Assert.IsType<BadRequestObjectResult>(result.Result);
         Assert.Equal("Workout must need a creating date and name, and have a positive user id", badRequest.Value);
     }
 
@@ -116,10 +116,10 @@ public class APIWorkoutControllerTests
         };
 
         // Act
-        var result = await _controller.CheckCredentials(workout, 1);
+        var result = await _controller.CreateWorkout(workout, 1);
 
         // Assert
-        var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+        var badRequest = Assert.IsType<BadRequestObjectResult>(result.Result);
         Assert.Equal("Workout must need a creating date and name, and have a positive user id", badRequest.Value);
     }
 
@@ -134,10 +134,10 @@ public class APIWorkoutControllerTests
         };
 
         // Act
-        var result = await _controller.CheckCredentials(workout, 0);
+        var result = await _controller.CreateWorkout(workout, 0);
 
         // Assert
-        var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+        var badRequest = Assert.IsType<BadRequestObjectResult>(result.Result);
         Assert.Equal("Workout must need a creating date and name, and have a positive user id", badRequest.Value);
     }
 
@@ -152,10 +152,10 @@ public class APIWorkoutControllerTests
         };
 
         // Act
-        var result = await _controller.CheckCredentials(workout, -1);
+        var result = await _controller.CreateWorkout(workout, -1);
 
         // Assert
-        var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+        var badRequest = Assert.IsType<BadRequestObjectResult>(result.Result);
         Assert.Equal("Workout must need a creating date and name, and have a positive user id", badRequest.Value);
     }
 
@@ -171,10 +171,10 @@ public class APIWorkoutControllerTests
         _mockWorkoutService.Setup(s => s.CreateWorkout(workout, 1)).ReturnsAsync(0);
 
         // Act
-        var result = await _controller.CheckCredentials(workout, 1);
+        var result = await _controller.CreateWorkout(workout, 1);
 
         // Assert
-        var notFound = Assert.IsType<NotFoundObjectResult>(result);
+        var notFound = Assert.IsType<NotFoundObjectResult>(result.Result);
         Assert.Equal("Unable to create workout", notFound.Value);
     }
 
@@ -190,10 +190,10 @@ public class APIWorkoutControllerTests
         _mockWorkoutService.Setup(s => s.CreateWorkout(workout, 1)).ReturnsAsync(-1);
 
         // Act
-        var result = await _controller.CheckCredentials(workout, 1);
+        var result = await _controller.CreateWorkout(workout, 1);
 
         // Assert
-        var notFound = Assert.IsType<NotFoundObjectResult>(result);
+        var notFound = Assert.IsType<NotFoundObjectResult>(result.Result);
         Assert.Equal("Unable to create workout", notFound.Value);
     }
 
@@ -209,11 +209,11 @@ public class APIWorkoutControllerTests
         _mockWorkoutService.Setup(s => s.CreateWorkout(workout, 1)).ReturnsAsync(1);
 
         // Act
-        var result = await _controller.CheckCredentials(workout, 1);
+        var result = await _controller.CreateWorkout(workout, 1);
 
         // Assert
-        var okResult = Assert.IsType<OkObjectResult>(result);
-        Assert.Equal("Workout created successfully", okResult.Value);
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.Equal(1, okResult.Value);
     }
 
     // ===================== AddSetToWorkout Tests =====================

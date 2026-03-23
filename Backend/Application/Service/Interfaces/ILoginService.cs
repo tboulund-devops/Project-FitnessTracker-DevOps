@@ -4,5 +4,6 @@ namespace Backend.Application.Service.Interfaces;
 
 public interface ILoginService
 {
-    public bool CheckCredentials(LoginRequest request);
+    public int CheckCredentials(LoginRequest request);
+    public bool RegisterLoginCredentials(RegisterUserRequest? request);
 }

@@ -8,4 +8,6 @@ public interface IWorkoutRepo
     public Task<int> AddSetToWorkout(Set newSet, int WorkoutID);
 
     public Task<Workout> getWorkout(int workoutId);
+    
+    public Task<List<Workout>> GetWorkoutsByUserID(int userId);
 }

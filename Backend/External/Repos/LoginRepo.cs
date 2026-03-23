@@ -13,7 +13,7 @@ namespace Backend.Gateway
             _connectionService = connectionService;
         }
 
-        public List<string> getCredentials(string username)
+        public List<string> getCredentials(string? username)
         {
             // Handle null or empty username gracefully
             if (string.IsNullOrEmpty(username))
@@ -39,6 +39,54 @@ namespace Backend.Gateway
             }
 
             return result;
+        }
+
+        public int getUserID(string? username)
+        {
+            // Handle null or empty username gracefully
+            if (string.IsNullOrEmpty(username))
+                return -1; // Indicate invalid username
+
+            using var connection = _connectionService.GetConnection();
+            connection.Open();
+
+            using var cmd = new NpgsqlCommand(
+                @"SELECT u.fldUserID
+                  FROM tblUser u
+                  INNER JOIN tblUserCredentials c ON c.fldCredentialsID = u.fldCredentialsID
+                  WHERE c.fldUsername = @username",
+                connection);
+
+            cmd.Parameters.AddWithValue("@username", username);
+
+            using var reader = cmd.ExecuteReader();
+
+            if (reader.Read())
+            {
+                return reader.GetInt32(0);
+            }
+
+            return -1; // Indicate user not found
+        }
+
+        public int addCredentials(string? username, string? password)
+        {
+            // Handle null or empty username or password gracefully
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+                return -1; // Indicate invalid input
+
+            using var connection = _connectionService.GetConnection();
+            connection.Open();
+
+            using var cmd = new NpgsqlCommand(
+                "INSERT INTO tblUserCredentials (fldUsername, fldPassword) VALUES (@username, @password) RETURNING fldCredentialsID",
+                connection);
+
+            cmd.Parameters.AddWithValue("@username", username);
+            cmd.Parameters.AddWithValue("@password", password);
+
+            object? result = cmd.ExecuteScalar();
+            return result is int credentialsId ? credentialsId : -1;
         }
     }
 }
