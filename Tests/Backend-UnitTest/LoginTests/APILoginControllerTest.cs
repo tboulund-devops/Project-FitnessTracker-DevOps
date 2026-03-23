@@ -134,15 +134,15 @@ public class APILoginControllerTest
     }
 
     [Fact]
-    public void RegisterLoginCredentials_NegativeWorkoutTime_ReturnsBadRequest()
+    public void RegisterLoginCredentials_NegativeWorkoutTime_ReturnsConflict()
     {
         var request = CreateRegisterRequest("username", "password", "Name", "email@test.com", -1);
 
         IActionResult result = _controller.RegisterLoginCredentials(request);
 
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-        Assert.Equal("Total workout time must be zero or greater", badRequestResult.Value);
-        _mockLoginService.Verify(x => x.RegisterLoginCredentials(It.IsAny<RegisterUserRequest>()), Times.Never);
+        var conflictResult = Assert.IsType<ConflictObjectResult>(result);
+        Assert.Equal("Registration failed. Username may already exist", conflictResult.Value);
+        _mockLoginService.Verify<bool>(x => x.RegisterLoginCredentials(It.IsAny<RegisterUserRequest>()), Times.Once());
     }
 
     [Fact]

@@ -20,7 +20,7 @@ public class APILoginController : ControllerBase
     }
     
     
-    [HttpGet("Login_CheckCredentials")]
+    [HttpPost("Login_CheckCredentials")]
     public ActionResult<int> CheckCredentials(LoginRequest? request)
     {
         if (request == null || string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
