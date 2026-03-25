@@ -378,5 +378,114 @@ namespace Backend.Tests.WorkoutTests
             // Assert
             Assert.Null(result);
         }
+
+        // ===================== GetWorkoutsByUserID Tests =====================
+
+        [DockerFact]
+        public async Task GetWorkoutsByUserID_UserWithNoWorkouts_ReturnsEmptyList()
+        {
+            var result = await _workoutRepo.GetWorkoutsByUserID(2);
+
+            Assert.NotNull(result);
+            Assert.Empty(result);
+        }
+
+        [DockerFact]
+        public async Task GetWorkoutsByUserID_WorkoutWithoutSets_ReturnsWorkoutWithEmptySets()
+        {
+            var workout = new Workout
+            {
+                Name = "No Set Workout",
+                DateOfWorkout = new DateTime(2026, 3, 11)
+            };
+            var workoutId = await _workoutRepo.CreateWorkout(workout, 1);
+
+            var result = await _workoutRepo.GetWorkoutsByUserID(1);
+            var mappedWorkout = Assert.Single(result.Where(w => w.WorkoutID == workoutId));
+
+            Assert.Equal("No Set Workout", mappedWorkout.Name);
+            Assert.NotNull(mappedWorkout.Sets);
+            Assert.Empty(mappedWorkout.Sets);
+        }
+
+        [DockerFact]
+        public async Task GetWorkoutsByUserID_WorkoutWithMultipleSets_ReturnsSingleWorkoutWithAllSets()
+        {
+            var workout = new Workout
+            {
+                Name = "Mapped Workout",
+                DateOfWorkout = new DateTime(2026, 3, 12)
+            };
+            var workoutId = await _workoutRepo.CreateWorkout(workout, 1);
+
+            await _workoutRepo.AddSetToWorkout(new Set
+            {
+                ExerciseID = 1,
+                Weight = 90,
+                Reps = 8,
+                RestBetweenSetInSec = 60
+            }, workoutId);
+
+            await _workoutRepo.AddSetToWorkout(new Set
+            {
+                ExerciseID = 2,
+                Weight = 120,
+                Reps = 5,
+                RestBetweenSetInSec = 90
+            }, workoutId);
+
+            var result = await _workoutRepo.GetWorkoutsByUserID(1);
+            var mappedWorkout = Assert.Single(result.Where(w => w.WorkoutID == workoutId));
+
+            Assert.Equal(2, mappedWorkout.Sets.Count);
+            Assert.Contains(mappedWorkout.Sets, s => s.ExerciseID == 1 && s.ExerciseName == "Bench Press");
+            Assert.Contains(mappedWorkout.Sets, s => s.ExerciseID == 2 && s.ExerciseName == "Squat");
+        }
+
+        [DockerFact]
+        public async Task GetWorkoutsByUserID_ReturnsOnlyRequestedUsersWorkouts_InDateDescendingOrder()
+        {
+            var userOneOldWorkoutId = await _workoutRepo.CreateWorkout(new Workout
+            {
+                Name = "User1 Old",
+                DateOfWorkout = new DateTime(2026, 3, 1)
+            }, 1);
+
+            var userOneNewWorkoutId = await _workoutRepo.CreateWorkout(new Workout
+            {
+                Name = "User1 New",
+                DateOfWorkout = new DateTime(2026, 3, 20)
+            }, 1);
+
+            await using (var conn = new NpgsqlConnection(_postgreSqlContainer.GetConnectionString()))
+            {
+                await conn.OpenAsync();
+                var createUser2Cmd = conn.CreateCommand();
+                createUser2Cmd.CommandText = @"
+                    INSERT INTO tblUserCredentials (fldUsername, fldPassword)
+                    VALUES ('testuser2', 'testpass2');
+
+                    INSERT INTO tblUser (fldCredentialsID, fldName, fldEmail)
+                    VALUES (2, 'Test User 2', 'test2@example.com');";
+                await createUser2Cmd.ExecuteNonQueryAsync();
+            }
+
+            await _workoutRepo.CreateWorkout(new Workout
+            {
+                Name = "User2 Workout",
+                DateOfWorkout = new DateTime(2026, 3, 25)
+            }, 2);
+
+            var result = await _workoutRepo.GetWorkoutsByUserID(1);
+            var ids = result.Select(w => w.WorkoutID).ToList();
+
+            Assert.Contains(userOneOldWorkoutId, ids);
+            Assert.Contains(userOneNewWorkoutId, ids);
+            Assert.DoesNotContain(result, w => w.Name == "User2 Workout");
+
+            var oldIndex = result.FindIndex(w => w.WorkoutID == userOneOldWorkoutId);
+            var newIndex = result.FindIndex(w => w.WorkoutID == userOneNewWorkoutId);
+            Assert.True(newIndex < oldIndex);
+        }
     }
 }
