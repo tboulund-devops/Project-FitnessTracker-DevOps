@@ -5,6 +5,7 @@ using Backend.External.Repos;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
 using Testcontainers.PostgreSql;
+using Xunit;
 
 namespace UnitTests.Backend_UnitTest.UserTests;
 
@@ -160,7 +161,7 @@ public class UserRepoTests : IAsyncLifetime
 
     // ===================== Constructor Tests =====================
 
-    [Fact]
+    [DockerFact]
     public void Constructor_WithValidConnectionService_InitializesRepo()
     {
         var repo = new UserRepo(_connectionService);
@@ -169,7 +170,7 @@ public class UserRepoTests : IAsyncLifetime
 
     // ===================== GetByUsernameAsync Tests =====================
 
-    [Fact]
+    [DockerFact]
     public async Task GetByUsernameAsync_AnyUsername_ThrowsNotImplementedException()
     {
         var ex = await Assert.ThrowsAsync<NotImplementedException>(
@@ -177,7 +178,7 @@ public class UserRepoTests : IAsyncLifetime
         Assert.Contains("not implemented", ex.Message);
     }
 
-    [Fact]
+    [DockerFact]
     public async Task GetByUsernameAsync_EmptyUsername_ThrowsNotImplementedException()
     {
         var ex = await Assert.ThrowsAsync<NotImplementedException>(
@@ -185,7 +186,7 @@ public class UserRepoTests : IAsyncLifetime
         Assert.Contains("not implemented", ex.Message);
     }
 
-    [Fact]
+    [DockerFact]
     public async Task GetByUsernameAsync_NullUsername_ThrowsNotImplementedException()
     {
         var ex = await Assert.ThrowsAsync<NotImplementedException>(
@@ -195,7 +196,7 @@ public class UserRepoTests : IAsyncLifetime
 
     // ===================== GetUserInfoByIdAsync Tests =====================
 
-    [Fact]
+    [DockerFact]
     public async Task GetUserInfoByIdAsync_ExistingUser_ReturnsUser()
     {
         var result = await _userRepo.GetUserInfoByIdAsync(1);
@@ -208,7 +209,7 @@ public class UserRepoTests : IAsyncLifetime
         Assert.True(result.TimeOfRegistration > DateTime.MinValue);
     }
 
-    [Fact]
+    [DockerFact]
     public async Task GetUserInfoByIdAsync_NonExistingUser_ReturnsNull()
     {
         var result = await _userRepo.GetUserInfoByIdAsync(999);
@@ -216,7 +217,7 @@ public class UserRepoTests : IAsyncLifetime
         Assert.Null(result);
     }
 
-    [Fact]
+    [DockerFact]
     public async Task GetUserInfoByIdAsync_UserWithNullWorkoutTime_ReturnsZero()
     {
         var result = await _userRepo.GetUserInfoByIdAsync(2);
@@ -228,7 +229,7 @@ public class UserRepoTests : IAsyncLifetime
 
     // ===================== GetWorkoutCountAsync Tests =====================
 
-    [Fact]
+    [DockerFact]
     public async Task GetWorkoutCountAsync_UserWithWorkouts_ReturnsCorrectCount()
     {
         var result = await _userRepo.GetWorkoutCountAsync(1);
@@ -236,7 +237,7 @@ public class UserRepoTests : IAsyncLifetime
         Assert.Equal(2, result);
     }
 
-    [Fact]
+    [DockerFact]
     public async Task GetWorkoutCountAsync_UserWithNoWorkouts_ReturnsZero()
     {
         var result = await _userRepo.GetWorkoutCountAsync(2);
@@ -244,7 +245,7 @@ public class UserRepoTests : IAsyncLifetime
         Assert.Equal(0, result);
     }
 
-    [Fact]
+    [DockerFact]
     public async Task GetWorkoutCountAsync_NonExistingUser_ReturnsZero()
     {
         var result = await _userRepo.GetWorkoutCountAsync(999);
@@ -254,7 +255,7 @@ public class UserRepoTests : IAsyncLifetime
 
     // ===================== GetWorkoutDatesAsync Tests =====================
 
-    [Fact]
+    [DockerFact]
     public async Task GetWorkoutDatesAsync_UserWithWorkouts_ReturnsDatesDescending()
     {
         var result = await _userRepo.GetWorkoutDatesAsync(1);
@@ -265,7 +266,7 @@ public class UserRepoTests : IAsyncLifetime
         Assert.Equal(new DateTime(2026, 3, 9), result[1]);
     }
 
-    [Fact]
+    [DockerFact]
     public async Task GetWorkoutDatesAsync_UserWithNoWorkouts_ReturnsEmptyList()
     {
         var result = await _userRepo.GetWorkoutDatesAsync(2);
@@ -274,7 +275,7 @@ public class UserRepoTests : IAsyncLifetime
         Assert.Empty(result);
     }
 
-    [Fact]
+    [DockerFact]
     public async Task GetWorkoutDatesAsync_NonExistingUser_ReturnsEmptyList()
     {
         var result = await _userRepo.GetWorkoutDatesAsync(999);
@@ -285,8 +286,8 @@ public class UserRepoTests : IAsyncLifetime
 
     // ===================== GetMostUsedExerciseAsync Tests =====================
 
-    [Fact]
-    public async Task GetMostUsedExerciseAsync_UserWithExercises_ReturnsMostUsed()
+    [DockerFact]
+    public async Task GetMostUsedExerciseAsync_UserWithExercises_ReturnsMostUsedExercise()
     {
         var result = await _userRepo.GetMostUsedExerciseAsync(1);
 
@@ -294,19 +295,60 @@ public class UserRepoTests : IAsyncLifetime
         Assert.Equal("Bench Press", result); // 3 sets vs 1 Squat set
     }
 
-    [Fact]
-    public async Task GetMostUsedExerciseAsync_UserWithNoExercises_ReturnsNull()
+    [DockerFact]
+    public async Task GetMostUsedExerciseAsync_UserWithNoSets_ReturnsNull()
     {
         var result = await _userRepo.GetMostUsedExerciseAsync(2);
 
         Assert.Null(result);
     }
 
-    [Fact]
+    [DockerFact]
     public async Task GetMostUsedExerciseAsync_NonExistingUser_ReturnsNull()
     {
         var result = await _userRepo.GetMostUsedExerciseAsync(999);
 
         Assert.Null(result);
+    }
+
+    // ===================== AddUserInformation Tests =====================
+
+    [DockerFact]
+    public async Task AddUserInformation_ValidData_ReturnsTrue()
+    {
+        await using var connection = new NpgsqlConnection(_postgreSqlContainer.GetConnectionString());
+        await connection.OpenAsync();
+
+        var seedCredentials = connection.CreateCommand();
+        seedCredentials.CommandText = "INSERT INTO tblUserCredentials (fldUsername, fldPassword) VALUES ('newuser', 'password123')";
+        await seedCredentials.ExecuteNonQueryAsync();
+
+        var result = _userRepo.addUserInformation(3, "New User", "newuser@example.com", 30);
+
+        Assert.True(result);
+    }
+
+    [DockerFact]
+    public void AddUserInformation_InvalidNameOrEmail_ReturnsFalse()
+    {
+        Assert.False(_userRepo.addUserInformation(1, null, "valid@example.com", 10));
+        Assert.False(_userRepo.addUserInformation(1, "Valid Name", null, 10));
+        Assert.False(_userRepo.addUserInformation(1, " ", "valid@example.com", 10));
+    }
+
+    [DockerFact]
+    public void AddUserInformation_NegativeWorkoutTime_ReturnsFalse()
+    {
+        var result = _userRepo.addUserInformation(1, "Valid Name", "valid@example.com", -1);
+
+        Assert.False(result);
+    }
+
+    [DockerFact]
+    public void AddUserInformation_InvalidCredentialsId_ReturnsFalse()
+    {
+        var result = _userRepo.addUserInformation(0, "invaliduser", "invaliduser@example.com", 10);
+
+        Assert.False(result);
     }
 }

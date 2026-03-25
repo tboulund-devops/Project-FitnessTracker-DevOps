@@ -134,7 +134,7 @@ namespace Backend.Tests.WorkoutTests
 
         // ===================== CreateWorkout Tests =====================
 
-        [Fact]
+        [DockerFact]
         public async Task CreateWorkout_ValidWorkout_ReturnsUserWorkoutId()
         {
             // Arrange
@@ -151,7 +151,7 @@ namespace Backend.Tests.WorkoutTests
             Assert.True(result > 0);
         }
 
-        [Fact]
+        [DockerFact]
         public async Task CreateWorkout_NullWorkout_ThrowsException()
         {
             // Act & Assert
@@ -161,7 +161,7 @@ namespace Backend.Tests.WorkoutTests
             Assert.Equal("Workout cannot be null or empty", ex.Message);
         }
 
-        [Fact]
+        [DockerFact]
         public async Task CreateWorkout_EmptyName_ThrowsException()
         {
             // Arrange
@@ -178,7 +178,7 @@ namespace Backend.Tests.WorkoutTests
             Assert.Equal("Workout cannot be null or empty", ex.Message);
         }
 
-        [Fact]
+        [DockerFact]
         public async Task CreateWorkout_NullName_ThrowsException()
         {
             // Arrange
@@ -195,7 +195,7 @@ namespace Backend.Tests.WorkoutTests
             Assert.Equal("Workout cannot be null or empty", ex.Message);
         }
 
-        [Fact]
+        [DockerFact]
         public async Task CreateWorkout_InvalidUserId_ThrowsException()
         {
             // Arrange - userId 999 does not exist, FK violation triggers rollback
@@ -212,7 +212,7 @@ namespace Backend.Tests.WorkoutTests
 
         // ===================== AddSetToWorkout Tests =====================
 
-        [Fact]
+        [DockerFact]
         public async Task AddSetToWorkout_ValidSet_ReturnsWorkoutSetId()
         {
             // Arrange - first create a workout
@@ -246,7 +246,7 @@ namespace Backend.Tests.WorkoutTests
             Assert.True(result > 0);
         }
 
-        [Fact]
+        [DockerFact]
         public async Task AddSetToWorkout_NullSet_ThrowsArgumentNullException()
         {
             // Act & Assert
@@ -254,7 +254,7 @@ namespace Backend.Tests.WorkoutTests
                 () => _workoutRepo.AddSetToWorkout(null!, 1));
         }
 
-        [Fact]
+        [DockerFact]
         public async Task AddSetToWorkout_InvalidWorkoutId_ThrowsException()
         {
             // Arrange - workoutId 999 does not exist, FK violation triggers rollback
@@ -271,7 +271,7 @@ namespace Backend.Tests.WorkoutTests
                 () => _workoutRepo.AddSetToWorkout(set, 999));
         }
 
-        [Fact]
+        [DockerFact]
         public async Task AddSetToWorkout_InvalidExerciseId_ThrowsException()
         {
             // Arrange - create a valid workout first
@@ -303,7 +303,7 @@ namespace Backend.Tests.WorkoutTests
 
         // ===================== getWorkout Tests =====================
 
-        [Fact]
+        [DockerFact]
         public async Task GetWorkout_ExistingWorkoutWithSets_ReturnsWorkoutWithSets()
         {
             // Arrange - create workout and add sets
@@ -342,7 +342,7 @@ namespace Backend.Tests.WorkoutTests
             Assert.Contains(result.Sets, s => s.ExerciseID == 2 && s.Weight == 120 && s.Reps == 8 && s.RestBetweenSetInSec == 90);
         }
 
-        [Fact]
+        [DockerFact]
         public async Task GetWorkout_ExistingWorkoutWithoutSets_ReturnsWorkoutWithEmptySetsList()
         {
             // Arrange - create workout without adding sets
@@ -369,7 +369,7 @@ namespace Backend.Tests.WorkoutTests
             Assert.Empty(result.Sets);
         }
 
-        [Fact]
+        [DockerFact]
         public async Task GetWorkout_NonExistingWorkout_ReturnsNull()
         {
             // Act
@@ -380,4 +380,3 @@ namespace Backend.Tests.WorkoutTests
         }
     }
 }
-
