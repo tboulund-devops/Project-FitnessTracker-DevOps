@@ -66,7 +66,7 @@ public class LoginService : ILoginService
             return false;
         }
 
-        bool addedUserInfo = _userRepo.addUserInformation(credentialsID, request.Name, request.Email, request.TotalWorkoutTime);
+        bool addedUserInfo = _userRepo.AddUserInformation(credentialsID, request.Name, request.Email, request.TotalWorkoutTime);
         return addedUserInfo;
     }
 

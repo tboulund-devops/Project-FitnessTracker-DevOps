@@ -44,6 +44,24 @@ public class UserService : IUserService
             FavoriteExercise = favoriteExercise ?? "N/A"
         };
     }
+    
+    public async Task<User> GetProfileInfo(int userID)
+    {
+        var user = await _userRepo.GetUserInfoByIdAsync(userID);
+        if (user == null)
+            throw new Exception($"User with ID {userID} not found");
+
+        return user;
+    }
+    
+    public async Task<bool> UpdateUserEmail(int userID, string newEmail)
+    {
+        var user = await _userRepo.GetUserInfoByIdAsync(userID);
+        if (user == null)
+            throw new Exception($"User with ID {userID} not found");
+
+        return await _userRepo.UpdateUserEmailAsync(userID, newEmail);
+    }
 
     private static string FormatWorkoutTime(int totalMinutes)
     {
@@ -89,4 +107,6 @@ public class UserService : IUserService
 
         return (currentStreak, bestStreak);
     }
+    
+    
 }

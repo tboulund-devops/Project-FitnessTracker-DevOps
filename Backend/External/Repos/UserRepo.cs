@@ -95,7 +95,7 @@ public class UserRepo : IUserRepo
         return await cmd.ExecuteScalarAsync() as string;
     }
 
-    public bool addUserInformation(int credentialsId, string? name, string? email, int totalWorkoutTime)
+    public bool AddUserInformation(int credentialsId, string? name, string? email, int totalWorkoutTime)
     {
         if (credentialsId <= 0 || string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(email) || totalWorkoutTime < 0)
         {
@@ -113,6 +113,27 @@ public class UserRepo : IUserRepo
         cmd.Parameters.AddWithValue("@name", name);
         cmd.Parameters.AddWithValue("@email", email);
         cmd.Parameters.AddWithValue("@totalWorkoutTime", totalWorkoutTime);
+
+        int rowsAffected = cmd.ExecuteNonQuery();
+        return rowsAffected > 0;
+    }
+    
+    public async Task<bool>UpdateUserEmailAsync(int userId, string newEmail)
+    {
+        if (userId <= 0 || string.IsNullOrWhiteSpace(newEmail))
+        {
+            return false;
+        }
+
+        using var connection = _connectionService.GetConnection();
+        connection.Open();
+
+        using var cmd = new NpgsqlCommand(
+            "UPDATE tblUser SET fldEmail = @newEmail WHERE fldUserID = @userId",
+            connection);
+
+        cmd.Parameters.AddWithValue("@newEmail", newEmail);
+        cmd.Parameters.AddWithValue("@userId", userId);
 
         int rowsAffected = cmd.ExecuteNonQuery();
         return rowsAffected > 0;
