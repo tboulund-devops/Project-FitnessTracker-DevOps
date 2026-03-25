@@ -1,4 +1,4 @@
-﻿using Backend.Application.Service.Interfaces;
+﻿﻿using Backend.Application.Service.Interfaces;
 using Backend.Domain;
 using Backend.External.Repos.Interface;
 using Npgsql;
@@ -42,8 +42,6 @@ public class WorkoutRepo : IWorkoutRepo
                 insertWorkoutCmd.Parameters.AddWithValue("@name", workout.Name);
 
                 var result = await insertWorkoutCmd.ExecuteScalarAsync();
-                if (result == null)
-                    throw new Exception("Failed to create workout");
                 workoutId = Convert.ToInt32(result);
             }
 
@@ -59,8 +57,6 @@ public class WorkoutRepo : IWorkoutRepo
                 insertBridgeCmd.Parameters.AddWithValue("@userId", userId);
 
                 var result = await insertBridgeCmd.ExecuteScalarAsync();
-                if (result == null)
-                    throw new Exception("Failed to add workout to bridge table");
 
                 await transaction.CommitAsync();
                 return workoutId; // Return the actual workout ID, not the bridge table ID
@@ -104,9 +100,6 @@ public class WorkoutRepo : IWorkoutRepo
                 insertSetCmd.Parameters.AddWithValue("@rest", setRequest.RestBetweenSetInSec);
 
                 var result = await insertSetCmd.ExecuteScalarAsync();
-                if (result == null)
-                    throw new Exception("Failed to create set");
-
                 setId = Convert.ToInt32(result);
             }
 
@@ -123,9 +116,6 @@ public class WorkoutRepo : IWorkoutRepo
                 insertBridgeCmd.Parameters.AddWithValue("@workoutId", workoutId);
 
                 var result = await insertBridgeCmd.ExecuteScalarAsync();
-                if (result == null)
-                    throw new Exception("Failed to link set to workout");
-
                 var workoutSetId = Convert.ToInt32(result);
 
                 await transaction.CommitAsync();
@@ -185,52 +175,26 @@ public class WorkoutRepo : IWorkoutRepo
         
             getSetsCmd.Parameters.AddWithValue("@workoutId", workoutId);
 
-            try
+            using var reader = await getSetsCmd.ExecuteReaderAsync();
+
+            // Log column information
+            Console.WriteLine($"Number of columns: {reader.FieldCount}");
+            for (int i = 0; i < reader.FieldCount; i++)
             {
-                using var reader = await getSetsCmd.ExecuteReaderAsync();
-                
-                // Log column information
-                Console.WriteLine($"Number of columns: {reader.FieldCount}");
-                for (int i = 0; i < reader.FieldCount; i++)
-                {
-                    Console.WriteLine($"Column {i}: {reader.GetName(i)} - Type: {reader.GetFieldType(i)}");
-                }
-                
-                while (await reader.ReadAsync())
-                {
-                    try
-                    {
-                        var set = new Set
-                        {
-                            SetID = Convert.ToInt32(reader[0]),
-                            ExerciseID = Convert.ToInt32(reader[1]),
-                            Weight = Convert.ToInt32(reader[2]),
-                            Reps = Convert.ToInt32(reader[3]),
-                            RestBetweenSetInSec = Convert.ToInt32(reader[4])
-                        };
-                        workout.Sets.Add(set);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"ERROR reading set data: {ex.Message}");
-                        Console.WriteLine($"Column values: " +
-                            $"SetID={reader[0]}, " +
-                            $"ExerciseID={reader[1]}, " +
-                            $"Weight={reader[2]}, " +
-                            $"Reps={reader[3]}, " +
-                            $"Rest={reader[4]}");
-                        
-                        Console.WriteLine("=== ERROR in getWorkout ===");
-                        Console.WriteLine($"Message: {ex.Message}");
-                        Console.WriteLine($"Stack Trace: {ex.StackTrace}");
-                        throw;
-                    }
-                }
+                Console.WriteLine($"Column {i}: {reader.GetName(i)} - Type: {reader.GetFieldType(i)}");
             }
-            catch (Exception ex)
+
+            while (await reader.ReadAsync())
             {
-                Console.WriteLine($"ERROR in set query for workout {workoutId}: {ex.Message}");
-                throw;
+                var set = new Set
+                {
+                    SetID = Convert.ToInt32(reader[0]),
+                    ExerciseID = Convert.ToInt32(reader[1]),
+                    Weight = Convert.ToInt32(reader[2]),
+                    Reps = Convert.ToInt32(reader[3]),
+                    RestBetweenSetInSec = Convert.ToInt32(reader[4])
+                };
+                workout.Sets.Add(set);
             }
         }
         return workout;
