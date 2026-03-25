@@ -54,42 +54,41 @@ jobs:
         run: dotnet build Project-FitnessTracker-DevOps.sln
 
       # Unit tests with coverage
-      # - name: Run unit tests with coverage
-      #   run: |
-      #     dotnet test Tests/Tests.csproj \
-      #       --collect:"XPlat Code Coverage" \
-      #       --results-directory TestResults \
-      #       --logger "trx;LogFileName=test_results.trx"
+       - name: Run unit tests with coverage
+         run: |
+           dotnet test Tests/Tests.csproj \
+             --collect:"XPlat Code Coverage" \
+             --results-directory TestResults \
+             --logger "trx;LogFileName=test_results.trx"
 
-      # Convert coverage to SonarQube format
-      # - name: Convert coverage to SonarQube format
-      #   run: |
-      #     COVERAGE_FILE=$(find TestResults -name "coverage.cobertura.xml" | head -n 1)
-      #     echo "Found coverage file: $COVERAGE_FILE"
-      #     if [ -f "$COVERAGE_FILE" ]; then
-      #       mkdir -p sonarqube-coverage-report
-      #       reportgenerator \
-      #         -reports:"$COVERAGE_FILE" \
-      #         -targetdir:"sonarqube-coverage-report" \
-      #         -reporttypes:SonarQube
-      #       echo "✅ Coverage file converted to SonarQube format"
-      #     else
-      #       echo "❌ No coverage file found!"
-      #       exit 1
-      #     fi
+       Convert coverage to SonarQube format
+       - name: Convert coverage to SonarQube format
+         run: |
+           COVERAGE_FILE=$(find TestResults -name "coverage.cobertura.xml" | head -n 1)
+           echo "Found coverage file: $COVERAGE_FILE"
+           if [ -f "$COVERAGE_FILE" ]; then
+             mkdir -p sonarqube-coverage-report
+             reportgenerator \
+               -reports:"$COVERAGE_FILE" \
+               -targetdir:"sonarqube-coverage-report" \
+               -reporttypes:SonarQube
+             echo "✅ Coverage file converted to SonarQube format"
+           else
+             echo "❌ No coverage file found!"
+             exit 1
+           fi
 
       # SonarCloud end
-      # - name: Complete Static Code Analysis
-      #   run: |
-      #     dotnet sonarscanner end \
-      #     /d:sonar.token="${{ secrets.FITNESSTRACKERTOKEN }}"
+       - name: Complete Static Code Analysis
+         run: |
+           dotnet sonarscanner end \
+           /d:sonar.token="${{ secrets.FITNESSTRACKERTOKEN }}"
 
       # Mutation tests
-      # - name: Run Mutation Tests
-      #   working-directory: ./Tests
-      #   run: dotnet stryker --project ./Tests.csproj --break-at 60 --output "stryker-report"
+       - name: Run Mutation Tests
+         working-directory: ./Tests
+         run: dotnet stryker --project ./Tests.csproj --break-at 60 --output "stryker-report"
 
-      # ===== DOCKER BUILD & PUSH TO GHCR ====
       # ===== DOCKER BUILD & PUSH TO GHCR =====
       - name: Convert repository name to lowercase
         if: always()
