@@ -40,8 +40,8 @@ services:
 
   backend:
     build:
-      context: ./Backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Backend/Dockerfile
     container_name: FitnessTrackerBackend-Dev
     depends_on:
       db:

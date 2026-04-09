@@ -14,6 +14,7 @@ using Backend.External.Repos.Interface;
 using Backend.Gateway;
 using Npgsql;
 using ILoginRepo = Backend.Gateway.ILoginRepo;
+using FeaturehubHelper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -59,6 +60,7 @@ builder.Services.AddScoped<IWorkoutRepo, WorkoutRepo>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<IWorkoutService, WorkoutService>();
+builder.Services.AddSingleton<FeatureStateProvider>();
 
 var app = builder.Build();
 

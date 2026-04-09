@@ -9,6 +9,7 @@ function ProfilePage() {
     const [loading, setLoading] = useState(true);
     const [emailDraft, setEmailDraft] = useState("");
     const [saving, setSaving] = useState(false);
+    const [isChangeEmailEnabled, setIsChangeEmailEnabled] = useState(false);
 
     const userId = localStorage.getItem("userID") ?? localStorage.getItem("userId");
     const numericUserId = userId ? parseInt(userId, 10) : null;
@@ -41,6 +42,21 @@ function ProfilePage() {
         fetchProfile();
     }, [userId]);
     
+    
+    // Fetches the status of a feature toggle by its key - Frontend
+    async function fetchFeatureToggles(featureKey: string): Promise<boolean> {
+        try {
+            const response = await fetch(`/api/toggle/APIToggles/feature-toggles/${encodeURIComponent(featureKey)}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch feature toggles');
+            }
+            const data = await response.json();
+            return Boolean(data);
+        } catch (error) {
+            console.error('Error fetching feature toggles:', error);
+            return false;
+        }
+    }
     async function updateEmail(newEmail: string) {
         if (!userId) {
             setError("Please log in");
@@ -68,6 +84,15 @@ function ProfilePage() {
             setSaving(false);
         }
     }
+    
+    // Load the feature toggle status on component mount
+    useEffect(() => {
+        async function loadToggle() {
+            const enabled = await fetchFeatureToggles("ChangeEmail");
+            setIsChangeEmailEnabled(enabled);
+        }
+        loadToggle();
+    }, []);
 
     if (loading) {
         return (
@@ -106,15 +131,18 @@ function ProfilePage() {
                         type="email"
                         value={emailDraft}
                         onChange={(e) => setEmailDraft(e.target.value)}
+                        disabled={!isChangeEmailEnabled || saving}
                     />
                 </label>
-                <button
-                    onClick={() => updateEmail(emailDraft)}
-                    disabled={saving || !emailDraft || emailDraft === profileInfo.email}
-                    className={"savebutton"}
-                >
-                    {saving ? "Saving..." : "Save Email"}
-                </button>
+                    {isChangeEmailEnabled && (
+                        <button
+                            onClick={() => updateEmail(emailDraft)}
+                            disabled={saving || !emailDraft || emailDraft === profileInfo.email}
+                            className="savebutton"
+                        >
+                            {saving ? "Saving..." : "Save Email"}
+                        </button>
+                    )}
                 </div>
                 <p><strong>Member Since:</strong> {new Date(profileInfo.timeOfRegistration).toLocaleDateString()}</p>
             </div>

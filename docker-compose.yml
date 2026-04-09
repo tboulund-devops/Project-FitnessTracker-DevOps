@@ -53,6 +53,14 @@
       - backend
     ports:
       - "8030:3000"
+        
+  featurehub:
+    image: featurehub/party-server:latest
+    restart: always
+    volumes:
+      - ./featurehub:/db
+    ports:
+      - "8085:8085"
 
 volumes:
   postgres_data:
