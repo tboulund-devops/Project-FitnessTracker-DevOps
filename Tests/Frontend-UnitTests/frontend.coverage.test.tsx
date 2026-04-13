@@ -2,6 +2,7 @@
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import '@testing-library/jest-dom/vitest';
 
 import App from '../../Frontend/src/App';
 import HomePage from '../../Frontend/src/assets/pages/HomePage';
@@ -14,6 +15,35 @@ import RegistrationPage from '../../Frontend/src/assets/pages/RegistrationPage';
 import Settings from '../../Frontend/src/assets/pages/Settings';
 
 const mockNavigate = vi.fn();
+
+if (typeof localStorage.clear !== 'function') {
+  const storage = new Map<string, string>();
+  const localStorageMock: Storage = {
+    get length() {
+      return storage.size;
+    },
+    clear() {
+      storage.clear();
+    },
+    getItem(key: string) {
+      return storage.has(key) ? storage.get(key)! : null;
+    },
+    key(index: number) {
+      return Array.from(storage.keys())[index] ?? null;
+    },
+    removeItem(key: string) {
+      storage.delete(key);
+    },
+    setItem(key: string, value: string) {
+      storage.set(key, value);
+    }
+  };
+
+  Object.defineProperty(globalThis, 'localStorage', {
+    value: localStorageMock,
+    configurable: true
+  });
+}
 
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
@@ -67,18 +97,18 @@ describe('Frontend coverage tests', () => {
 
     goTo('/');
     render(<App />);
-    expect(screen.queryByRole('button', { name: 'Logout' })).not.toBeInTheDocument();
-    expect(await screen.findByRole('heading', { name: 'Login' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Logout' })).toBeNull();
+    expect(await screen.findByRole('heading', { name: 'Login' })).not.toBeNull();
 
     goTo('/register');
-    expect(await screen.findByRole('heading', { name: 'Registration' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Logout' })).not.toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Registration' })).not.toBeNull();
+    expect(screen.queryByRole('button', { name: 'Logout' })).toBeNull();
 
     goTo('/home');
-    expect(await screen.findByRole('button', { name: 'Logout' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Logout' })).not.toBeNull();
 
     goTo('/profile');
-    expect(await screen.findByRole('heading', { name: 'Profile Page' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Profile Page' })).not.toBeNull();
   });
 
   it('covers NavBar links and logout', async () => {
@@ -89,8 +119,8 @@ describe('Frontend coverage tests', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByRole('link', { name: 'Homepage' })).toHaveAttribute('href', '/home');
-    expect(screen.getByRole('link', { name: 'Settings' })).toHaveAttribute('href', '/settings');
+    expect(screen.getByRole('link', { name: 'Homepage' }).getAttribute('href')).toBe('/home');
+    expect(screen.getByRole('link', { name: 'Settings' }).getAttribute('href')).toBe('/settings');
 
     await userEvent.click(screen.getByRole('button', { name: 'Logout' }));
     expect(localStorage.getItem('userID')).toBeNull();
@@ -103,10 +133,10 @@ describe('Frontend coverage tests', () => {
         <PageNavigation />
       </MemoryRouter>
     );
-    expect(screen.getByRole('link', { name: 'HomePage' })).toHaveAttribute('href', '/homepage');
+    expect(screen.getByRole('link', { name: 'HomePage' }).getAttribute('href')).toBe('/homepage');
 
     render(<Settings />);
-    expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Settings' })).not.toBeNull();
   });
 
   it('covers LoginPage submit success, failure and fetch exception', async () => {
@@ -128,7 +158,7 @@ describe('Frontend coverage tests', () => {
     );
 
     await userEvent.click(screen.getByRole('button', { name: 'Log in' }));
-    expect(screen.getByRole('button', { name: 'Logging in…' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Logging in…' })).not.toBeNull();
     resolveLogin(textResponse('99'));
 
     await screen.findByText('99 Redirecting to home…');
@@ -199,7 +229,7 @@ describe('Frontend coverage tests', () => {
     );
     const successRender = render(<HomePage />);
     await screen.findByRole('heading', { name: 'Profile Overview' });
-    expect(screen.getByText('Jane')).toBeInTheDocument();
+    expect(screen.getByText('Jane')).not.toBeNull();
     successRender.unmount();
 
     fetchMock.mockResolvedValueOnce(textResponse('', 500));
@@ -238,8 +268,8 @@ describe('Frontend coverage tests', () => {
 
     render(<OldWorkouts />);
     await screen.findByText('Bench Press');
-    expect(screen.getByText('Exercise 2')).toBeInTheDocument();
-    expect(screen.getByText('Set 1: 8 reps at 100 kg')).toBeInTheDocument();
+    expect(screen.getByText('Exercise 2')).not.toBeNull();
+    expect(screen.getByText('Set 1: 8 reps at 100 kg')).not.toBeNull();
 
     fetchMock.mockResolvedValueOnce(jsonResponse([]));
     render(<OldWorkouts />);
@@ -282,7 +312,7 @@ describe('Frontend coverage tests', () => {
       .mockResolvedValueOnce(textResponse('toggle down', 500));
     const phase4 = render(<ProfilePage />);
     await screen.findByText('fit-user');
-    expect(screen.queryByRole('button', { name: 'Save Email' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Save Email' })).toBeNull();
     expect(consoleSpy).toHaveBeenCalled();
     phase4.unmount();
 
@@ -293,7 +323,7 @@ describe('Frontend coverage tests', () => {
     await screen.findByDisplayValue('same@mail.com');
 
     const sameEmailButton = await screen.findByRole('button', { name: 'Save Email' });
-    expect(sameEmailButton).toBeDisabled();
+    expect((sameEmailButton as HTMLButtonElement).disabled).toBe(true);
 
     const emailInput = screen.getByDisplayValue('same@mail.com');
     await userEvent.clear(emailInput);
@@ -354,7 +384,7 @@ describe('Frontend coverage tests', () => {
 
     window.history.pushState({}, '', '/home');
     render(<App />);
-    expect(await screen.findByText('Loading profile…')).toBeInTheDocument();
+    expect(await screen.findByText('Loading profile…')).not.toBeNull();
 
     resolveFetch(
       jsonResponse({
@@ -392,7 +422,7 @@ describe('Frontend coverage tests', () => {
     );
 
     fireEvent.submit(screen.getByRole('button', { name: 'Log in' }).closest('form') as HTMLFormElement);
-    expect(screen.getByRole('button', { name: 'Navigation to RegistrationPage' })).toBeDisabled();
+    expect((screen.getByRole('button', { name: 'Navigation to RegistrationPage' }) as HTMLButtonElement).disabled).toBe(true);
     resolveLogin(textResponse('10'));
     await screen.findByText('10 Redirecting to home…');
 
@@ -415,7 +445,7 @@ describe('Frontend coverage tests', () => {
     );
 
     fireEvent.submit(screen.getAllByRole('button', { name: 'Register' })[1].closest('form') as HTMLFormElement);
-    expect(screen.getByRole('button', { name: 'Navigation to LoginPage' })).toBeDisabled();
+    expect((screen.getByRole('button', { name: 'Navigation to LoginPage' }) as HTMLButtonElement).disabled).toBe(true);
     resolveRegister(textResponse('ok', 200));
     await screen.findByText('ok');
   });
