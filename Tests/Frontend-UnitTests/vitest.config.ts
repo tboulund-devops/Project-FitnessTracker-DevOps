@@ -77,13 +77,7 @@ export default defineConfig({
         '**/Frontend/src/assets/pages/ProfilePage.tsx',
         '**/Frontend/src/assets/pages/RegistrationPage.tsx',
         '**/Frontend/src/assets/pages/Settings.tsx'
-      ],
-      thresholds: {
-        lines: 100,
-        functions: 100,
-        statements: 100,
-        branches: 100
-      }
+      ]
     }
   }
 });

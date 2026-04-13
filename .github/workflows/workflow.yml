@@ -108,7 +108,11 @@ jobs:
       - name: Run Frontend Tests with Coverage
         if: always()
         working-directory: ./Tests/Frontend-UnitTests/
-        run: npm run coverage
+        run: |
+          npm run coverage
+          # Normalize lcov source paths so Sonar resolves files under Frontend/src.
+          sed -i -E 's#^SF:\.\./\.\./Frontend/#SF:Frontend/#; s#^SF:\.\.\\\.\.\\Frontend\\#SF:Frontend/#; s#\\#/#g' coverage/lcov.info
+          grep '^SF:' coverage/lcov.info | head -n 20
 
       - name: Upload test diagnostics
         if: always()
