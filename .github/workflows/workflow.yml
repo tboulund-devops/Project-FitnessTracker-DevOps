@@ -51,10 +51,12 @@ jobs:
 
       # Build
       - name: Build
+        if: always()
         run: dotnet build Project-FitnessTracker-DevOps.sln
 
       # Unit tests with coverage
       - name: Run unit tests with coverage
+        if: always()
         run: |
           dotnet test Tests/Tests.csproj \
             --collect:"XPlat Code Coverage" \
@@ -63,6 +65,7 @@ jobs:
 
       # Convert coverage to SonarQube format
       - name: Convert coverage to SonarQube format
+        if: always()
         run: |
           COVERAGE_FILE=$(find TestResults -name "coverage.cobertura.xml" | head -n 1)
           echo "Found coverage file: $COVERAGE_FILE"
@@ -80,6 +83,7 @@ jobs:
 
       # SonarQube end
       - name: Complete Static Code Analysis
+        if: always()
         run: |
           dotnet sonarscanner end \
           /d:sonar.token="${{ secrets.FITNESSTRACKERTOKEN }}"
