@@ -1,4 +1,5 @@
-﻿using FeatureHubSDK;
+﻿using System;
+using FeatureHubSDK;
 
 namespace FeaturehubHelper;
 
@@ -9,7 +10,14 @@ public class FeatureStateProvider
     public FeatureStateProvider()
     {
         var config = new EdgeFeatureHubConfig("http://featurehub:8085", "ba378ba8-5ed6-42e0-80fb-7a34805ea402/DszMrjiR3LKWf31JlakdyrL2UQkE7F*hbSqu4L4Wb6nUVtyLhru" );
-        config.Init().Wait();
+
+        // Avoid indefinite blocking when FeatureHub is unreachable.
+        var initialized = config.Init().Wait(TimeSpan.FromSeconds(10));
+        if (!initialized)
+        {
+            throw new TimeoutException("FeatureHub initialization timed out after 10 seconds.");
+        }
+
         _config = config;
     }
 

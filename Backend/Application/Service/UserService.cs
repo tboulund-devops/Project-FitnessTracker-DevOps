@@ -7,12 +7,10 @@ namespace Backend.Service;
 public class UserService : IUserService
 {
     private readonly IUserRepo _userRepo;
-    private readonly FeaturehubHelper.FeatureStateProvider _featureStateProvider;
 
     public UserService(IUserRepo userRepo)
     {
         _userRepo = userRepo;
-            _featureStateProvider = new FeaturehubHelper.FeatureStateProvider();
     }
 
     public async Task<User?> GetUserByUsername(string username)
@@ -58,13 +56,15 @@ public class UserService : IUserService
     
     public async Task<bool> UpdateUserEmail(int userID, string newEmail)
     {
-        
+        // Lazily create FeatureHub dependency so unrelated service calls/tests do not block on external network init.
+        var featureStateProvider = new FeaturehubHelper.FeatureStateProvider();
+
         //Backend check for feature toggle - if the feature is disabled, throw an exception or return an error response
-        if (!_featureStateProvider.IsEnabled("ChangeEmail"))
+        if (!featureStateProvider.IsEnabled("ChangeEmail"))
         {
             throw new Exception("ChangeEmail feature is disabled");
         }
-        
+
         var user = await _userRepo.GetUserInfoByIdAsync(userID);
         if (user == null)
             throw new Exception($"User with ID {userID} not found");
