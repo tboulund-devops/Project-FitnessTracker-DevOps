@@ -112,7 +112,7 @@ jobs:
       # Mutation tests
       - name: Run Mutation Tests
         working-directory: ./Tests
-        run: dotnet stryker --project ./Tests.csproj --break-at 60 --output "stryker-report"
+        run: dotnet stryker --project Backend.csproj --break-at 60 --output "stryker-report"
 
       # ===== DOCKER BUILD & PUSH TO GHCR ====
       - name: Convert repository name to lowercase
