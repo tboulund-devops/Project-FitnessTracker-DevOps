@@ -55,31 +55,6 @@ jobs:
         if: always()
         run: dotnet build Project-FitnessTracker-DevOps.sln
 
-      - name: Docker preflight
-        if: always()
-        run: |
-          docker version
-          docker info
-
-      - name: Pre-pull Testcontainers images
-        if: always()
-        run: |
-          set -e
-          IMAGES=("postgres:15-alpine" "testcontainers/ryuk:0.7.0")
-          for IMAGE in "${IMAGES[@]}"; do
-            for ATTEMPT in 1 2 3; do
-              echo "Pulling $IMAGE (attempt $ATTEMPT/3)"
-              if docker pull "$IMAGE"; then
-                break
-              fi
-              if [ "$ATTEMPT" -eq 3 ]; then
-                echo "Failed to pull $IMAGE after 3 attempts"
-                exit 1
-              fi
-              sleep $((ATTEMPT * 10))
-            done
-          done
-
       # Unit tests with coverage
       - name: Run unit tests with coverage
         if: always()

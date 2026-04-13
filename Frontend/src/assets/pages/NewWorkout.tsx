@@ -118,6 +118,39 @@ const saveSets = async (workoutId: number, allSets: SetEntry[]) => {
     }
 };
 
+const updateExerciseSetValue = (
+    exercises: ExerciseEntry[],
+    exLocalId: number,
+    setLocalId: number,
+    field: keyof Pick<SetEntry, "weight" | "reps" | "restBetweenSetInSec">,
+    value: number
+): ExerciseEntry[] => {
+    return exercises.map((exercise) => {
+        if (exercise.localId !== exLocalId) {
+            return exercise;
+        }
+
+        const updatedSets = exercise.sets.map((set) =>
+            set.localId === setLocalId ? { ...set, [field]: value } : set
+        );
+        return { ...exercise, sets: updatedSets };
+    });
+};
+
+const removeExerciseSet = (
+    exercises: ExerciseEntry[],
+    exLocalId: number,
+    setLocalId: number
+): ExerciseEntry[] => {
+    return exercises.map((exercise) => {
+        if (exercise.localId !== exLocalId) {
+            return exercise;
+        }
+
+        return { ...exercise, sets: exercise.sets.filter((set) => set.localId !== setLocalId) };
+    });
+};
+
 function NewWorkout() {
     const navigate = useNavigate();
 
@@ -169,28 +202,11 @@ function NewWorkout() {
         field: keyof Pick<SetEntry, "weight" | "reps" | "restBetweenSetInSec">,
         value: number
     ) => {
-        setExercises((prev) =>
-            prev.map((ex) =>
-                ex.localId !== exLocalId
-                    ? ex
-                    : {
-                          ...ex,
-                          sets: ex.sets.map((s) =>
-                              s.localId === setLocalId ? { ...s, [field]: value } : s
-                          ),
-                      }
-            )
-        );
+        setExercises((prev) => updateExerciseSetValue(prev, exLocalId, setLocalId, field, value));
     };
 
     const removeSet = (exLocalId: number, setLocalId: number) => {
-        setExercises((prev) =>
-            prev.map((ex) =>
-                ex.localId !== exLocalId
-                    ? ex
-                    : { ...ex, sets: ex.sets.filter((s) => s.localId !== setLocalId) }
-            )
-        );
+        setExercises((prev) => removeExerciseSet(prev, exLocalId, setLocalId));
     };
     
     // ── Save ─────────────────────────────────────────
