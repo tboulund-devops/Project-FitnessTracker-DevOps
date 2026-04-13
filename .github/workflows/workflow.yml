@@ -54,14 +54,52 @@ jobs:
         if: always()
         run: dotnet build Project-FitnessTracker-DevOps.sln
 
+      - name: Docker preflight
+        if: always()
+        run: |
+          docker version
+          docker info
+
+      - name: Pre-pull Testcontainers images
+        if: always()
+        run: |
+          set -e
+          IMAGES=("postgres:15-alpine" "testcontainers/ryuk:0.7.0")
+          for IMAGE in "${IMAGES[@]}"; do
+            for ATTEMPT in 1 2 3; do
+              echo "Pulling $IMAGE (attempt $ATTEMPT/3)"
+              if docker pull "$IMAGE"; then
+                break
+              fi
+              if [ "$ATTEMPT" -eq 3 ]; then
+                echo "Failed to pull $IMAGE after 3 attempts"
+                exit 1
+              fi
+              sleep $((ATTEMPT * 10))
+            done
+          done
+
       # Unit tests with coverage
       - name: Run unit tests with coverage
         if: always()
+        timeout-minutes: 25
         run: |
           dotnet test Tests/Tests.csproj \
             --collect:"XPlat Code Coverage" \
             --results-directory TestResults \
-            --logger "trx;LogFileName=test_results.trx"
+            --logger "trx;LogFileName=test_results.trx" \
+            --blame-hang \
+            --blame-hang-timeout 5m \
+            --diag TestResults/dotnet-test-diag.log \
+            --verbosity normal
+
+      - name: Upload test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults/**
+          if-no-files-found: warn
 
       # Convert coverage to SonarQube format
       - name: Convert coverage to SonarQube format
