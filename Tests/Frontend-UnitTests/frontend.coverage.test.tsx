@@ -8,6 +8,7 @@ import App from '../../Frontend/src/App';
 import HomePage from '../../Frontend/src/assets/pages/HomePage';
 import LoginPage from '../../Frontend/src/assets/pages/LoginPage';
 import NavBar from '../../Frontend/src/assets/Components/NavBar';
+import NewWorkout from '../../Frontend/src/assets/pages/NewWorkout';
 import OldWorkouts from '../../Frontend/src/assets/pages/OldWorkouts';
 import PageNavigation from '../../Frontend/src/assets/Services/PageNavigation';
 import ProfilePage from '../../Frontend/src/assets/pages/ProfilePage';
@@ -448,6 +449,52 @@ describe('Frontend coverage tests', () => {
     expect((screen.getByRole('button', { name: 'Navigation to LoginPage' }) as HTMLButtonElement).disabled).toBe(true);
     resolveRegister(textResponse('ok', 200));
     await screen.findByText('ok');
+  });
+
+  it('covers NewWorkout happy path and validation branches', async () => {
+    const fetchMock = vi.mocked(fetch);
+
+    render(<NewWorkout />);
+    await userEvent.selectOptions(screen.getByLabelText('Exercise'), '2');
+    await userEvent.click(screen.getByRole('button', { name: '+ Add' }));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(mockNavigate).toHaveBeenCalledWith('/home');
+
+    await userEvent.click(screen.getByRole('button', { name: /Complete Workout/i }));
+    await screen.findByText('User ID not found. Please log in again.');
+
+    localStorage.setItem('userID', '42');
+    await userEvent.click(screen.getByRole('button', { name: /Complete Workout/i }));
+    await screen.findByText('Please enter a workout name.');
+
+    await userEvent.type(screen.getByLabelText('Workout Name'), 'Leg day');
+    await userEvent.click(screen.getByRole('button', { name: /Complete Workout/i }));
+    await screen.findByText('Please add at least one set.');
+
+    await userEvent.click(screen.getByRole('button', { name: '+ Add Set' }));
+    await userEvent.click(screen.getByRole('button', { name: /Complete Workout/i }));
+    await screen.findByText('Every set must have at least 1 rep and a weight greater than 0 kg.');
+
+    const numberInputs = screen.getAllByRole('spinbutton');
+    await userEvent.clear(numberInputs[1]);
+    await userEvent.type(numberInputs[1], '100');
+
+    fetchMock
+      .mockResolvedValueOnce(textResponse('9', 200))
+      .mockResolvedValueOnce(textResponse('', 200));
+
+    await userEvent.click(screen.getByRole('button', { name: /Complete Workout/i }));
+    await screen.findByText(/Workout saved!/i);
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith('/api/workout/APIWorkout/CreateWorkout?UserId=42', expect.objectContaining({
+        method: 'POST'
+      }));
+      expect(fetchMock).toHaveBeenCalledWith('/api/workout/APIWorkout/AddSetToWorkout?workoutId=9', expect.objectContaining({
+        method: 'POST'
+      }));
+    });
   });
 });
 

@@ -73,6 +73,7 @@ export default defineConfig({
         '**/Frontend/src/assets/Services/PageNavigation.tsx',
         '**/Frontend/src/assets/pages/HomePage.tsx',
         '**/Frontend/src/assets/pages/LoginPage.tsx',
+        '**/Frontend/src/assets/pages/NewWorkout.tsx',
         '**/Frontend/src/assets/pages/OldWorkouts.tsx',
         '**/Frontend/src/assets/pages/ProfilePage.tsx',
         '**/Frontend/src/assets/pages/RegistrationPage.tsx',
