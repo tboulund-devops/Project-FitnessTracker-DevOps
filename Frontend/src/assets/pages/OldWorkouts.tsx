@@ -1,6 +1,52 @@
-﻿import "../../index.css";
+import "../../index.css";
 import {useEffect, useState} from "react";
 import type {Workout} from "../../Domain/Workout";
+
+interface BackendSet {
+    exerciseID: number;
+    exerciseName: string | null;
+    weight: number;
+    reps: number;
+}
+
+interface BackendWorkout {
+    workoutID: number;
+    dateOfWorkout: string;
+    sets?: BackendSet[];
+}
+
+function mapExerciseSets(sets?: BackendSet[]) {
+    if (!sets || sets.length === 0) {
+        return [];
+    }
+
+    const exerciseMap = new Map<number, { name: string; sets: { weight: number; repetitions: number }[] }>();
+    for (const set of sets) {
+        const exerciseId = set.exerciseID;
+        if (!exerciseMap.has(exerciseId)) {
+            exerciseMap.set(exerciseId, {
+                name: set.exerciseName || `Exercise ${exerciseId}`,
+                sets: [],
+            });
+        }
+
+        exerciseMap.get(exerciseId)?.sets.push({
+            weight: set.weight,
+            repetitions: set.reps,
+        });
+    }
+
+    return Array.from(exerciseMap.values());
+}
+
+function toWorkout(backendWorkout: BackendWorkout): Workout {
+    return {
+        id: backendWorkout.workoutID,
+        date: backendWorkout.dateOfWorkout,
+        exercises: mapExerciseSets(backendWorkout.sets),
+    };
+}
+
 function OldWorkouts() {
     const [workouts, setWorkouts] = useState<Workout[] | null>(null);
     const [error, setError] = useState("");
@@ -12,51 +58,14 @@ function OldWorkouts() {
         async function fetchWorkouts() {
             try {
                 const response = await fetch(`/api/workout/APIWorkout/GetWorkoutsByUserID/${userId}`);
-                if (response.ok) {
-                    const backendData = await response.json();
-
-                    // Transform backend data to match frontend Workout interface
-                    const transformedWorkouts: Workout[] = backendData.map((backendWorkout: any) => {
-                        // Group sets by exercise
-                        const exerciseMap = new Map();
-
-                        // If there are sets, group them by ExerciseID
-                        if (backendWorkout.sets && backendWorkout.sets.length > 0) {
-                            backendWorkout.sets.forEach((set: any) => {
-                                const exerciseId = set.exerciseID;
-                                const exerciseName = set.exerciseName;
-
-                                if (!exerciseMap.has(exerciseId)) {
-                                    exerciseMap.set(exerciseId, {
-                                        name: exerciseName||`Exercise ${exerciseId}`, 
-                                        sets: []
-                                    });
-                                }
-
-                                // Add the set to the exercise
-                                exerciseMap.get(exerciseId).sets.push({
-                                    weight: set.weight,
-                                    repetitions: set.reps
-                                });
-                            });
-                        }
-
-                        // Convert the map to an array of exercises
-                        const exercises = Array.from(exerciseMap.values());
-
-                        // Return the transformed workout
-                        return {
-                            id: backendWorkout.workoutID,
-                            date: backendWorkout.dateOfWorkout,
-                            exercises: exercises
-                        };
-                    });
-
-                    setWorkouts(transformedWorkouts);
-                } else {
+                if (!response.ok) {
                     const message = await response.text();
                     setError(message || "Failed to load workouts");
+                    return;
                 }
+
+                const backendData: BackendWorkout[] = await response.json();
+                setWorkouts(backendData.map(toWorkout));
             } catch (error) {
                 console.error("Fetch error:", error);
                 setError("Could not reach the server. Please try again later.");

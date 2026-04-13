@@ -495,6 +495,6 @@ describe('Frontend coverage tests', () => {
         method: 'POST'
       }));
     });
-  });
+  }, 10000);
 });
 

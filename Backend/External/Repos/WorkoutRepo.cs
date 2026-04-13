@@ -15,9 +15,9 @@ public class WorkoutRepo : IWorkoutRepo
         _connectionService = connectionService;
     }
 
-    public async Task<int> CreateWorkout(Workout workout, int userId)
+    public async Task<int> CreateWorkout(Workout request, int userId)
     {
-        if (workout == null || string.IsNullOrEmpty(workout.Name))
+        if (request == null || string.IsNullOrEmpty(request.Name))
             throw new Exception("Workout cannot be null or empty");
 
         using var connection = _connectionService.GetConnection();
@@ -38,8 +38,8 @@ public class WorkoutRepo : IWorkoutRepo
                 VALUES (@dateOfWorkout, @name)
                 RETURNING fldWorkoutID;";
 
-                insertWorkoutCmd.Parameters.AddWithValue("@dateOfWorkout", workout.DateOfWorkout);
-                insertWorkoutCmd.Parameters.AddWithValue("@name", workout.Name);
+                insertWorkoutCmd.Parameters.AddWithValue("@dateOfWorkout", request.DateOfWorkout);
+                insertWorkoutCmd.Parameters.AddWithValue("@name", request.Name);
 
                 var result = await insertWorkoutCmd.ExecuteScalarAsync();
                 workoutId = Convert.ToInt32(result);
@@ -69,11 +69,11 @@ public class WorkoutRepo : IWorkoutRepo
         }
     }
 
-    public async Task<int> AddSetToWorkout(Set setRequest, int workoutId) 
+    public async Task<int> AddSetToWorkout(Set newSet, int WorkoutID) 
     {
-        if (setRequest == null)
+        if (newSet == null)
         {
-            throw new ArgumentNullException(nameof(setRequest));
+            throw new ArgumentNullException(nameof(newSet));
         }
 
         using var connection = _connectionService.GetConnection();
@@ -94,10 +94,10 @@ public class WorkoutRepo : IWorkoutRepo
                     VALUES (@exerciseId, @weight, @reps, @rest)
                     RETURNING fldSetID;";
 
-                insertSetCmd.Parameters.AddWithValue("@exerciseId", setRequest.ExerciseID);
-                insertSetCmd.Parameters.AddWithValue("@weight", setRequest.Weight);
-                insertSetCmd.Parameters.AddWithValue("@reps", setRequest.Reps);
-                insertSetCmd.Parameters.AddWithValue("@rest", setRequest.RestBetweenSetInSec);
+                insertSetCmd.Parameters.AddWithValue("@exerciseId", newSet.ExerciseID);
+                insertSetCmd.Parameters.AddWithValue("@weight", newSet.Weight);
+                insertSetCmd.Parameters.AddWithValue("@reps", newSet.Reps);
+                insertSetCmd.Parameters.AddWithValue("@rest", newSet.RestBetweenSetInSec);
 
                 var result = await insertSetCmd.ExecuteScalarAsync();
                 setId = Convert.ToInt32(result);
@@ -113,7 +113,7 @@ public class WorkoutRepo : IWorkoutRepo
                     RETURNING fldWorkoutSetID;";
 
                 insertBridgeCmd.Parameters.AddWithValue("@setId", setId);
-                insertBridgeCmd.Parameters.AddWithValue("@workoutId", workoutId);
+                insertBridgeCmd.Parameters.AddWithValue("@workoutId", WorkoutID);
 
                 var result = await insertBridgeCmd.ExecuteScalarAsync();
                 var workoutSetId = Convert.ToInt32(result);
