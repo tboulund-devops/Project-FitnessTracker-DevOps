@@ -134,7 +134,7 @@ jobs:
           docker build \
             -t ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}:production \
             -f Backend/Dockerfile \
-            Backend/
+            .
           docker push ghcr.io/${{ steps.repo_lower.outputs.repo_lower }} --all-tags
 
       - name: Build and Push Frontend Docker image
@@ -279,7 +279,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: stryker-report
-          path: stryker-report/reports/mutation-report.html
+          path: Tests/stryker-report/reports/mutation-report.html
 
       - name: Upload k6 Report
         if: always()
