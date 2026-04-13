@@ -46,7 +46,7 @@ jobs:
           /d:sonar.token="${{ secrets.FITNESSTRACKERTOKEN }}" \
           /d:sonar.projectBaseDir="$(pwd)" \
           /d:sonar.coverageReportPaths="sonarqube-coverage-report/SonarQube.xml" \
-          /d:sonar.javascript.lcov.reportPaths="Frontend/coverage/lcov.info" \
+          /d:sonar.javascript.lcov.reportPaths="Tests/Frontend-UnitTests/coverage/lcov.info" \
           /d:sonar.qualitygate.wait=true \
           /d:sonar.qualitygate.timeout=300
 
@@ -102,13 +102,13 @@ jobs:
 
       - name: Install Frontend Dependencies
         if: always()
-        working-directory: ./Frontend/
-        run: npm ci
+        working-directory: ./Tests/Frontend-UnitTests/
+        run: npm install
 
       - name: Run Frontend Tests with Coverage
         if: always()
-        working-directory: ./Frontend/
-        run: npm run test:coverage --if-present
+        working-directory: ./Tests/Frontend-UnitTests/
+        run: npm run coverage
 
       - name: Upload test diagnostics
         if: always()
