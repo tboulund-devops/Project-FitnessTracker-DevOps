@@ -46,6 +46,7 @@ jobs:
           /d:sonar.token="${{ secrets.FITNESSTRACKERTOKEN }}" \
           /d:sonar.projectBaseDir="$(pwd)" \
           /d:sonar.coverageReportPaths="sonarqube-coverage-report/SonarQube.xml" \
+          /d:sonar.javascript.lcov.reportPaths="Frontend/coverage/lcov.info" \
           /d:sonar.qualitygate.wait=true \
           /d:sonar.qualitygate.timeout=300
 
@@ -92,6 +93,22 @@ jobs:
             --blame-hang-timeout 5m \
             --diag TestResults/dotnet-test-diag.log \
             --verbosity normal
+
+      - name: Install Node.js for frontend tests
+        if: always()
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Install Frontend Dependencies
+        if: always()
+        working-directory: ./Frontend/
+        run: npm ci
+
+      - name: Run Frontend Tests with Coverage
+        if: always()
+        working-directory: ./Frontend/
+        run: npm run test:coverage --if-present
 
       - name: Upload test diagnostics
         if: always()
@@ -319,15 +336,6 @@ jobs:
           exit 1
 
       # ===== Frontedn Build =====
-      - name: Install Node.js
-        if: always()
-        uses: actions/setup-node@v3
-        with:
-          node-version: "18"
-      - name: Install Frontend Dependencies
-        if: always()
-        working-directory: ./Frontend/
-        run: npm install
       - name: Build Frontend
         if: always()
         working-directory: ./Frontend/
