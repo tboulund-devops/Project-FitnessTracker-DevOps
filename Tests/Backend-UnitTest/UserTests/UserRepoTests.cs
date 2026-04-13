@@ -13,7 +13,7 @@ public class UserRepoTests : IAsyncLifetime
 {
     private readonly PostgreSqlContainer _postgreSqlContainer;
     private IConnectionService _connectionService;
-    private UserRepo _userRepo;
+    private IUserRepo _userRepo;
 
     public UserRepoTests()
     {
@@ -323,7 +323,7 @@ public class UserRepoTests : IAsyncLifetime
         seedCredentials.CommandText = "INSERT INTO tblUserCredentials (fldUsername, fldPassword) VALUES ('newuser', 'password123')";
         await seedCredentials.ExecuteNonQueryAsync();
 
-        var result = _userRepo.addUserInformation(3, "New User", "newuser@example.com", 30);
+        var result = _userRepo.AddUserInformation(3, "New User", "newuser@example.com", 30);
 
         Assert.True(result);
     }
@@ -331,15 +331,15 @@ public class UserRepoTests : IAsyncLifetime
     [DockerFact]
     public void AddUserInformation_InvalidNameOrEmail_ReturnsFalse()
     {
-        Assert.False(_userRepo.addUserInformation(1, null, "valid@example.com", 10));
-        Assert.False(_userRepo.addUserInformation(1, "Valid Name", null, 10));
-        Assert.False(_userRepo.addUserInformation(1, " ", "valid@example.com", 10));
+        Assert.False(_userRepo.AddUserInformation(1, null, "valid@example.com", 10));
+        Assert.False(_userRepo.AddUserInformation(1, "Valid Name", null, 10));
+        Assert.False(_userRepo.AddUserInformation(1, " ", "valid@example.com", 10));
     }
 
     [DockerFact]
     public void AddUserInformation_NegativeWorkoutTime_ReturnsFalse()
     {
-        var result = _userRepo.addUserInformation(1, "Valid Name", "valid@example.com", -1);
+        var result = _userRepo.AddUserInformation(1, "Valid Name", "valid@example.com", -1);
 
         Assert.False(result);
     }
@@ -347,7 +347,7 @@ public class UserRepoTests : IAsyncLifetime
     [DockerFact]
     public void AddUserInformation_InvalidCredentialsId_ReturnsFalse()
     {
-        var result = _userRepo.addUserInformation(0, "invaliduser", "invaliduser@example.com", 10);
+        var result = _userRepo.AddUserInformation(0, "invaliduser", "invaliduser@example.com", 10);
 
         Assert.False(result);
     }
