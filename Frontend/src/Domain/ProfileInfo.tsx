@@ -3,4 +3,3 @@
     email: string;
     timeOfRegistration: Date;
 }
-   

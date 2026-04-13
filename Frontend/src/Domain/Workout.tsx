@@ -4,5 +4,3 @@ export interface Workout {
     date: string;
     exercises: Exercise[];
 }
-
-
