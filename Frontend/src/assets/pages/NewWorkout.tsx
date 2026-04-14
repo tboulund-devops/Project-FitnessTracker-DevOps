@@ -390,4 +390,3 @@ function NewWorkout() {
 }
 
 export default NewWorkout;
-

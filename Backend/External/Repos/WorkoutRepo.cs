@@ -22,9 +22,6 @@ public class WorkoutRepo : IWorkoutRepo
 
         using var connection = _connectionService.GetConnection();
         await connection.OpenAsync();
-        
-        //transaction combines the 2 inserts to a single "unit" / commit, if not, the first might succede
-        //and the 2nd fail, and you are left with "floating" data in tblWorkout.
         using var transaction = await connection.BeginTransactionAsync();
 
         try
@@ -78,8 +75,6 @@ public class WorkoutRepo : IWorkoutRepo
 
         using var connection = _connectionService.GetConnection();
         await connection.OpenAsync();
-        //transaction combines the 2 inserts to a single "unit" / commit, if not, the first might succede
-        //and the 2nd fail, and you are left with "floating" data in tblSet.
         using var transaction = await connection.BeginTransactionAsync();
 
         try
@@ -176,14 +171,6 @@ public class WorkoutRepo : IWorkoutRepo
             getSetsCmd.Parameters.AddWithValue("@workoutId", workoutId);
 
             using var reader = await getSetsCmd.ExecuteReaderAsync();
-
-            // Log column information
-            Console.WriteLine($"Number of columns: {reader.FieldCount}");
-            for (int i = 0; i < reader.FieldCount; i++)
-            {
-                Console.WriteLine($"Column {i}: {reader.GetName(i)} - Type: {reader.GetFieldType(i)}");
-            }
-
             while (await reader.ReadAsync())
             {
                 var set = new Set
@@ -235,7 +222,6 @@ public class WorkoutRepo : IWorkoutRepo
     {
         var workoutId = reader.GetInt32(0);
         
-        // Check if we've already created this workout
         if (!workoutDict.TryGetValue(workoutId, out var workout))
         {
             workout = new Workout
@@ -248,13 +234,8 @@ public class WorkoutRepo : IWorkoutRepo
             workoutDict.Add(workoutId, workout);
             workouts.Add(workout);
         }
-        else
-        {
-            workout = workoutDict[workoutId];
-        }
 
-        // Check if there's a set (might be null if no sets)
-        if (!reader.IsDBNull(3)) // Check if fldSetID is not null
+        if (!reader.IsDBNull(3))
         {
             var set = new Set
             {
