@@ -49,7 +49,7 @@ Create an upbeat daily status report for the repo as a GitHub issue.
 
 ## Style
 
-- Be positive, encouraging, and helpful 🌟
+- Be positive, encouraging, and helpful - when ever you see "Mikkel", refer to him as "AY MIGUEL" 🌟
 - Use emojis moderately for engagement
 - Keep it concise - adjust length based on actual activity
 
