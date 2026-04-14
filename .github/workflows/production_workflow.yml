@@ -1,46 +1,21 @@
 ﻿name: production_workflow.yml
 on:
-  # This workflow ONLY runs when a PR targets the Production branch
-  pull_request:
+  push:
     branches:
-      - Production
+      - main
 
 permissions:
   contents: write
   packages: write
 
 jobs:
-  # FIRST JOB: Validate the source branch
-  check-merge-source:
-    # This job only runs if the PR is targeting 'Production'
-    # It checks if the source branch is exactly 'main'
-    if: github.base_ref == 'Production'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check if source branch is main
-        run: |
-          echo "Pull request #${{ github.event.number }}"
-          echo "Target branch (base): ${{ github.base_ref }}"
-          echo "Source branch (head): ${{ github.head_ref }}"
-
-          # This is the core validation logic
-          if [ "${{ github.head_ref }}" != "main" ]; then
-            echo "::error::Merge blocked: Only the 'main' branch can be merged into 'Production'. Attempted merge from '${{ github.head_ref }}'."
-            exit 1
-          else
-            echo "✅ Merge source is 'main'. Allowed."
-          fi
-
-  # SECOND JOB: All your integration steps (only runs if source check passes)
   integration:
-    needs: check-merge-source # This ensures integration only runs if source check passes
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       # ----- SEMANTIC VERSIONING -----
       - name: Application Version
         id: semver-app
@@ -71,23 +46,60 @@ jobs:
           /d:sonar.token="${{ secrets.FITNESSTRACKERTOKEN }}" \
           /d:sonar.projectBaseDir="$(pwd)" \
           /d:sonar.coverageReportPaths="sonarqube-coverage-report/SonarQube.xml" \
+          /d:sonar.javascript.lcov.reportPaths="Tests/Frontend-UnitTests/coverage/lcov.info" \
           /d:sonar.qualitygate.wait=true \
           /d:sonar.qualitygate.timeout=300
 
       # Build
       - name: Build
+        if: always()
         run: dotnet build Project-FitnessTracker-DevOps.sln
 
       # Unit tests with coverage
       - name: Run unit tests with coverage
+        if: always()
+        timeout-minutes: 25
         run: |
           dotnet test Tests/Tests.csproj \
             --collect:"XPlat Code Coverage" \
             --results-directory TestResults \
-            --logger "trx;LogFileName=test_results.trx"
+            --logger "trx;LogFileName=test_results.trx" \
+            --blame-hang \
+            --blame-hang-timeout 5m \
+            --diag TestResults/dotnet-test-diag.log \
+            --verbosity normal
+
+      - name: Install Node.js for frontend tests
+        if: always()
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Install Frontend Dependencies
+        if: always()
+        working-directory: ./Tests/Frontend-UnitTests/
+        run: npm install
+
+      - name: Run Frontend Tests with Coverage
+        if: always()
+        working-directory: ./Tests/Frontend-UnitTests/
+        run: |
+          npm run coverage
+          # Normalize lcov source paths so Sonar resolves files under Frontend/src.
+          sed -i -E 's#^SF:\.\./\.\./Frontend/#SF:Frontend/#; s#^SF:\.\.\\\.\.\\Frontend\\#SF:Frontend/#; s#\\#/#g' coverage/lcov.info
+          grep '^SF:' coverage/lcov.info | head -n 20
+
+      - name: Upload test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults/**
+          if-no-files-found: warn
 
       # Convert coverage to SonarQube format
       - name: Convert coverage to SonarQube format
+        if: always()
         run: |
           COVERAGE_FILE=$(find TestResults -name "coverage.cobertura.xml" | head -n 1)
           echo "Found coverage file: $COVERAGE_FILE"
@@ -103,18 +115,20 @@ jobs:
             exit 1
           fi
 
-      # SonarCloud end
+      # SonarQube end
       - name: Complete Static Code Analysis
+        if: always()
         run: |
           dotnet sonarscanner end \
           /d:sonar.token="${{ secrets.FITNESSTRACKERTOKEN }}"
 
       # Mutation tests
       - name: Run Mutation Tests
+        if: always()
         working-directory: ./Tests
         run: dotnet stryker --project Backend.csproj --break-at 60 --output "stryker-report"
 
-      # ===== DOCKER BUILD & PUSH TO GHCR ====
+      # ===== DOCKER BUILD & PUSH TO GHCR =====
       - name: Convert repository name to lowercase
         if: always()
         id: repo_lower
@@ -132,7 +146,7 @@ jobs:
         if: always()
         run: |
           docker build \
-            -t ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}:production \
+            -t ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}:staging \
             -f Backend/Dockerfile \
             .
           docker push ghcr.io/${{ steps.repo_lower.outputs.repo_lower }} --all-tags
@@ -141,82 +155,151 @@ jobs:
         if: always()
         run: |
           docker build \
-            -t ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}-frontend:production \
+            --build-arg REACT_APP_API_URL=http://${{ vars.STAGING_SERVER_IP }}:8081 \
+            -t ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}-frontend:staging \
             -f Frontend/Dockerfile \
             Frontend/
           docker push ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}-frontend --all-tags
 
-        # ===== DEPLOY TO PRODUCTION SERVER =====
+      # ===== DEPLOY TO STAGING SERVER =====
       - name: Ensure target directory exists and is writable
+        if: always()
         uses: appleboy/ssh-action@v1.2.1
         with:
-          host: ${{ vars.PRODUCTION_SERVER_IP }}
-          username: ${{ vars.PRODUCTION_SERVER_USERNAME }}
-          key: ${{ secrets.PRODUCTION_SERVER_SSH_KEY }}
+          host: ${{ vars.STAGING_SERVER_IP }}
+          username: ${{ vars.STAGING_SERVER_USERNAME }}
+          key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
           script: |
             mkdir -p dowa
-            # Take ownership of the directory (requires sudo)
-            sudo -S chown -R $(whoami) dowa
-      #
-      - name: Deliver Docker Compose file and migrations to Production
+            echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S chown -R $(whoami) dowa
+
+      - name: Deliver Docker Compose file and migrations to staging
         if: always()
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ vars.PRODUCTION_SERVER_IP }}
-          username: ${{ vars.PRODUCTION_SERVER_USERNAME }}
-          key: ${{ secrets.PRODUCTION_SERVER_SSH_KEY }}
-          source: "docker-compose.yml,db/migrations/*.sql"
+          host: ${{ vars.STAGING_SERVER_IP }}
+          username: ${{ vars.STAGING_SERVER_USERNAME }}
+          key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
+          source: "docker-compose.staging.yml,db/migrations/*.sql"
           target: dowa/
-          rm: false # Overwrite existing files
+          rm: false
 
-      - name: Create .env file on Production server
+      - name: Create .env file on staging server
         if: always()
         uses: appleboy/ssh-action@v1.2.1
         with:
-          host: ${{ vars.PRODUCTION_SERVER_IP }}
-          username: ${{ vars.PRODUCTION_SERVER_USERNAME }}
-          key: ${{ secrets.PRODUCTION_SERVER_SSH_KEY }}
+          host: ${{ vars.STAGING_SERVER_IP }}
+          username: ${{ vars.STAGING_SERVER_USERNAME }}
+          key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
           script: |
             cd dowa
             echo "DATABASE_USER=${{ vars.DATABASE_USER }}" > .env
             echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> .env
             echo "DATABASE_NAME=${{ vars.DATABASE_NAME }}" >> .env
             echo "CONNECTION_STRING=Host=db;Database=${{ vars.DATABASE_NAME }};Username=${{ vars.DATABASE_USER }};Password=${{ secrets.DATABASE_PASSWORD }}" >> .env
-            echo "ASPNETCORE_ENVIRONMENT=Production" >> .env
+            echo "ASPNETCORE_ENVIRONMENT=Staging" >> .env
+            # Add any runtime frontend variables if needed (e.g., for a config.js)
+            # echo "REACT_APP_API_URL=http://${{ vars.STAGING_SERVER_IP }}:8081" >> .env
 
-      - name: Run Docker Compose on Production server
+      - name: Run Docker Compose on staging server
         if: always()
         uses: appleboy/ssh-action@v1.2.1
         with:
-          host: ${{ vars.PRODUCTION_SERVER_IP }}
-          username: ${{ vars.PRODUCTION_SERVER_USERNAME }}
-          key: ${{ secrets.PRODUCTION_SERVER_SSH_KEY }}
-          # Use bash -c with a quoted multi‑line string – safe for Fish
+          host: ${{ vars.STAGING_SERVER_IP }}
+          username: ${{ vars.STAGING_SERVER_USERNAME }}
+          key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
           script: |
             cd dowa
-            sudo -S docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_PAT }}
-            sudo -S docker-compose down --force
-            sudo -S docker-compose pull
-            sudo -S docker-compose up -d db
+
+            # Function to run commands with sudo (no password prompt)
+            function run_sudo
+              echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S -p '' $argv
+            end
+
+            # Log in to GHCR
+            run_sudo docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_PAT }}
+
+            # Stop and remove containers, then pull fresh images
+            run_sudo docker compose -f docker-compose.staging.yml down
+            # Force removal of old images to ensure fresh pull
+            run_sudo docker rmi ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}:staging ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}-frontend:staging 2>/dev/null || true
+
+            run_sudo docker compose -f docker-compose.staging.yml pull
+
+            # Start database
+            run_sudo docker compose -f docker-compose.staging.yml up -d db
+
             echo "Waiting for database to be healthy..."
-            while test (sudo docker inspect --format='{{.State.Health.Status}}' FitnessTrackerDBPost) != "healthy"
+            while test (run_sudo docker inspect --format='{{.State.Health.Status}}' FitnessTrackerDBPost) != "healthy"
               sleep 2
             end
-            echo "Running Flyway migrations..."
-            if not sudo -S docker-compose run --rm flyway
+
+            # Flyway validation and migration
+            echo "Running Flyway validation..."
+            set flyway_validate_output (run_sudo docker compose -f docker-compose.staging.yml run --rm flyway validate 2>&1)
+            set flyway_validate_exit $status
+
+            if test $flyway_validate_exit -ne 0
+              echo "$flyway_validate_output"
+              if string match -rqi "Migration checksum mismatch|checksum mismatch" -- "$flyway_validate_output"
+                echo "Checksum mismatch detected. Running one-time Flyway repair..."
+                if not run_sudo docker compose -f docker-compose.staging.yml run --rm flyway repair
+                  echo "❌ Flyway repair failed!"
+                  exit 1
+                end
+              else
+                echo "❌ Flyway validation failed for a non-checksum reason."
+                exit $flyway_validate_exit
+              end
+            end
+
+            echo "Running Flyway migrate..."
+            if not run_sudo docker compose -f docker-compose.staging.yml run --rm flyway migrate
               echo "❌ Flyway migration failed!"
               exit 1
             end
+
+            # Start backend and frontend
             echo "Starting backend..."
-            sudo -S docker-compose up -d backend
+            run_sudo docker compose -f docker-compose.staging.yml up -d backend
             echo "Starting frontend..."
-            sudo -S docker-compose up -d frontend
+            run_sudo docker compose -f docker-compose.staging.yml up -d frontend
+
       # ===== WAIT FOR APP TO BE READY =====
-      - name: Wait for Production to be Ready
+      - name: Wait for Backend to be Ready
         if: always()
         run: |
           MAX_ATTEMPTS=30
-          URL="http://${{ vars.PRODUCTION_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
+          URL="http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
+          echo "Waiting for backend at $URL"
+          for i in $(seq 1 $MAX_ATTEMPTS); do
+            HTTP_STATUS=$(curl -4 -s -o /dev/null -w "%{http_code}" --connect-timeout 5 "$URL" || echo "000")
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "✅ Backend is up! (HTTP 200)"
+              break
+            else
+              echo "Attempt $i/$MAX_ATTEMPTS: HTTP $HTTP_STATUS - not ready yet. Sleeping 5s..."
+            fi
+            sleep 5
+          done
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "❌ Backend did not become ready in time. Last HTTP status: $HTTP_STATUS"
+            exit 1
+          fi
+
+      - name: Verify Frontend is Serving
+        if: always()
+        run: |
+          FRONTEND_URL="http://${{ vars.STAGING_SERVER_IP }}:8030"
+          curl -f -s -o /dev/null "$FRONTEND_URL" || (echo "❌ Frontend not reachable" && exit 1)
+          echo "✅ Frontend is reachable"
+
+      # ===== WAIT FOR APP TO BE READY =====
+      - name: Wait for Staging to be Ready
+        if: always()
+        run: |
+          MAX_ATTEMPTS=30
+          URL="http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
           echo "Waiting for app at $URL"
           for i in $(seq 1 $MAX_ATTEMPTS); do
             HTTP_STATUS=$(curl -4 -s -o /dev/null -w "%{http_code}" --connect-timeout 5 "$URL" || echo "000")
@@ -232,15 +315,11 @@ jobs:
           exit 1
 
       # ===== Frontedn Build =====
-      - name: Install Node.js
-        if: always()
-        uses: actions/setup-node@v3
-        with:
-          node-version: "18"
-      - name: Install Frontend Dependencies
+      - name: Install Frontend Dependencies for Build
         if: always()
         working-directory: ./Frontend/
-        run: npm install
+        run: npm ci
+
       - name: Build Frontend
         if: always()
         working-directory: ./Frontend/
