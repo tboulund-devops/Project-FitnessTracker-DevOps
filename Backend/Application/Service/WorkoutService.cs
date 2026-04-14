@@ -46,4 +46,14 @@ public class WorkoutService : IWorkoutService
         return await _repo.getWorkout(workoutId);
     }
     
+    public async Task<List<Workout>> GetWorkoutsByUserID(int userId)
+    {
+        if (userId <= 0)
+        {
+            throw new ArgumentException("User ID is required");
+        }
+        
+        return await _repo.GetWorkoutsByUserID(userId);
+    }
+    
 }

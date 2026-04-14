@@ -14,17 +14,29 @@ FROM tblUserCredentials
 WHERE fldUsername = 'test'
     ON CONFLICT (fldCredentialsID) DO NOTHING;   -- unique constraint ensures one user per credentials
 
--- Insert a test workout with a dynamic date (two days ago from today)
+-- Insert a test workout only if one with the same demo date+name does not already exist
 INSERT INTO tblWorkout (fldDateOfWorkout, fldName)
-VALUES (CURRENT_DATE - INTERVAL '2 days', 'Morning Chest Day')   
-    ON CONFLICT (fldDateOfWorkout, fldName) DO NOTHING;
+SELECT CURRENT_DATE - INTERVAL '2 days', 'Morning Chest Day'
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM tblWorkout
+    WHERE fldDateOfWorkout = CURRENT_DATE - INTERVAL '2 days'
+      AND fldName = 'Morning Chest Day'
+);
 
--- Link the user to the workout (if not already linked)
+-- Link the user to one deterministic workout record for the demo data
 INSERT INTO tblUserWorkout (fldUserID, fldWorkoutID)
 SELECT u.fldUserID, w.fldWorkoutID
-FROM tblUser u, tblWorkout w
-WHERE u.fldName = 'John Doe' AND w.fldName = 'Morning Chest Day'
-  AND w.fldDateOfWorkout = CURRENT_DATE - INTERVAL '2 days'   -- match the exact date
+FROM tblUser u
+CROSS JOIN LATERAL (
+    SELECT fldWorkoutID
+    FROM tblWorkout
+    WHERE fldName = 'Morning Chest Day'
+      AND fldDateOfWorkout = CURRENT_DATE - INTERVAL '2 days'
+    ORDER BY fldWorkoutID
+    LIMIT 1
+) w
+WHERE u.fldName = 'John Doe'
 ON CONFLICT (fldUserID, fldWorkoutID) DO NOTHING;
 
 -- Insert test exercise
@@ -39,13 +51,19 @@ FROM tblExercise
 WHERE fldName = 'Barbell Bench Press'
     ON CONFLICT (fldExerciseID, fldWeight, fldReps, fldRestBetweenSet) DO NOTHING;
 
--- Link the set to the workout (must match the exact date)
+-- Link the set to one deterministic workout record for the demo data
 INSERT INTO tblWorkoutSet (fldSetID, fldWorkoutID)
 SELECT s.fldSetID, w.fldWorkoutID
-FROM tblSet s, tblWorkout w
+FROM tblSet s
+CROSS JOIN LATERAL (
+    SELECT fldWorkoutID
+    FROM tblWorkout
+    WHERE fldName = 'Morning Chest Day'
+      AND fldDateOfWorkout = CURRENT_DATE - INTERVAL '2 days'
+    ORDER BY fldWorkoutID
+    LIMIT 1
+) w
 WHERE s.fldWeight = 185
   AND s.fldReps = 10
   AND s.fldRestBetweenSet = 90
-  AND w.fldName = 'Morning Chest Day'
-  AND w.fldDateOfWorkout = CURRENT_DATE - INTERVAL '2 days'   -- ensure correct workout
 ON CONFLICT (fldSetID, fldWorkoutID) DO NOTHING;

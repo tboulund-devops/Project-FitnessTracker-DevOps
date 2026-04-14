@@ -1,20 +1,18 @@
-﻿
-
-services:
+﻿services:
   db:
     image: postgres:15
     container_name: FitnessTrackerDBPost
     restart: always
     environment:
-      POSTGRES_USER: ${DATABASE_USER} 
-      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}      
-      POSTGRES_DB: ${DATABASE_NAME}            
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME}" ]
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -31,13 +29,13 @@ services:
       FLYWAY_PASSWORD: ${DATABASE_PASSWORD}
       FLYWAY_CONNECT_RETRIES: 10
       FLYWAY_LOCATIONS: filesystem:/flyway/sql
-      FLYWAY_BASELINE_ON_MIGRATE: true
+      FLYWAY_BASELINE_ON_MIGRATE: "true"
     volumes:
       - ./db/migrations:/flyway/sql
     command: migrate
 
   backend:
-    image: ghcr.io/tboulund-devops/project-fitnesstracker-devops:staging
+    image: ghcr.io/tboulund-devops/project-fitnesstracker-devops:production
     container_name: FitnessTrackerBackend
     depends_on:
       db:
@@ -49,12 +47,20 @@ services:
       - "8081:8080"
 
   frontend:
-    image: ghcr.io/tboulund-devops/project-fitnesstracker-devops-frontend:staging
+    image: ghcr.io/tboulund-devops/project-fitnesstracker-devops-frontend:production
     container_name: FitnessTrackerFrontend
     depends_on:
       - backend
     ports:
       - "8030:3000"
+        
+  featurehub:
+    image: featurehub/party-server:latest
+    restart: always
+    volumes:
+      - ./featurehub:/db
+    ports:
+      - "8085:8085"
 
 volumes:
   postgres_data:

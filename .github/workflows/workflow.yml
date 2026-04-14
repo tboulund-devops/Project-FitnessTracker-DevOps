@@ -15,21 +15,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  
+          fetch-depth: 0
       # ----- SEMANTIC VERSIONING -----
       - name: Application Version
         id: semver-app
         uses: paulhatch/semantic-version@v5.4.0
         with:
-          bump_each_commit: true           # Increments on every commit
-          
+          bump_each_commit: true # Increments on every commit
+
           major_pattern: "(MAJOR)"
           minor_pattern: "(MINOR)"
-          bump_each_commit_patch_pattern: "(PATCH)"        
-            
+          bump_each_commit_patch_pattern: "(PATCH)"
+
       - name: Display Version
         run: echo "Generated version is ${{ steps.semver-app.outputs.version }}"
-        
+
       # Install required tools
       - name: Install required tools
         run: |
@@ -46,50 +46,89 @@ jobs:
           /d:sonar.token="${{ secrets.FITNESSTRACKERTOKEN }}" \
           /d:sonar.projectBaseDir="$(pwd)" \
           /d:sonar.coverageReportPaths="sonarqube-coverage-report/SonarQube.xml" \
+          /d:sonar.javascript.lcov.reportPaths="Tests/Frontend-UnitTests/coverage/lcov.info" \
           /d:sonar.qualitygate.wait=true \
           /d:sonar.qualitygate.timeout=300
 
       # Build
       - name: Build
+        if: always()
         run: dotnet build Project-FitnessTracker-DevOps.sln
 
       # Unit tests with coverage
-      # - name: Run unit tests with coverage
-      #   run: |
-      #     dotnet test Tests/Tests.csproj \
-      #       --collect:"XPlat Code Coverage" \
-      #       --results-directory TestResults \
-      #       --logger "trx;LogFileName=test_results.trx"
+      - name: Run unit tests with coverage
+        if: always()
+        timeout-minutes: 25
+        run: |
+          dotnet test Tests/Tests.csproj \
+            --collect:"XPlat Code Coverage" \
+            --results-directory TestResults \
+            --logger "trx;LogFileName=test_results.trx" \
+            --blame-hang \
+            --blame-hang-timeout 5m \
+            --diag TestResults/dotnet-test-diag.log \
+            --verbosity normal
+
+      - name: Install Node.js for frontend tests
+        if: always()
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Install Frontend Dependencies
+        if: always()
+        working-directory: ./Tests/Frontend-UnitTests/
+        run: npm install
+
+      - name: Run Frontend Tests with Coverage
+        if: always()
+        working-directory: ./Tests/Frontend-UnitTests/
+        run: |
+          npm run coverage
+          # Normalize lcov source paths so Sonar resolves files under Frontend/src.
+          sed -i -E 's#^SF:\.\./\.\./Frontend/#SF:Frontend/#; s#^SF:\.\.\\\.\.\\Frontend\\#SF:Frontend/#; s#\\#/#g' coverage/lcov.info
+          grep '^SF:' coverage/lcov.info | head -n 20
+
+      - name: Upload test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults/**
+          if-no-files-found: warn
 
       # Convert coverage to SonarQube format
-      # - name: Convert coverage to SonarQube format
-      #   run: |
-      #     COVERAGE_FILE=$(find TestResults -name "coverage.cobertura.xml" | head -n 1)
-      #     echo "Found coverage file: $COVERAGE_FILE"
-      #     if [ -f "$COVERAGE_FILE" ]; then
-      #       mkdir -p sonarqube-coverage-report
-      #       reportgenerator \
-      #         -reports:"$COVERAGE_FILE" \
-      #         -targetdir:"sonarqube-coverage-report" \
-      #         -reporttypes:SonarQube
-      #       echo "✅ Coverage file converted to SonarQube format"
-      #     else
-      #       echo "❌ No coverage file found!"
-      #       exit 1
-      #     fi
+      - name: Convert coverage to SonarQube format
+        if: always()
+        run: |
+          COVERAGE_FILE=$(find TestResults -name "coverage.cobertura.xml" | head -n 1)
+          echo "Found coverage file: $COVERAGE_FILE"
+          if [ -f "$COVERAGE_FILE" ]; then
+            mkdir -p sonarqube-coverage-report
+            reportgenerator \
+              -reports:"$COVERAGE_FILE" \
+              -targetdir:"sonarqube-coverage-report" \
+              -reporttypes:SonarQube
+            echo "✅ Coverage file converted to SonarQube format"
+          else
+            echo "❌ No coverage file found!"
+            exit 1
+          fi
 
-      # SonarCloud end 
-      # - name: Complete Static Code Analysis
-      #   run: |
-      #     dotnet sonarscanner end \
-      #     /d:sonar.token="${{ secrets.FITNESSTRACKERTOKEN }}"
+      # SonarQube end
+      - name: Complete Static Code Analysis
+        if: always()
+        run: |
+          dotnet sonarscanner end \
+          /d:sonar.token="${{ secrets.FITNESSTRACKERTOKEN }}"
 
       # Mutation tests
-      # - name: Run Mutation Tests
-      #   working-directory: ./Tests
-      #   run: dotnet stryker --project ./Tests.csproj --break-at 60 --output "stryker-report"
+      - name: Run Mutation Tests
+        if: always()
+        working-directory: ./Tests
+        run: dotnet stryker --project Backend.csproj --break-at 60 --output "stryker-report"
 
-      # ===== DOCKER BUILD & PUSH TO GHCR ====
+      # ===== DOCKER BUILD & PUSH TO GHCR =====
       - name: Convert repository name to lowercase
         if: always()
         id: repo_lower
@@ -109,19 +148,20 @@ jobs:
           docker build \
             -t ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}:staging \
             -f Backend/Dockerfile \
-            Backend/
+            .
           docker push ghcr.io/${{ steps.repo_lower.outputs.repo_lower }} --all-tags
 
       - name: Build and Push Frontend Docker image
         if: always()
         run: |
           docker build \
+            --build-arg REACT_APP_API_URL=http://${{ vars.STAGING_SERVER_IP }}:8081 \
             -t ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}-frontend:staging \
             -f Frontend/Dockerfile \
             Frontend/
           docker push ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}-frontend --all-tags
-
-        # ===== DEPLOY TO STAGING SERVER =====
+      
+      # ===== DEPLOY TO STAGING SERVER =====
       - name: Ensure target directory exists and is writable
         if: always()
         uses: appleboy/ssh-action@v1.2.1
@@ -131,7 +171,6 @@ jobs:
           key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
           script: |
             mkdir -p dowa
-            # Take ownership of the directory (requires sudo)
             echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S chown -R $(whoami) dowa
 
       - name: Deliver Docker Compose file and migrations to staging
@@ -141,9 +180,9 @@ jobs:
           host: ${{ vars.STAGING_SERVER_IP }}
           username: ${{ vars.STAGING_SERVER_USERNAME }}
           key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
-          source: "docker-compose.yml,db/migrations/*.sql"
+          source: "docker-compose.staging.yml,db/migrations/*.sql"
           target: dowa/
-          rm: false   # Overwrite existing files
+          rm: false
 
       - name: Create .env file on staging server
         if: always()
@@ -159,7 +198,9 @@ jobs:
             echo "DATABASE_NAME=${{ vars.DATABASE_NAME }}" >> .env
             echo "CONNECTION_STRING=Host=db;Database=${{ vars.DATABASE_NAME }};Username=${{ vars.DATABASE_USER }};Password=${{ secrets.DATABASE_PASSWORD }}" >> .env
             echo "ASPNETCORE_ENVIRONMENT=Staging" >> .env
-
+            # Add any runtime frontend variables if needed (e.g., for a config.js)
+            # echo "REACT_APP_API_URL=http://${{ vars.STAGING_SERVER_IP }}:8081" >> .env
+  
       - name: Run Docker Compose on staging server
         if: always()
         uses: appleboy/ssh-action@v1.2.1
@@ -167,26 +208,92 @@ jobs:
           host: ${{ vars.STAGING_SERVER_IP }}
           username: ${{ vars.STAGING_SERVER_USERNAME }}
           key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
-          # Use bash -c with a quoted multi‑line string – safe for Fish
           script: |
             cd dowa
-            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_PAT }}
-            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose pull
-            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose up -d db
+            
+            # Function to run commands with sudo (no password prompt)
+            function run_sudo
+              echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S -p '' $argv
+            end
+            
+            # Log in to GHCR
+            run_sudo docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_PAT }}
+            
+            # Stop and remove containers, then pull fresh images
+            run_sudo docker compose -f docker-compose.staging.yml down
+            # Force removal of old images to ensure fresh pull
+            run_sudo docker rmi ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}:staging ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}-frontend:staging 2>/dev/null || true
+            
+            run_sudo docker compose -f docker-compose.staging.yml pull 
+            
+            # Start database
+            run_sudo docker compose -f docker-compose.staging.yml up -d db
+            
             echo "Waiting for database to be healthy..."
-            while test (sudo docker inspect --format='{{.State.Health.Status}}' FitnessTrackerDBPost) != "healthy"
+            while test (run_sudo docker inspect --format='{{.State.Health.Status}}' FitnessTrackerDBPost) != "healthy"
               sleep 2
             end
-            echo "Running Flyway migrations..."
-            if not echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose run --rm flyway
+            
+            # Flyway validation and migration
+            echo "Running Flyway validation..."
+            set flyway_validate_output (run_sudo docker compose -f docker-compose.staging.yml run --rm flyway validate 2>&1)
+            set flyway_validate_exit $status
+            
+            if test $flyway_validate_exit -ne 0
+              echo "$flyway_validate_output"
+              if string match -rqi "Migration checksum mismatch|checksum mismatch" -- "$flyway_validate_output"
+                echo "Checksum mismatch detected. Running one-time Flyway repair..."
+                if not run_sudo docker compose -f docker-compose.staging.yml run --rm flyway repair
+                  echo "❌ Flyway repair failed!"
+                  exit 1
+                end
+              else
+                echo "❌ Flyway validation failed for a non-checksum reason."
+                exit $flyway_validate_exit
+              end
+            end
+            
+            echo "Running Flyway migrate..."
+            if not run_sudo docker compose -f docker-compose.staging.yml run --rm flyway migrate
               echo "❌ Flyway migration failed!"
               exit 1
             end
+            
+            # Start backend and frontend
             echo "Starting backend..."
-            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose up -d backend
+            run_sudo docker compose -f docker-compose.staging.yml up -d backend
             echo "Starting frontend..."
-            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S docker compose up -d frontend
+            run_sudo docker compose -f docker-compose.staging.yml up -d frontend
+      
+      # ===== WAIT FOR APP TO BE READY =====
+      - name: Wait for Backend to be Ready
+        if: always()
+        run: |
+          MAX_ATTEMPTS=30
+          URL="http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
+          echo "Waiting for backend at $URL"
+          for i in $(seq 1 $MAX_ATTEMPTS); do
+            HTTP_STATUS=$(curl -4 -s -o /dev/null -w "%{http_code}" --connect-timeout 5 "$URL" || echo "000")
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "✅ Backend is up! (HTTP 200)"
+              break
+            else
+              echo "Attempt $i/$MAX_ATTEMPTS: HTTP $HTTP_STATUS - not ready yet. Sleeping 5s..."
+            fi
+            sleep 5
+          done
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "❌ Backend did not become ready in time. Last HTTP status: $HTTP_STATUS"
+            exit 1
+          fi
 
+      - name: Verify Frontend is Serving
+        if: always()
+        run: |
+          FRONTEND_URL="http://${{ vars.STAGING_SERVER_IP }}:8030"
+          curl -f -s -o /dev/null "$FRONTEND_URL" || (echo "❌ Frontend not reachable" && exit 1)
+          echo "✅ Frontend is reachable"
+          
       # ===== WAIT FOR APP TO BE READY =====
       - name: Wait for Staging to be Ready
         if: always()
@@ -206,17 +313,13 @@ jobs:
           done
           echo "❌ App did not become ready in time. Last HTTP status: $HTTP_STATUS"
           exit 1
-        
+
       # ===== Frontedn Build =====
-      - name: Install Node.js
-        if: always()
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      - name: Install Frontend Dependencies
+      - name: Install Frontend Dependencies for Build
         if: always()
         working-directory: ./Frontend/
-        run: npm install
+        run: npm ci
+
       - name: Build Frontend
         if: always()
         working-directory: ./Frontend/
@@ -232,7 +335,7 @@ jobs:
           k6 version
 
       - name: Run Performance Test (k6)
-        #if: always() 
+        #if: always()
         working-directory: ./Tests
         env:
           TARGET_URL: "http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
@@ -243,7 +346,7 @@ jobs:
       - name: Install TestCafe
         if: always()
         run: npm install -g testcafe testcafe-reporter-html
-        
+
       - name: Run E2E Tests
         if: always()
         working-directory: ./Tests
@@ -255,7 +358,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: stryker-report
-          path: stryker-report/reports/mutation-report.html
+          path: Tests/stryker-report/reports/mutation-report.html
 
       - name: Upload k6 Report
         if: always()
@@ -263,7 +366,7 @@ jobs:
         with:
           name: k6-report
           path: Tests/k6-summary.json
-      
+
       - name: Collect E2E Report
         if: always()
         uses: actions/upload-artifact@v4

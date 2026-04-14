@@ -1,4 +1,4 @@
-﻿using Backend.Application.Service.Interfaces;
+﻿﻿using Backend.Application.Service.Interfaces;
 using Backend.Domain;
 using Backend.External.Repos.Interface;
 using Npgsql;
@@ -15,9 +15,9 @@ public class WorkoutRepo : IWorkoutRepo
         _connectionService = connectionService;
     }
 
-    public async Task<int> CreateWorkout(Workout workout, int userId)
+    public async Task<int> CreateWorkout(Workout request, int userId)
     {
-        if (workout == null || string.IsNullOrEmpty(workout.Name))
+        if (request == null || string.IsNullOrEmpty(request.Name))
             throw new Exception("Workout cannot be null or empty");
 
         using var connection = _connectionService.GetConnection();
@@ -38,12 +38,10 @@ public class WorkoutRepo : IWorkoutRepo
                 VALUES (@dateOfWorkout, @name)
                 RETURNING fldWorkoutID;";
 
-                insertWorkoutCmd.Parameters.AddWithValue("@dateOfWorkout", workout.DateOfWorkout);
-                insertWorkoutCmd.Parameters.AddWithValue("@name", workout.Name);
+                insertWorkoutCmd.Parameters.AddWithValue("@dateOfWorkout", request.DateOfWorkout);
+                insertWorkoutCmd.Parameters.AddWithValue("@name", request.Name);
 
                 var result = await insertWorkoutCmd.ExecuteScalarAsync();
-                if (result == null)
-                    throw new Exception("Failed to create workout");
                 workoutId = Convert.ToInt32(result);
             }
 
@@ -59,11 +57,9 @@ public class WorkoutRepo : IWorkoutRepo
                 insertBridgeCmd.Parameters.AddWithValue("@userId", userId);
 
                 var result = await insertBridgeCmd.ExecuteScalarAsync();
-                if (result == null)
-                    throw new Exception("Failed to add workout to bridge table");
 
                 await transaction.CommitAsync();
-                return Convert.ToInt32(result);
+                return workoutId; // Return the actual workout ID, not the bridge table ID
             }
         }
         catch
@@ -73,11 +69,11 @@ public class WorkoutRepo : IWorkoutRepo
         }
     }
 
-    public async Task<int> AddSetToWorkout(Set setRequest, int workoutId) 
+    public async Task<int> AddSetToWorkout(Set newSet, int WorkoutID) 
     {
-        if (setRequest == null)
+        if (newSet == null)
         {
-            throw new ArgumentNullException(nameof(setRequest));
+            throw new ArgumentNullException(nameof(newSet));
         }
 
         using var connection = _connectionService.GetConnection();
@@ -98,15 +94,12 @@ public class WorkoutRepo : IWorkoutRepo
                     VALUES (@exerciseId, @weight, @reps, @rest)
                     RETURNING fldSetID;";
 
-                insertSetCmd.Parameters.AddWithValue("@exerciseId", setRequest.ExerciseID);
-                insertSetCmd.Parameters.AddWithValue("@weight", setRequest.Weight);
-                insertSetCmd.Parameters.AddWithValue("@reps", setRequest.Reps);
-                insertSetCmd.Parameters.AddWithValue("@rest", setRequest.RestBetweenSetInSec);
+                insertSetCmd.Parameters.AddWithValue("@exerciseId", newSet.ExerciseID);
+                insertSetCmd.Parameters.AddWithValue("@weight", newSet.Weight);
+                insertSetCmd.Parameters.AddWithValue("@reps", newSet.Reps);
+                insertSetCmd.Parameters.AddWithValue("@rest", newSet.RestBetweenSetInSec);
 
                 var result = await insertSetCmd.ExecuteScalarAsync();
-                if (result == null)
-                    throw new Exception("Failed to create set");
-
                 setId = Convert.ToInt32(result);
             }
 
@@ -120,12 +113,9 @@ public class WorkoutRepo : IWorkoutRepo
                     RETURNING fldWorkoutSetID;";
 
                 insertBridgeCmd.Parameters.AddWithValue("@setId", setId);
-                insertBridgeCmd.Parameters.AddWithValue("@workoutId", workoutId);
+                insertBridgeCmd.Parameters.AddWithValue("@workoutId", WorkoutID);
 
                 var result = await insertBridgeCmd.ExecuteScalarAsync();
-                if (result == null)
-                    throw new Exception("Failed to link set to workout");
-
                 var workoutSetId = Convert.ToInt32(result);
 
                 await transaction.CommitAsync();
@@ -185,54 +175,100 @@ public class WorkoutRepo : IWorkoutRepo
         
             getSetsCmd.Parameters.AddWithValue("@workoutId", workoutId);
 
-            try
+            using var reader = await getSetsCmd.ExecuteReaderAsync();
+
+            // Log column information
+            Console.WriteLine($"Number of columns: {reader.FieldCount}");
+            for (int i = 0; i < reader.FieldCount; i++)
             {
-                using var reader = await getSetsCmd.ExecuteReaderAsync();
-                
-                // Log column information
-                Console.WriteLine($"Number of columns: {reader.FieldCount}");
-                for (int i = 0; i < reader.FieldCount; i++)
-                {
-                    Console.WriteLine($"Column {i}: {reader.GetName(i)} - Type: {reader.GetFieldType(i)}");
-                }
-                
-                while (await reader.ReadAsync())
-                {
-                    try
-                    {
-                        var set = new Set
-                        {
-                            SetID = Convert.ToInt32(reader[0]),
-                            ExerciseID = Convert.ToInt32(reader[1]),
-                            Weight = Convert.ToInt32(reader[2]),
-                            Reps = Convert.ToInt32(reader[3]),
-                            RestBetweenSetInSec = Convert.ToInt32(reader[4])
-                        };
-                        workout.Sets.Add(set);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"ERROR reading set data: {ex.Message}");
-                        Console.WriteLine($"Column values: " +
-                            $"SetID={reader[0]}, " +
-                            $"ExerciseID={reader[1]}, " +
-                            $"Weight={reader[2]}, " +
-                            $"Reps={reader[3]}, " +
-                            $"Rest={reader[4]}");
-                        
-                        Console.WriteLine("=== ERROR in getWorkout ===");
-                        Console.WriteLine($"Message: {ex.Message}");
-                        Console.WriteLine($"Stack Trace: {ex.StackTrace}");
-                        throw;
-                    }
-                }
+                Console.WriteLine($"Column {i}: {reader.GetName(i)} - Type: {reader.GetFieldType(i)}");
             }
-            catch (Exception ex)
+
+            while (await reader.ReadAsync())
             {
-                Console.WriteLine($"ERROR in set query for workout {workoutId}: {ex.Message}");
-                throw;
+                var set = new Set
+                {
+                    SetID = Convert.ToInt32(reader[0]),
+                    ExerciseID = Convert.ToInt32(reader[1]),
+                    Weight = Convert.ToInt32(reader[2]),
+                    Reps = Convert.ToInt32(reader[3]),
+                    RestBetweenSetInSec = Convert.ToInt32(reader[4])
+                };
+                workout.Sets.Add(set);
             }
         }
         return workout;
     }
+    
+   public async Task<List<Workout>> GetWorkoutsByUserID(int userId)
+{
+    var workouts = new List<Workout>();
+    var workoutDict = new Dictionary<int, Workout>();
+
+    using var connection = _connectionService.GetConnection();
+    await connection.OpenAsync();
+
+    using var cmd = connection.CreateCommand();
+    cmd.CommandText = @"
+        SELECT 
+            w.fldWorkoutID, 
+            w.fldDateOfWorkout, 
+            w.fldName,
+            s.fldSetID,
+            s.fldExerciseID,
+            e.fldName as ExerciseName,
+            s.fldWeight,
+            s.fldReps,
+            s.fldRestBetweenSet
+        FROM tblWorkout w
+        INNER JOIN tblUserWorkout uw ON w.fldWorkoutID = uw.fldWorkoutID
+        LEFT JOIN tblWorkoutSet ws ON w.fldWorkoutID = ws.fldWorkoutID
+        LEFT JOIN tblSet s ON ws.fldSetID = s.fldSetID
+        LEFT JOIN tblExercise e ON s.fldExerciseID = e.fldExerciseID 
+        WHERE uw.fldUserID = @userId
+        ORDER BY w.fldDateOfWorkout DESC, w.fldWorkoutID;";
+    
+    cmd.Parameters.AddWithValue("@userId", userId);
+
+    using var reader = await cmd.ExecuteReaderAsync();
+    while (await reader.ReadAsync())
+    {
+        var workoutId = reader.GetInt32(0);
+        
+        // Check if we've already created this workout
+        if (!workoutDict.TryGetValue(workoutId, out var workout))
+        {
+            workout = new Workout
+            {
+                WorkoutID = workoutId,
+                DateOfWorkout = reader.GetDateTime(1),
+                Name = reader.GetString(2),
+                Sets = new List<Set>()
+            };
+            workoutDict.Add(workoutId, workout);
+            workouts.Add(workout);
+        }
+        else
+        {
+            workout = workoutDict[workoutId];
+        }
+
+        // Check if there's a set (might be null if no sets)
+        if (!reader.IsDBNull(3)) // Check if fldSetID is not null
+        {
+            var set = new Set
+            {
+                SetID = reader.GetInt32(3),
+                ExerciseID = reader.GetInt32(4),
+                ExerciseName = reader.GetString(5),
+                Weight = reader.GetInt32(6),
+                Reps = reader.GetInt32(7),
+                RestBetweenSetInSec = reader.GetInt32(8)
+            };
+            workout.Sets.Add(set);
+        }
+    }
+
+    return workouts;
+}
 }

@@ -1,10 +1,6 @@
 using Backend.Application.Service.Interfaces;
 using Backend.Domain;
-using Backend.Gateway;
-using Backend.Service;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Npgsql;
 
 namespace Backend.External.APIControllers;
 
@@ -25,21 +21,52 @@ public class APILoginController : ControllerBase
     
     
     [HttpPost("Login_CheckCredentials")]
-    public IActionResult CheckCredentials(LoginRequest request)
+    public ActionResult<int> CheckCredentials(LoginRequest? request)
     {
-        if (request == null ||string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
+        if (request == null || string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
         {
             return Unauthorized("Credtials Can not be empty");
         }
 
-        var isValid = _loginService.CheckCredentials(request);
+        var returnUserId = _loginService.CheckCredentials(request);
 
-        if (!isValid)
+        if (returnUserId <= 0)
         {
             return Unauthorized("Invalid username or password");
         }
         
-        return Ok("Valid Credentials"); 
-        
+        return Ok(returnUserId); 
     }
+    [HttpPost("Register")]
+    public IActionResult RegisterLoginCredentials(RegisterUserRequest? request)
+    {
+        if (request == null)
+        {
+            return BadRequest("Request body is required");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Username) ||
+            string.IsNullOrWhiteSpace(request.Password) ||
+            string.IsNullOrWhiteSpace(request.Name) ||
+            string.IsNullOrWhiteSpace(request.Email))
+        {
+            return BadRequest("Username, password, name and email are required");
+        }
+
+        if (request.TotalWorkoutTime > 0)
+        {
+            return BadRequest("Total workout time must be less that 1");
+        }
+
+        
+        bool isAdded = _loginService.RegisterLoginCredentials(request);
+
+        if (!isAdded)
+        {
+            return Conflict("Registration failed. Username may already exist");
+        }
+        
+        return Ok("Credentials registered. User profile fields received");
+    }
+    
 }
