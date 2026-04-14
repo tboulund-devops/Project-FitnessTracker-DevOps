@@ -1,8 +1,9 @@
-﻿name: production_workflow.yml
+name: production_workflow.yml
 on:
-  push:
+  pull_request:
     branches:
-      - main
+      - Production
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: write
@@ -16,6 +17,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Validate source branch for production
+        run: |
+          if [ "${{ github.head_ref }}" != "main" ]; then
+            echo "❌ production_workflow only allows PRs from main to Production."
+            exit 1
+          fi
+          echo "✅ Source branch validation passed (${GITHUB_HEAD_REF})"
       # ----- SEMANTIC VERSIONING -----
       - name: Application Version
         id: semver-app
@@ -143,134 +151,129 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push Backend Docker image
-        if: always()
         run: |
           docker build \
-            -t ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}:staging \
+            -t ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}:production \
             -f Backend/Dockerfile \
             .
           docker push ghcr.io/${{ steps.repo_lower.outputs.repo_lower }} --all-tags
 
       - name: Build and Push Frontend Docker image
-        if: always()
         run: |
           docker build \
-            --build-arg REACT_APP_API_URL=http://${{ vars.STAGING_SERVER_IP }}:8081 \
-            -t ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}-frontend:staging \
+            --build-arg REACT_APP_API_URL=http://${{ vars.PRODUCTION_SERVER_IP }}:8081 \
+            -t ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}-frontend:production \
             -f Frontend/Dockerfile \
             Frontend/
           docker push ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}-frontend --all-tags
 
-      # ===== DEPLOY TO STAGING SERVER =====
+      # ===== DEPLOY TO PRODUCTION SERVER =====
       - name: Ensure target directory exists and is writable
-        if: always()
         uses: appleboy/ssh-action@v1.2.1
         with:
-          host: ${{ vars.STAGING_SERVER_IP }}
-          username: ${{ vars.STAGING_SERVER_USERNAME }}
-          key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
+          host: ${{ vars.PRODUCTION_SERVER_IP }}
+          username: ${{ vars.PRODUCTION_SERVER_USERNAME }}
+          key: ${{ secrets.PRODUCTION_SERVER_SSH_KEY }}
           script: |
             mkdir -p dowa
             echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S chown -R $(whoami) dowa
 
-      - name: Deliver Docker Compose file and migrations to staging
-        if: always()
+      - name: Deliver Docker Compose file and migrations to production
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ vars.STAGING_SERVER_IP }}
-          username: ${{ vars.STAGING_SERVER_USERNAME }}
-          key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
-          source: "docker-compose.staging.yml,db/migrations/*.sql"
+          host: ${{ vars.PRODUCTION_SERVER_IP }}
+          username: ${{ vars.PRODUCTION_SERVER_USERNAME }}
+          key: ${{ secrets.PRODUCTION_SERVER_SSH_KEY }}
+          source: "docker-compose.yml,db/migrations/*.sql"
           target: dowa/
           rm: false
 
-      - name: Create .env file on staging server
-        if: always()
+      - name: Create .env file on production server
         uses: appleboy/ssh-action@v1.2.1
         with:
-          host: ${{ vars.STAGING_SERVER_IP }}
-          username: ${{ vars.STAGING_SERVER_USERNAME }}
-          key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
+          host: ${{ vars.PRODUCTION_SERVER_IP }}
+          username: ${{ vars.PRODUCTION_SERVER_USERNAME }}
+          key: ${{ secrets.PRODUCTION_SERVER_SSH_KEY }}
           script: |
             cd dowa
             echo "DATABASE_USER=${{ vars.DATABASE_USER }}" > .env
             echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> .env
             echo "DATABASE_NAME=${{ vars.DATABASE_NAME }}" >> .env
             echo "CONNECTION_STRING=Host=db;Database=${{ vars.DATABASE_NAME }};Username=${{ vars.DATABASE_USER }};Password=${{ secrets.DATABASE_PASSWORD }}" >> .env
-            echo "ASPNETCORE_ENVIRONMENT=Staging" >> .env
+            echo "ASPNETCORE_ENVIRONMENT=Production" >> .env
             # Add any runtime frontend variables if needed (e.g., for a config.js)
-            # echo "REACT_APP_API_URL=http://${{ vars.STAGING_SERVER_IP }}:8081" >> .env
+            # echo "REACT_APP_API_URL=http://${{ vars.PRODUCTION_SERVER_IP }}:8081" >> .env
 
-      - name: Run Docker Compose on staging server
-        if: always()
+      - name: Run Docker Compose on production server
         uses: appleboy/ssh-action@v1.2.1
         with:
-          host: ${{ vars.STAGING_SERVER_IP }}
-          username: ${{ vars.STAGING_SERVER_USERNAME }}
-          key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
+          host: ${{ vars.PRODUCTION_SERVER_IP }}
+          username: ${{ vars.PRODUCTION_SERVER_USERNAME }}
+          key: ${{ secrets.PRODUCTION_SERVER_SSH_KEY }}
           script: |
             cd dowa
 
-            # Function to run commands with sudo (no password prompt)
-            function run_sudo
-              echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S -p '' $argv
-            end
+            # Run commands with sudo non-interactively.
+            run_sudo() {
+              echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S -p '' "$@"
+            }
 
             # Log in to GHCR
+            run_sudo docker --version
+            run_sudo docker compose version
             run_sudo docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_PAT }}
 
             # Stop and remove containers, then pull fresh images
-            run_sudo docker compose -f docker-compose.staging.yml down
+            run_sudo docker compose -f docker-compose.yml down
             # Force removal of old images to ensure fresh pull
-            run_sudo docker rmi ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}:staging ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}-frontend:staging 2>/dev/null || true
+            run_sudo docker rmi ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}:production ghcr.io/${{ steps.repo_lower.outputs.repo_lower }}-frontend:production 2>/dev/null || true
 
-            run_sudo docker compose -f docker-compose.staging.yml pull
+            run_sudo docker compose -f docker-compose.yml pull
 
             # Start database
-            run_sudo docker compose -f docker-compose.staging.yml up -d db
+            run_sudo docker compose -f docker-compose.yml up -d db
 
             echo "Waiting for database to be healthy..."
-            while test (run_sudo docker inspect --format='{{.State.Health.Status}}' FitnessTrackerDBPost) != "healthy"
+            while [ "$(run_sudo docker inspect --format='{{.State.Health.Status}}' FitnessTrackerDBPost 2>/dev/null || echo starting)" != "healthy" ]; do
               sleep 2
-            end
+            done
 
             # Flyway validation and migration
             echo "Running Flyway validation..."
-            set flyway_validate_output (run_sudo docker compose -f docker-compose.staging.yml run --rm flyway validate 2>&1)
-            set flyway_validate_exit $status
+            flyway_validate_output="$(run_sudo docker compose -f docker-compose.yml run --rm flyway validate 2>&1)"
+            flyway_validate_exit=$?
 
-            if test $flyway_validate_exit -ne 0
+            if [ $flyway_validate_exit -ne 0 ]; then
               echo "$flyway_validate_output"
-              if string match -rqi "Migration checksum mismatch|checksum mismatch" -- "$flyway_validate_output"
+              if echo "$flyway_validate_output" | grep -Eqi "Migration checksum mismatch|checksum mismatch"; then
                 echo "Checksum mismatch detected. Running one-time Flyway repair..."
-                if not run_sudo docker compose -f docker-compose.staging.yml run --rm flyway repair
+                if ! run_sudo docker compose -f docker-compose.yml run --rm flyway repair; then
                   echo "❌ Flyway repair failed!"
                   exit 1
-                end
+                fi
               else
                 echo "❌ Flyway validation failed for a non-checksum reason."
                 exit $flyway_validate_exit
-              end
-            end
+              fi
+            fi
 
             echo "Running Flyway migrate..."
-            if not run_sudo docker compose -f docker-compose.staging.yml run --rm flyway migrate
+            if ! run_sudo docker compose -f docker-compose.yml run --rm flyway migrate; then
               echo "❌ Flyway migration failed!"
               exit 1
-            end
+            fi
 
             # Start backend and frontend
             echo "Starting backend..."
-            run_sudo docker compose -f docker-compose.staging.yml up -d backend
+            run_sudo docker compose -f docker-compose.yml up -d backend
             echo "Starting frontend..."
-            run_sudo docker compose -f docker-compose.staging.yml up -d frontend
+            run_sudo docker compose -f docker-compose.yml up -d frontend
 
       # ===== WAIT FOR APP TO BE READY =====
       - name: Wait for Backend to be Ready
-        if: always()
         run: |
           MAX_ATTEMPTS=30
-          URL="http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
+          URL="http://${{ vars.PRODUCTION_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
           echo "Waiting for backend at $URL"
           for i in $(seq 1 $MAX_ATTEMPTS); do
             HTTP_STATUS=$(curl -4 -s -o /dev/null -w "%{http_code}" --connect-timeout 5 "$URL" || echo "000")
@@ -288,18 +291,16 @@ jobs:
           fi
 
       - name: Verify Frontend is Serving
-        if: always()
         run: |
-          FRONTEND_URL="http://${{ vars.STAGING_SERVER_IP }}:8030"
+          FRONTEND_URL="http://${{ vars.PRODUCTION_SERVER_IP }}:8030"
           curl -f -s -o /dev/null "$FRONTEND_URL" || (echo "❌ Frontend not reachable" && exit 1)
           echo "✅ Frontend is reachable"
 
       # ===== WAIT FOR APP TO BE READY =====
-      - name: Wait for Staging to be Ready
-        if: always()
+      - name: Wait for Production to be Ready
         run: |
           MAX_ATTEMPTS=30
-          URL="http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
+          URL="http://${{ vars.PRODUCTION_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
           echo "Waiting for app at $URL"
           for i in $(seq 1 $MAX_ATTEMPTS); do
             HTTP_STATUS=$(curl -4 -s -o /dev/null -w "%{http_code}" --connect-timeout 5 "$URL" || echo "000")
@@ -316,18 +317,15 @@ jobs:
 
       # ===== Frontedn Build =====
       - name: Install Frontend Dependencies for Build
-        if: always()
         working-directory: ./Frontend/
         run: npm ci
 
       - name: Build Frontend
-        if: always()
         working-directory: ./Frontend/
         run: npm run build
 
       # ===== PERFORMANCE TEST WITH K6 =====
       - name: Install k6
-        if: always()
         run: |
           curl -L -O https://github.com/grafana/k6/releases/download/v0.54.0/k6-v0.54.0-linux-amd64.tar.gz
           tar -xzf k6-v0.54.0-linux-amd64.tar.gz
@@ -335,20 +333,17 @@ jobs:
           k6 version
 
       - name: Run Performance Test (k6)
-        #if: always()
         working-directory: ./Tests
         env:
-          TARGET_URL: "http://${{ vars.STAGING_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
+          TARGET_URL: "http://${{ vars.PRODUCTION_SERVER_IP }}:8081/api/workout/APIWorkout/GetWorkoutInformation/1"
         run: |
           k6 run K6Testing.js -e TARGET_URL="$TARGET_URL" --summary-export=k6-summary.json
 
       # ===== E2E TESTING =====
       - name: Install TestCafe
-        if: always()
         run: npm install -g testcafe testcafe-reporter-html
 
       - name: Run E2E Tests
-        if: always()
         working-directory: ./Tests
         run: testcafe chrome:headless E2ETest.js --reporter html:e2e-report.html
 

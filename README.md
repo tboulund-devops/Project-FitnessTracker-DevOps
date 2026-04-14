@@ -64,6 +64,7 @@ This project uses GitHub Actions for continuous integration, deployment, and aut
 **Production Workflow** (`production_workflow.yml`)
 - **Trigger**: Pull request to `Production` branch (only accepts merges from `main`)
 - **Purpose**: Production deployment with comprehensive testing
+- **Target Host**: `devops@89.150.149.43` via production repository variables
 - **Key Steps**:
   - Source branch validation (enforces main → Production flow)
   - Full test suite (unit tests, mutation tests, coverage)
@@ -71,6 +72,9 @@ This project uses GitHub Actions for continuous integration, deployment, and aut
   - Docker image build with production tags
   - Production server deployment
   - Performance and E2E testing validation
+- **Required Production Variables/Secrets**:
+  - Variables: `PRODUCTION_SERVER_IP`, `PRODUCTION_SERVER_USERNAME`, `DATABASE_USER`, `DATABASE_NAME`, `PROJECT_KEY`, `SONAR_URL`
+  - Secrets: `PRODUCTION_SERVER_SSH_KEY`, `DATABASE_PASSWORD`, `SUDO_PASSWORD`, `GHCR_PAT`, `FITNESSTRACKERTOKEN`
 
 #### Agentic Workflows
 
