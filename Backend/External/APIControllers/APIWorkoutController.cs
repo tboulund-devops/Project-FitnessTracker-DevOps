@@ -38,25 +38,25 @@ public class APIWorkoutController : ControllerBase
     }
 
     [HttpPost("AddSetToWorkout")]
-    public async Task<IActionResult> AddSetToWorkout(Set setRequest, int workoutId)
+    public async Task<IActionResult> AddSetToWorkout(Set newSet, int WorkoutID)
     {
-        if (setRequest.Reps <= 0 || setRequest.ExerciseID <= 0 || setRequest.Weight <= 0)
+        if (newSet.Reps <= 0 || newSet.ExerciseID <= 0 || newSet.Weight <= 0)
         { 
             return BadRequest("Set verification failure");
         }
 
-        if (workoutId <= 0)
+        if (WorkoutID <= 0)
         {
             return BadRequest("Workout id must be a positive number");
         }
-        int isValid = await _workoutService.AddSetToWorkout(setRequest, workoutId);
+        int isValid = await _workoutService.AddSetToWorkout(newSet, WorkoutID);
         
         if (isValid <= 0)
         {
-            return NotFound("Unable to Add Set to workout: " + workoutId);
+            return NotFound("Unable to Add Set to workout: " + WorkoutID);
         }
 
-        return Ok("Set successfully added to  workout: " + workoutId);
+        return Ok("Set successfully added to  workout: " + WorkoutID);
     }
 
     [HttpGet("GetWorkoutInformation/{workoutId}")]

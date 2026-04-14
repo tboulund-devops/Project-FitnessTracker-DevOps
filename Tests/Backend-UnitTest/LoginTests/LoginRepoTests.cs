@@ -90,7 +90,7 @@ namespace UnitTests.Backend_UnitTest.LoginTests
             await _postgreSqlContainer.DisposeAsync();
         }
 
-        [Fact]
+        [DockerFact]
         public void GetCredentials_ExistingUser_ReturnsUsernameAndPasswordTrimmed()
         {
             // Act
@@ -102,7 +102,7 @@ namespace UnitTests.Backend_UnitTest.LoginTests
             Assert.Equal("password123", result[1]);
         }
 
-        [Fact]
+        [DockerFact]
         public void GetCredentials_ExistingUserWithSpaces_ReturnsTrimmedValues()
         {
             // Act
@@ -114,7 +114,7 @@ namespace UnitTests.Backend_UnitTest.LoginTests
             Assert.Equal("pass123", result[1]);
         }
 
-        [Fact]
+        [DockerFact]
         public void GetCredentials_NonExistingUser_ReturnsEmptyList()
         {
             // Act
@@ -124,7 +124,7 @@ namespace UnitTests.Backend_UnitTest.LoginTests
             Assert.Empty(result);
         }
 
-        [Fact]
+        [DockerFact]
         public void GetCredentials_NullUsername_ReturnsEmptyList()
         {
             // Act
@@ -134,7 +134,7 @@ namespace UnitTests.Backend_UnitTest.LoginTests
             Assert.Empty(result);
         }
 
-        [Fact]
+        [DockerFact]
         public void GetCredentials_EmptyUsername_ReturnsEmptyList()
         {
             // Act
@@ -144,7 +144,7 @@ namespace UnitTests.Backend_UnitTest.LoginTests
             Assert.Empty(result);
         }
 
-        [Fact]
+        [DockerFact]
         public void GetUserID_ExistingUser_ReturnsUserId()
         {
             var result = _loginRepo.getUserID("john_doe");
@@ -152,7 +152,7 @@ namespace UnitTests.Backend_UnitTest.LoginTests
             Assert.True(result > 0);
         }
 
-        [Fact]
+        [DockerFact]
         public void GetUserID_NonExistingUser_ReturnsMinusOne()
         {
             var result = _loginRepo.getUserID("missing_user");
@@ -160,7 +160,7 @@ namespace UnitTests.Backend_UnitTest.LoginTests
             Assert.Equal(-1, result);
         }
 
-        [Fact]
+        [DockerFact]
         public void GetUserID_NullOrEmptyUsername_ReturnsMinusOne()
         {
             Assert.Equal(-1, _loginRepo.getUserID(null));

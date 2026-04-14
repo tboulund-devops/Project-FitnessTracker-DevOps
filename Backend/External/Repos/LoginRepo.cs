@@ -68,5 +68,25 @@ namespace Backend.Gateway
 
             return -1; // Indicate user not found
         }
+
+        public int addCredentials(string? username, string? password)
+        {
+            // Handle null or empty username or password gracefully
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+                return -1; // Indicate invalid input
+
+            using var connection = _connectionService.GetConnection();
+            connection.Open();
+
+            using var cmd = new NpgsqlCommand(
+                "INSERT INTO tblUserCredentials (fldUsername, fldPassword) VALUES (@username, @password) RETURNING fldCredentialsID",
+                connection);
+
+            cmd.Parameters.AddWithValue("@username", username);
+            cmd.Parameters.AddWithValue("@password", password);
+
+            object? result = cmd.ExecuteScalar();
+            return result is int credentialsId ? credentialsId : -1;
+        }
     }
 }

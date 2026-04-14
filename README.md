@@ -183,25 +183,25 @@ _Winter vacation - nothing planned._
 
 ### Week 13
 
-**Feature 1:** [...]
+**Feature 1:** Registration User backend
 
-**Feature 2:** [...]
+**Feature 2:** Registration User Frontend
 
 ### Week 14
 
-_Easter vacation - nothing planned._
+_Easter vacation - Collect Eastereggs._
 
 ### Week 15
 
-**Feature 1:** [...]
+**Feature 1:** Get Profile info Backend
 
-**Feature 2:** [...]
+**Feature 2:** Get Profile info Frontend
 
 ### Week 16
 
-**Feature 1:** [...]
+**Feature 1:** Change email Frontend
 
-**Feature 2:** [...]
+**Feature 2:** Change email Backend
 
 ### Week 17
 

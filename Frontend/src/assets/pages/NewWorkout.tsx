@@ -1,4 +1,4 @@
-﻿﻿import { useState } from "react";
+﻿import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../index.css";
 import "../../NewWorkoutPage.css";
@@ -19,6 +19,11 @@ interface ExerciseEntry {
     sets: SetEntry[];
 }
 
+interface WorkoutPayload {
+    dateOfWorkout: string;
+    name: string;
+}
+
 // Hard-coded exercise list (matches ExerciseID values in the DB)
 const EXERCISES = [
     { id: 1, name: "Bench Press" },
@@ -36,6 +41,115 @@ const EXERCISES = [
 
 let _nextId = 1;
 const nextId = () => _nextId++;
+
+const mapExerciseNameToId = new Map(EXERCISES.map((exercise) => [exercise.name, exercise.id]));
+
+const getValidationError = (
+    currentUserId: string | null,
+    workoutName: string,
+    exercises: ExerciseEntry[]
+): string | null => {
+    if (!currentUserId) {
+        return "User ID not found. Please log in again.";
+    }
+    if (!workoutName.trim()) {
+        return "Please enter a workout name.";
+    }
+    if (exercises.length === 0) {
+        return "Please add at least one exercise.";
+    }
+
+    const allSets = exercises.flatMap((exercise) => exercise.sets);
+    if (allSets.length === 0) {
+        return "Please add at least one set.";
+    }
+    if (allSets.some((set) => set.reps <= 0 || set.weight <= 0)) {
+        return "Every set must have at least 1 rep and a weight greater than 0 kg.";
+    }
+
+    return null;
+};
+
+const createWorkout = async (currentUserId: string, payload: WorkoutPayload): Promise<number> => {
+    const createRes = await fetch(
+        `/api/workout/APIWorkout/CreateWorkout?UserId=${currentUserId}`,
+        {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        }
+    );
+
+    if (!createRes.ok) {
+        const message = await createRes.text();
+        throw new Error(message || "Failed to create workout.");
+    }
+
+    const workoutId = parseInt(await createRes.text(), 10);
+    if (isNaN(workoutId) || workoutId <= 0) {
+        throw new Error("Server returned an invalid workout ID.");
+    }
+
+    return workoutId;
+};
+
+const saveSets = async (workoutId: number, allSets: SetEntry[]) => {
+    for (const set of allSets) {
+        const setPayload = {
+            ExerciseID: set.exerciseId,
+            Weight: Math.round(set.weight),
+            Reps: set.reps,
+            RestBetweenSetInSec: set.restBetweenSetInSec,
+        };
+
+        const setRes = await fetch(
+            `/api/workout/APIWorkout/AddSetToWorkout?workoutId=${workoutId}`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(setPayload),
+            }
+        );
+
+        if (!setRes.ok) {
+            const message = await setRes.text();
+            throw new Error(`Set save failed: ${message}`);
+        }
+    }
+};
+
+const updateExerciseSetValue = (
+    exercises: ExerciseEntry[],
+    exLocalId: number,
+    setLocalId: number,
+    field: keyof Pick<SetEntry, "weight" | "reps" | "restBetweenSetInSec">,
+    value: number
+): ExerciseEntry[] => {
+    return exercises.map((exercise) => {
+        if (exercise.localId !== exLocalId) {
+            return exercise;
+        }
+
+        const updatedSets = exercise.sets.map((set) =>
+            set.localId === setLocalId ? { ...set, [field]: value } : set
+        );
+        return { ...exercise, sets: updatedSets };
+    });
+};
+
+const removeExerciseSet = (
+    exercises: ExerciseEntry[],
+    exLocalId: number,
+    setLocalId: number
+): ExerciseEntry[] => {
+    return exercises.map((exercise) => {
+        if (exercise.localId !== exLocalId) {
+            return exercise;
+        }
+
+        return { ...exercise, sets: exercise.sets.filter((set) => set.localId !== setLocalId) };
+    });
+};
 
 function NewWorkout() {
     const navigate = useNavigate();
@@ -71,7 +185,7 @@ function NewWorkout() {
                 const last = ex.sets[ex.sets.length - 1];
                 const newSet: SetEntry = {
                     localId: nextId(),
-                    exerciseId: EXERCISES.find((e) => e.name === ex.name)?.id ?? 1,
+                    exerciseId: mapExerciseNameToId.get(ex.name) ?? 1,
                     weight: last?.weight ?? 0,
                     reps: last?.reps ?? 10,
                     restBetweenSetInSec: last?.restBetweenSetInSec ?? 90,
@@ -88,28 +202,11 @@ function NewWorkout() {
         field: keyof Pick<SetEntry, "weight" | "reps" | "restBetweenSetInSec">,
         value: number
     ) => {
-        setExercises((prev) =>
-            prev.map((ex) => {
-                if (ex.localId !== exLocalId) return ex;
-                
-                return {
-                    ...ex,
-                    sets: ex.sets.map((s) =>
-                        s.localId === setLocalId ? { ...s, [field]: value } : s
-                    ),
-                };
-            })
-        );
+        setExercises((prev) => updateExerciseSetValue(prev, exLocalId, setLocalId, field, value));
     };
 
     const removeSet = (exLocalId: number, setLocalId: number) => {
-        setExercises((prev) =>
-            prev.map((ex) => {
-                if (ex.localId !== exLocalId) return ex;
-                
-                return { ...ex, sets: ex.sets.filter((s) => s.localId !== setLocalId) };
-            })
-        );
+        setExercises((prev) => removeExerciseSet(prev, exLocalId, setLocalId));
     };
     
     // ── Save ─────────────────────────────────────────
@@ -118,91 +215,30 @@ function NewWorkout() {
         setSuccess("");
 
         const currentUserId = localStorage.getItem("userID");
-        if (!currentUserId) {
-            setError("User ID not found. Please log in again.");
-            return;
-        }
-
-        if (!workoutName.trim()) {
-            setError("Please enter a workout name.");
-            return;
-        }
-        
-        if (exercises.length === 0) {
-            setError("Please add at least one exercise.");
-            return;
-        }
-        
         const allSets = exercises.flatMap((e) => e.sets);
-        if (allSets.length === 0) {
-            setError("Please add at least one set.");
+        const validationError = getValidationError(currentUserId, workoutName, exercises);
+        if (validationError) {
+            setError(validationError);
             return;
         }
-
-        const hasInvalidSet = allSets.some((s) => s.reps <= 0 || s.weight <= 0);
-        if (hasInvalidSet) {
-            setError("Every set must have at least 1 rep and a weight greater than 0 kg.");
+        if (!currentUserId) {
             return;
         }
 
         setSaving(true);
         try {
-            const workoutPayload = {
+            const workoutPayload: WorkoutPayload = {
                 dateOfWorkout: startTime.toISOString(),
                 name: workoutName.trim(),
             };
+            const workoutId = await createWorkout(currentUserId, workoutPayload);
+            await saveSets(workoutId, allSets);
 
-            const createRes = await fetch(
-                `/api/workout/APIWorkout/CreateWorkout?UserId=${currentUserId}`,
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(workoutPayload),
-                }
-            );
-
-            if (!createRes.ok) {
-                const msg = await createRes.text();
-                setError(msg || "Failed to create workout.");
-                return;
-            }
-
-            const workoutIdRaw = await createRes.text();
-            const workoutId = parseInt(workoutIdRaw);
-
-            if (isNaN(workoutId) || workoutId <= 0) {
-                setError("Server returned an invalid workout ID.");
-                return;
-            }
-
-            for (const set of allSets) {
-                const setPayload = {
-                    ExerciseID: set.exerciseId,
-                    Weight: Math.round(set.weight),
-                    Reps: set.reps,
-                    RestBetweenSetInSec: set.restBetweenSetInSec,
-                };
-
-                const setRes = await fetch(
-                    `/api/workout/APIWorkout/AddSetToWorkout?workoutId=${workoutId}`,
-                    {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(setPayload),
-                    }
-                );
-
-                if (!setRes.ok) {
-                    const msg = await setRes.text();
-                    setError(`Set save failed: ${msg}`);
-                    return;
-                }
-            }
-
-            setSuccess("Workout saved! Redirecting…");
+            setSuccess("Workout saved! Redirecting...");
             setTimeout(() => navigate("/old-workouts"), 1200);
-        } catch {
-            setError("Could not reach the server. Please try again later.");
+        } catch (err) {
+            const message = err instanceof Error ? err.message : "Could not reach the server. Please try again later.";
+            setError(message);
         } finally {
             setSaving(false);
         }
@@ -354,4 +390,3 @@ function NewWorkout() {
 }
 
 export default NewWorkout;
-

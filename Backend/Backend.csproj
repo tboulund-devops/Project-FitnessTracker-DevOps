@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="External\Repos\Interface\" />
+    <ProjectReference Include="..\FeaturehubHelper\FeaturehubHelper.csproj" />
   </ItemGroup>
 
 </Project>

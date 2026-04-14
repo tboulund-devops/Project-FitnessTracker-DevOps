@@ -101,9 +101,101 @@ public class APILoginControllerTest
         _mockLoginService.Verify(x => x.CheckCredentials(request), Times.Once);
     }
 
+    [Fact]
+    public void RegisterLoginCredentials_NullRequest_ReturnsBadRequest()
+    {
+        IActionResult result = _controller.RegisterLoginCredentials(null);
+
+        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+        Assert.Equal("Request body is required", badRequestResult.Value);
+        _mockLoginService.Verify(x => x.RegisterLoginCredentials(It.IsAny<RegisterUserRequest>()), Times.Never);
+    }
+
+    [Theory]
+    [InlineData(null, "password", "Name", "email@test.com", 0)]
+    [InlineData("", "password", "Name", "email@test.com", 0)]
+    [InlineData("username", null, "Name", "email@test.com", 0)]
+    [InlineData("username", "password", "", "email@test.com", 0)]
+    [InlineData("username", "password", "Name", "", 0)]
+    public void RegisterLoginCredentials_MissingRequiredFields_ReturnsBadRequest(
+        string? username,
+        string? password,
+        string? name,
+        string? email,
+        int totalWorkoutTime)
+    {
+        var request = CreateRegisterRequest(username, password, name, email, totalWorkoutTime);
+
+        IActionResult result = _controller.RegisterLoginCredentials(request);
+
+        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+        Assert.Equal("Username, password, name and email are required", badRequestResult.Value);
+        _mockLoginService.Verify(x => x.RegisterLoginCredentials(It.IsAny<RegisterUserRequest>()), Times.Never);
+    }
+
+    [Fact]
+    public void RegisterLoginCredentials_NegativeWorkoutTime_ReturnsConflict()
+    {
+        var request = CreateRegisterRequest("username", "password", "Name", "email@test.com", -1);
+
+        IActionResult result = _controller.RegisterLoginCredentials(request);
+
+        var conflictResult = Assert.IsType<ConflictObjectResult>(result);
+        Assert.Equal("Registration failed. Username may already exist", conflictResult.Value);
+        _mockLoginService.Verify<bool>(x => x.RegisterLoginCredentials(It.IsAny<RegisterUserRequest>()), Times.Once());
+    }
+
+    [Fact]
+    public void RegisterLoginCredentials_ServiceReturnsFalse_ReturnsConflict()
+    {
+        var request = CreateRegisterRequest("username", "password", "Name", "email@test.com", 0);
+        _mockLoginService
+            .Setup(x => x.RegisterLoginCredentials(It.Is<RegisterUserRequest>(r => r.Username == "username" && r.Password == "password")))
+            .Returns(false);
+
+        IActionResult result = _controller.RegisterLoginCredentials(request);
+
+        var conflictResult = Assert.IsType<ConflictObjectResult>(result);
+        Assert.Equal("Registration failed. Username may already exist", conflictResult.Value);
+        _mockLoginService.Verify<bool>(
+            x => x.RegisterLoginCredentials(It.Is<RegisterUserRequest>(r => r.Username == "username" && r.Password == "password")),
+            Times.Once());
+    }
+
+    [Fact]
+    public void RegisterLoginCredentials_ServiceReturnsTrue_ReturnsOk()
+    {
+        var request = CreateRegisterRequest("username", "password", "Name", "email@test.com", 0);
+        _mockLoginService
+            .Setup(x => x.RegisterLoginCredentials(It.Is<RegisterUserRequest>(r => r.Username == "username" && r.Password == "password")))
+            .Returns(true);
+
+        IActionResult result = _controller.RegisterLoginCredentials(request);
+
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.Equal("Credentials registered. User profile fields received", okResult.Value);
+        _mockLoginService.Verify<bool>(
+            x => x.RegisterLoginCredentials(It.Is<RegisterUserRequest>(r => r.Username == "username" && r.Password == "password")),
+            Times.Once());
+    }
+
     private static LoginRequest CreateRequest(string? username, string? password) => new()
     {
         Username = username!,
         Password = password!
+    };
+
+    private static RegisterUserRequest CreateRegisterRequest(
+        string? username,
+        string? password,
+        string? name,
+        string? email,
+        int totalWorkoutTime) => new()
+    {
+        Username = username!,
+        Password = password!,
+        Name = name!,
+        Email = email!,
+        TotalWorkoutTime = totalWorkoutTime
     };
 }

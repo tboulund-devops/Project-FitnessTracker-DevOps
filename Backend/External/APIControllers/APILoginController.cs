@@ -36,6 +36,37 @@ public class APILoginController : ControllerBase
         }
         
         return Ok(returnUserId); 
-        
     }
+    [HttpPost("Register")]
+    public IActionResult RegisterLoginCredentials(RegisterUserRequest? request)
+    {
+        if (request == null)
+        {
+            return BadRequest("Request body is required");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Username) ||
+            string.IsNullOrWhiteSpace(request.Password) ||
+            string.IsNullOrWhiteSpace(request.Name) ||
+            string.IsNullOrWhiteSpace(request.Email))
+        {
+            return BadRequest("Username, password, name and email are required");
+        }
+
+        if (request.TotalWorkoutTime > 0)
+        {
+            return BadRequest("Total workout time must be less that 1");
+        }
+
+        
+        bool isAdded = _loginService.RegisterLoginCredentials(request);
+
+        if (!isAdded)
+        {
+            return Conflict("Registration failed. Username may already exist");
+        }
+        
+        return Ok("Credentials registered. User profile fields received");
+    }
+    
 }

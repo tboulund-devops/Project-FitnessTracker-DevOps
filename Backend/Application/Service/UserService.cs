@@ -44,6 +44,33 @@ public class UserService : IUserService
             FavoriteExercise = favoriteExercise ?? "N/A"
         };
     }
+    
+    public async Task<User> GetProfileInfo(int userID)
+    {
+        var user = await _userRepo.GetUserInfoByIdAsync(userID);
+        if (user == null)
+            throw new Exception($"User with ID {userID} not found");
+
+        return user;
+    }
+    
+    public async Task<bool> UpdateUserEmail(int userID, string newEmail)
+    {
+        // Lazily create FeatureHub dependency so unrelated service calls/tests do not block on external network init.
+        var featureStateProvider = new FeaturehubHelper.FeatureStateProvider();
+
+        //Backend check for feature toggle - if the feature is disabled, throw an exception or return an error response
+        if (!featureStateProvider.IsEnabled("ChangeEmail"))
+        {
+            throw new Exception("ChangeEmail feature is disabled");
+        }
+
+        var user = await _userRepo.GetUserInfoByIdAsync(userID);
+        if (user == null)
+            throw new Exception($"User with ID {userID} not found");
+
+        return await _userRepo.UpdateUserEmailAsync(userID, newEmail);
+    }
 
     private static string FormatWorkoutTime(int totalMinutes)
     {
@@ -90,4 +117,6 @@ public class UserService : IUserService
 
         return (currentStreak, bestStreak);
     }
+    
+    
 }
