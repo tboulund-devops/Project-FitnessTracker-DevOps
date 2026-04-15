@@ -32,8 +32,8 @@
 name: "Daily Repo Status"
 "on":
   schedule:
-  - cron: "31 11 * * 5"
-    # Friendly format: weekly (scattered)
+    - cron: "31 11 * * 5"
+      # Friendly format: weekly (scattered)
   workflow_dispatch:
 
 permissions: {}
@@ -55,6 +55,7 @@ jobs:
       model: ${{ steps.generate_aw_info.outputs.model }}
       secret_verification_result: ${{ steps.validate-secret.outputs.verification_result }}
     steps:
+      -
       - name: Setup Scripts
         uses: github/gh-aw-actions/setup@b2c35f34e1013dd9ed2a84c559e2b2fec9ad38e6 # v0.62.0
         with:
@@ -308,6 +309,23 @@ jobs:
         run: ${RUNNER_TEMP}/gh-aw/actions/install_copilot_cli.sh latest
         env:
           GH_HOST: github.com
+
+      # 🆕 DEBUG STEP – List available models
+      - name: List available Copilot models
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+        run: |
+          echo "=== Listing available models ==="
+          copilot --debug --prompt "list models" 2>&1 | grep -i "successfully listed" || true
+          echo "=== Full debug output (first 200 lines) ==="
+          copilot --debug --prompt "list models" 2>&1 | head -200
+      - name: Upload model list
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: model-list
+          path: /tmp/gh-aw/model-list.log
+          if-no-files-found: warn
+
       - name: Install AWF binary
         run: bash ${RUNNER_TEMP}/gh-aw/actions/install_awf_binary.sh v0.24.3
       - name: Download container images
@@ -443,7 +461,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
           
           echo "Safe Outputs MCP server will run on port ${PORT}"
-          
+
       - name: Start Safe Outputs MCP HTTP Server
         id: safe-outputs-start
         env:
@@ -463,7 +481,7 @@ jobs:
           export GH_AW_MCP_LOG_DIR
           
           bash ${RUNNER_TEMP}/gh-aw/actions/start_safe_outputs_server.sh
-          
+
       - name: Start MCP Gateway
         id: start-mcp-gateway
         env:
@@ -1016,4 +1034,3 @@ jobs:
           name: safe-output-items
           path: /tmp/safe-output-items.jsonl
           if-no-files-found: warn
-
