@@ -128,7 +128,7 @@ jobs:
         working-directory: ./Tests
         run: dotnet stryker --project Backend.csproj --break-at 60 --output "stryker-report"
 
-      # ===== DOCKER BUILD & PUSH TO GHCR =====
+      # ===== DOCKER BUILD & PUSH TO Github Container Repository =====
       - name: Convert repository name to lowercase
         if: always()
         id: repo_lower
@@ -314,7 +314,7 @@ jobs:
           echo "❌ App did not become ready in time. Last HTTP status: $HTTP_STATUS"
           exit 1
 
-      # ===== Frontedn Build =====
+      # ===== Frontend Build ===== for E2E and Performance tests via github container registry and actions
       - name: Install Frontend Dependencies for Build
         if: always()
         working-directory: ./Frontend/
