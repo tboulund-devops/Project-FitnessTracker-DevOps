@@ -316,9 +316,9 @@ jobs:
         run: |
           mkdir -p /tmp/gh-aw
           echo "=== Listing available models ===" | tee /tmp/gh-aw/model-list.log
-          copilot --log-level debug --help 2>&1 | grep -i "successfully listed" | tee -a /tmp/gh-aw/model-list.log
+          copilot --log-level debug --prompt "hi" 2>&1 | grep -i "successfully listed" | tee -a /tmp/gh-aw/model-list.log
           echo "=== Full debug output (first 300 lines) ===" | tee -a /tmp/gh-aw/model-list.log
-          copilot --log-level debug --help 2>&1 | head -300 >> /tmp/gh-aw/model-list.log
+          copilot --log-level debug --prompt "hi" 2>&1 | head -300 >> /tmp/gh-aw/model-list.log
       - name: Upload model list
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
