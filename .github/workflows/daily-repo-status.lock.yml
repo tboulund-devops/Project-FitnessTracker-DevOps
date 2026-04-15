@@ -55,7 +55,6 @@ jobs:
       model: ${{ steps.generate_aw_info.outputs.model }}
       secret_verification_result: ${{ steps.validate-secret.outputs.verification_result }}
     steps:
-      -
       - name: Setup Scripts
         uses: github/gh-aw-actions/setup@b2c35f34e1013dd9ed2a84c559e2b2fec9ad38e6 # v0.62.0
         with:
