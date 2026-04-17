@@ -177,6 +177,7 @@ jobs:
           username: ${{ vars.PRODUCTION_SERVER_USERNAME }}
           key: ${{ secrets.PRODUCTION_SERVER_SSH_KEY }}
           script: |
+            bash
             cd dowa
             echo "DATABASE_USER=${{ vars.DATABASE_USER }}" > .env
             echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> .env
@@ -193,6 +194,7 @@ jobs:
           key: ${{ secrets.PRODUCTION_SERVER_SSH_KEY }}
           # Use bash -c with a quoted multi‑line string – safe for Fish
           script: |
+            bash
             cd dowa
             sudo -S docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_PAT }}
             sudo -S docker-compose down --force
