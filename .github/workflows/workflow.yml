@@ -171,7 +171,7 @@ jobs:
           key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
           script: |
             mkdir -p dowa
-            echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S chown -R $(whoami) dowa
+            echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S chown -R (whoami) dowa
 
       - name: Deliver Docker Compose file and migrations to staging
         if: always()

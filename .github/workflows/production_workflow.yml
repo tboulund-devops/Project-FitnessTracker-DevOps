@@ -176,7 +176,7 @@ jobs:
           key: ${{ secrets.PRODUCTION_SERVER_SSH_KEY }}
           script: |
             mkdir -p dowa
-            echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S chown -R $(whoami) dowa
+            echo '${{ secrets.SUDO_PASSWORD }}' | sudo -S chown -R (whoami) dowa
 
       - name: Deliver Docker Compose file and migrations to production
         uses: appleboy/scp-action@v0.1.7
