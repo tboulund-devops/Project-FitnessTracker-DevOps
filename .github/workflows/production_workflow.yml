@@ -195,7 +195,6 @@ jobs:
           username: ${{ vars.PRODUCTION_SERVER_USERNAME }}
           key: ${{ secrets.PRODUCTION_SERVER_SSH_KEY }}
           script: |
-            bash
             cd dowa
             echo "DATABASE_USER=${{ vars.DATABASE_USER }}" > .env
             echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> .env
@@ -212,13 +211,12 @@ jobs:
           username: ${{ vars.PRODUCTION_SERVER_USERNAME }}
           key: ${{ secrets.PRODUCTION_SERVER_SSH_KEY }}
           script: |
-            bash
             cd dowa
 
             # Run commands with sudo non-interactively.
-            run_sudo() {
-              echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S -p '' "$@"
-            }
+            function run_sudo
+              echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S -p '' $argv
+            end
 
             # Log in to GHCR
             run_sudo docker --version
@@ -236,34 +234,34 @@ jobs:
             run_sudo docker compose -f docker-compose.yml up -d db
 
             echo "Waiting for database to be healthy..."
-            while [ "$(run_sudo docker inspect --format='{{.State.Health.Status}}' FitnessTrackerDBPost 2>/dev/null || echo starting)" != "healthy" ]; do
+            while test (run_sudo docker inspect --format='{{.State.Health.Status}}' FitnessTrackerDBPost) != "healthy"
               sleep 2
-            done
+            end
 
             # Flyway validation and migration
             echo "Running Flyway validation..."
-            flyway_validate_output="$(run_sudo docker compose -f docker-compose.yml run --rm flyway validate 2>&1)"
-            flyway_validate_exit=$?
+            set flyway_validate_output (run_sudo docker compose -f docker-compose.yml run --rm flyway validate 2>&1)
+            set flyway_validate_exit $status
 
-            if [ $flyway_validate_exit -ne 0 ]; then
+            if test $flyway_validate_exit -ne 0
               echo "$flyway_validate_output"
-              if echo "$flyway_validate_output" | grep -Eqi "Migration checksum mismatch|checksum mismatch"; then
+              if string match -rqi "Migration checksum mismatch|checksum mismatch" -- "$flyway_validate_output"
                 echo "Checksum mismatch detected. Running one-time Flyway repair..."
-                if ! run_sudo docker compose -f docker-compose.yml run --rm flyway repair; then
+                if not run_sudo docker compose -f docker-compose.yml run --rm flyway repair
                   echo "❌ Flyway repair failed!"
                   exit 1
-                fi
+                end
               else
                 echo "❌ Flyway validation failed for a non-checksum reason."
                 exit $flyway_validate_exit
-              fi
-            fi
+              end
+            end
 
             echo "Running Flyway migrate..."
-            if ! run_sudo docker compose -f docker-compose.yml run --rm flyway migrate; then
+            if not run_sudo docker compose -f docker-compose.yml run --rm flyway migrate
               echo "❌ Flyway migration failed!"
               exit 1
-            fi
+            end
 
             # Start backend and frontend
             echo "Starting backend..."
