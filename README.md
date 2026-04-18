@@ -1,214 +1,153 @@
 # Fitness Tracking
 
-> A comprehensive strength training journal for tracking workouts, monitoring progress, and achieving your fitness goals.
+> A strength training journal for logging workouts, tracking progress, and improving over time.
 
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?style=flat&logo=dotnet)](https://dotnet.microsoft.com/)
-[![Avalonia](https://img.shields.io/badge/Avalonia-11+-7B2FF7?style=flat&logo=avalonia&logoColor=white)](https://avaloniaui.net/)
+[![React](https://img.shields.io/badge/React-18+-61DAFB?style=flat&logo=react&logoColor=black)](https://react.dev/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-336791?style=flat&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 
 ---
 
 ## Vision
 
-An application for tracking strength training workouts with easy logging of weight, reps, sets, and rest periods.
-Users can plan future workouts, review past sessions, and visualize their progression through clear statistics and analytics.
+Fitness Tracking helps users:
+- Log workouts with sets, reps, and weight.
+- Review previous sessions and profile information.
+- Track consistency and progress through real usage data.
 
 ---
 
-## Tech-stack
+## Tech Stack
 
-Language: C#
-Framwork: ASPNET dotnet.10
-Database: _PostgreSQL_ (if distrubuted) / SQLite (if local on phone)
-Front-End: Avalonia Application
+### Language Breakdown (GitHub Linguist)
+
+- `57.7%` C#
+- `30.7%` TypeScript
+- `8.0%` CSS
+- Remaining percentage: SQL, JavaScript, and workflow/configuration files
+
+### Platform
+
+- **Backend:** ASP.NET Core (`.NET 10`)
+- **Frontend:** React + Vite + TypeScript
+- **Database:** PostgreSQL
+- **Containerization:** Docker + Docker Compose
+
 
 ---
 
 ## Architecture
 
-3 Tier based:
+Three-tier setup:
 
-Tier 1.
-Front-End: React + vite
+1. **Presentation tier:** React + Vite frontend
+2. **Application tier:** ASP.NET Core backend (Clean Architecture inspired)
+3. **Data tier:** PostgreSQL database
 
-Tier 2.
-Back-End: Clean Architechture
+---
 
-Tier 3.
-Database: PostgreSQL
+## Staging Server
+
+- **URL:** http://89.150.149.43:8030/
+- **Branch flow:** Updated automatically on every push to `main`
+- **Pipeline:** `.github/workflows/workflow.yml`
+- **What happens:** build + tests + analysis + image publish + deployment + migration + verification
+
+This environment is used as the continuously deployed validation environment for the latest `main` changes.
+
+---
+
+## Production Server
+
+- **URL:** http://46.62.146.222:8030/
+- **Branch flow:** Updated only through a pull request from `main` to `Production`
+- **Pipeline:** `.github/workflows/production_workflow.yml`
+- **Guardrail:** Workflow validates that the source branch is exactly `main`
+
+This keeps production releases intentional and controlled, with explicit promotion from staging-ready code.
 
 ---
 
 ## Automation & CI/CD
 
-### GitHub Workflows
+GitHub Actions drives CI, CD, and repository automation.
 
-This project uses GitHub Actions for continuous integration, deployment, and automated maintenance.
+### CI + Staging CD (`workflow.yml`)
 
-#### CI/CD Pipelines
+- **Trigger:** Push to `main`
+- **Core checks:**
+  - Semantic version generation
+  - .NET build and unit tests with coverage
+  - Frontend unit tests with coverage
+  - Sonar analysis with quality gate wait
+  - Mutation testing with Stryker
+- **Delivery:**
+  - Build and push backend/frontend Docker images to GHCR (`:staging` tags)
+  - Deploy to staging host over SSH
+  - Run Flyway validate/repair (if checksum mismatch)/migrate
+  - Health checks for backend and frontend
+  - Run k6 performance test and TestCafe E2E
+  - Upload artifacts (mutation, k6, E2E, test diagnostics)
 
-**Main Branch Workflow** (`workflow.yml`)
-- **Trigger**: Push to `main` branch
-- **Purpose**: Continuous integration and deployment to staging environment
-- **Key Steps**:
-  - Semantic versioning (automatic version bumps)
-  - Static code analysis with SonarCloud
-  - Build .NET solution
-  - Docker image build and push to GHCR
-  - Deploy to staging server with Docker Compose
-  - Database migrations with Flyway
-  - Performance testing with k6
-  - E2E testing with TestCafe
-  - Frontend build and deployment
+### Production CD (`production_workflow.yml`)
 
-**Production Workflow** (`production_workflow.yml`)
-- **Trigger**: Pull request to `Production` branch (only accepts merges from `main`)
-- **Purpose**: Production deployment with comprehensive testing
-- **Target Host**: `devops@89.150.149.43` via production repository variables
-- **Key Steps**:
-  - Source branch validation (enforces main → Production flow)
-  - Full test suite (unit tests, mutation tests, coverage)
-  - SonarCloud quality gate validation
-  - Docker image build with production tags
-  - Production server deployment
-  - Performance and E2E testing validation
-- **Required Production Variables/Secrets**:
-  - Variables: `PRODUCTION_SERVER_IP`, `PRODUCTION_SERVER_USERNAME`, `DATABASE_USER`, `DATABASE_NAME`, `PROJECT_KEY`, `SONAR_URL`
-  - Secrets: `PRODUCTION_SERVER_SSH_KEY`, `DATABASE_PASSWORD`, `SUDO_PASSWORD`, `GHCR_PAT`, `FITNESSTRACKERTOKEN`
+- **Trigger:** Pull request events targeting `Production` (`opened`, `synchronize`, `reopened`)
+- **Branch policy in pipeline:** rejects PRs unless source branch is `main`
+- **Core checks:** Same quality gates as staging flow (build, tests, coverage, Sonar, mutation)
+- **Delivery:**
+  - Build and push Docker images with `:production` tags
+  - Deploy with `docker-compose.yml` to production host
+  - Run Flyway validation and migrations
+  - Verify service readiness
+  - Run k6 and TestCafe checks
+  - Upload execution reports as workflow artifacts
 
-#### Agentic Workflows
+### Agentic Repository Automation
 
-Automated AI-powered workflows that maintain and improve the repository:
-
-**Daily Documentation Updater** (`daily-doc-updater`)
-- **Schedule**: Weekly (configurable via workflow_dispatch)
-- **Purpose**: Automatically reviews merged PRs from the last 24 hours and updates documentation
-- **Features**:
-  - Scans for new features, changes, and breaking changes
-  - Updates README and other documentation files
-  - Creates pull requests with documentation improvements
-  - Maintains consistent documentation style
-- **Labels**: `documentation`, `automation`
-
-**Daily Repository Status** (`daily-repo-status`)
-- **Schedule**: Weekly (configurable via workflow_dispatch)
-- **Purpose**: Creates daily status reports as GitHub issues
-- **Features**:
-  - Summarizes recent repository activity
-  - Tracks issues, PRs, discussions, and releases
-  - Provides productivity insights and recommendations
-  - Highlights community contributions
-  - Suggests actionable next steps for maintainers
-- **Labels**: `report`, `daily-status`
-
-### Docker & Deployment
-
-The project uses Docker Compose for orchestration with separate configurations:
-- `docker-compose.yml` - Production environment
-- `docker-compose.staging.yml` - Staging environment
-- `docker-compose.dev.yml` - Local development
-
-**Services**:
-- Frontend (React + Vite) - Port 8030 (staging)
-- Backend (ASP.NET Core) - Port 8081 (staging)
-- Database (PostgreSQL) - Internal
-- Flyway - Database migrations
-
-### How to Use Automated Workflows
-
-**Trigger Manual Documentation Updates**:
-```bash
-# Go to Actions tab in GitHub
-# Select "Daily Documentation Updater"
-# Click "Run workflow" button
-# The bot will review recent changes and create a documentation PR if needed
-```
-
-**Trigger Manual Repository Status Report**:
-```bash
-# Go to Actions tab in GitHub
-# Select "Daily Repository Status"
-# Click "Run workflow" button
-# The bot will create an issue with the latest repository status
-```
-
-**View Workflow Results**:
-- Documentation PRs are labeled with `documentation` and `automation`
-- Status reports are created as issues with labels `report` and `daily-status`
-- All workflow runs can be monitored in the Actions tab
+- **`daily-doc-updater` (weekly/manual):** Proposes documentation updates based on recent merged changes.
+- **`daily-repo-status` (weekly/manual):** Creates repository status issues with activity and recommendations.
+- **`code-simplifier` (weekly):** Opens refactoring PRs to improve readability and maintainability.
 
 ---
 
-## Feature plan
+## Feature Plan
 
-### Week 5
+| Week | Focus | Planned Items |
+| --- | --- | --- |
+| 5 | Kick-off | No planned features |
+| 6 | Authentication | Login backend, Login frontend |
+| 7 | Winter break | Nothing planned |
+| 8 | Workout creation | Add workout backend, Add set to workout backend |
+| 9 | Retrieval + SPA | Get workout backend, SPA setup frontend |
+| 10 | UI foundations | Home page setup frontend, Get workout frontend |
+| 11 | Workout UX | Add workout frontend, Add set to workout frontend |
+| 12 | Navigation | Nav bar navigation, Log out |
+| 13 | Registration | Registration user backend, Registration user frontend |
+| 14 | Easter break | Collect Easter eggs |
+| 15 | Profile | Get profile info backend, Get profile info frontend |
+| 16 | Email change | Change email frontend, Change email backend |
+| 17 | Upcoming | Feature 1: [...], Feature 2: [...] |
 
-_Kick-off week - no features to be planned here_
+---
 
-### Week 6
+## CALMR
 
-**Feature 1:** Login Backend
+### Culture
 
-**Feature 2:** Login Frontend
+The team works with a generative culture: failures are treated as learning opportunities, communication is encouraged, new information is implemented quickly, and responsibilities are shared instead of isolated.
 
-### Week 7
+### Automation
 
-_Winter vacation - nothing planned._
+CI/CD is heavily automated with GitHub Actions for testing, quality checks, image publishing, deployments, migrations, and post-deployment verification across staging and production flows.
 
-### Week 8
+### Lean
 
-**Feature 1:** Add Workout Backend
+The workflow emphasizes small, incremental changes through `main`, fast feedback from staging, and controlled promotion to production, reducing waste and large risky releases.
 
-**Feature 2:** Add set to workout Backend
+### Measurement
 
-### Week 9
+The project measures quality and reliability through unit coverage, frontend coverage, Sonar quality gates, mutation testing, k6 performance runs, E2E tests, and stored workflow artifacts.
 
-**Feature 1:** Get workout backend
+### Recovery
 
-**Feature 2:** SPA Setup Frontend 
-
-### Week 10
-
-**Feature 1:** Home page frontend basic setup
-
-**Feature 2:** Get Workout frontend
-
-### Week 11
-
-**Feature 1:** Add workout frontend
-
-**Feature 2:** Add set to workout frontend
-
-### Week 12
-
-**Feature 1:** Navigation via Nav Bar
-
-**Feature 2:** Log out
-
-### Week 13
-
-**Feature 1:** Registration User backend
-
-**Feature 2:** Registration User Frontend
-
-### Week 14
-
-_Easter vacation - Collect Eastereggs._
-
-### Week 15
-
-**Feature 1:** Get Profile info Backend
-
-**Feature 2:** Get Profile info Frontend
-
-### Week 16
-
-**Feature 1:** Change email Frontend
-
-**Feature 2:** Change email Backend
-
-### Week 17
-
-**Feature 1:** [...]
-
-**Feature 2:** [...]
+Recovery is supported by reproducible Docker deployments, health checks, staged promotion, and migration validation/repair paths that reduce downtime risk and make roll-forward operations safer.
